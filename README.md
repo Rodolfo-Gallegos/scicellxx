@@ -7,11 +7,6 @@
 
 ---
 
-## Welcome!
-This is the official GitHub repository for the **SciCell++** project.
-
-## What is SciCell++?
-
 SciCell++ is an object-oriented framework for the simulation of biological and physical phenomena modelled as continuous or discrete processes.
 
 ## Table of Contents
@@ -25,21 +20,16 @@ SciCell++ is an object-oriented framework for the simulation of biological and p
 
 ## Installation <a name="installation"></a>
 
-### Docker-based installation
+### Docker-based installation (Windows/Linux/Mac)
 We are adopting containers to ease the installation and release of
-versions so you do not need to worry about any dependencies.
+versions so you do not need to worry about any dependencies. Get your
+image copy from the ofifcial DockerHub of SciCell++ and ta-dah, you
+are ready to go.
 
-This section and installation procedure is under development.
-:construction: :construction: :construction: :construction: :construction:
+Check the documentation for this type of installation in
+[here](https://scicellxx.readthedocs.io/en/latest/?badge=latest).
 
-Follow the instructions in
-[here](https://docs.docker.com/engine/install/) to get Docker
-installed in your system.
-
-Then get the image from our Docker repository and ta-dah, you are
-ready to go.
-
-### Fast installation and starting up!!!
+### Fast installation and starting up (Linux only)!!!
 
 #### What you need to have it running and working nicely?
 * A C++ compiler - demo drivers and library built with version
@@ -70,24 +60,29 @@ customised branch, we assume that your name is _john_cool_
 
 #### Configuration
 * In a terminal (shell command line) go into the `scicellxx` folder
-  then type
+  and type
 
 ```shell
 ./autogen.sh
 ```
 
-* Follow up the instructions on screen to configure your own copy of
-the project.
+* Follow up the instructions on screen.
 
 ## Demos <a name="demos"></a>
 
-Demos live in the `demos` folder. You should run all of them to make sure everything is working fine. If you did not run them at installation time (by default) you can do it at any time by opening a terminal, going into the build folder (the default one is `build`) and typing
+Demos live in the `demos` folder. Run them to make sure everything is
+working fine. If you did not run them at installation time (by
+default) you can do it at any time by opening a terminal, going into
+the build folder (the default one is `build`) and typing
 
 ```shell
 ./ctest
 ```
 
-A large number of demos is expected to live in the `demos` folder. Review the [corresponding documentation](https://scicellxx.readthedocs.io/en/latest/?badge=latest) for their full description.
+A large number of demos is expected to live in the `demos`
+folder. Review the [corresponding
+documentation](https://scicellxx.readthedocs.io/en/latest/?badge=latest)
+for their full description.
 
 ### Featured demos
 * Interpolation
@@ -114,7 +109,7 @@ Please check the [corresponding documentation](https://scicellxx.readthedocs.io/
 
 ### How many developers are currently working on this project?
 
-At Wednesday, March/31, 2021 there is one and only one developer, me
+At Thursday, July/29, 2021 there is one and only one developer, me
 :no_mouth: :envelope:
 
 :construction: :construction: :construction: :construction: :construction:
