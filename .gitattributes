@@ -7,10 +7,28 @@
 
 # Explicitly declare text files you want to always be normalized and converted
 # to native line endings on checkout.
+
+# Source code
 *.cpp text
+*.hpp text
 *.c text
 *.h text
-*.py
+
+# Configuration files
+./configs/* text
+
+# CMake
+*.txt text
+
+# Tools
+*.sh text
+*.py text
+
+# Documentations
+*.rst text
+*.bat text
+*.tex text
+*.bib text
 
 # Declare files that will always have CRLF line endings on checkout.
 *.sln text eol=crlf
