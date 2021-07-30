@@ -14,12 +14,12 @@
 *.h text eol=lf
 
 # Configuration files
-configs/* text eol=lf
+#configs/* text eol=lf
 
 # CMake
 *.txt text eol=lf
 
-# Tools
+# Tools (scripts and python)
 *.sh text eol=lf
 *.py text eol=lf
 
