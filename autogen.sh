@@ -363,15 +363,6 @@ if ! cmake ../ \
     exit 1 # Add this flag for GitHub Actions report
 fi
 
-#if test cmake_output != 0 ; then
-#    echo ""
-#    echo "============================================================= "
-#    echo "[ERROR] CMake"
-#    echo "============================================================= "
-#    echo ""
-#    exit 1
-#fi
-
 echo ""
 echo "============================================================= "
 echo "[Done] CMake"
