@@ -20,11 +20,10 @@ def scan_for_files_of_a_type(root_folder, ext, ignore_in_path):
     for entry in list_of_all_files:
         # Flag to check whether to ignore or not the file
         ignore_file = False
-        if ignore_in_path:
-            for item in ignore_in_path:
-                if entry.find(item) >= 0:
-                    ignore_file = True
-                    break
+        for item in ignore_in_path:
+            if entry.find(item) >= 0:
+                ignore_file = True
+                break
 
         # If file not ignored then check it it ends with any given extension
         if not ignore_file:
@@ -33,6 +32,7 @@ def scan_for_files_of_a_type(root_folder, ext, ignore_in_path):
                     #print(f"File ending with {type_file} : {entry}")
                     files_to_delete.append(entry)
                     sum_ext_files = sum_ext_files + 1
+                    break;
     
     return sum_ext_files, files_to_delete
 
@@ -46,8 +46,8 @@ def main():
     
     # Set the positional arguments
     parser.add_argument("--root_folder", type=str, help="The root folder to search for given extensions", required=True)
-    parser.add_argument("--ext", type=str, nargs='+', help="The list of extensions to look for and delete", required=True, choices=['dat', 'jpg', 'png', 'jpeg', 'tar.gz', 'fig', 'vtu', 'ubx', 'bin', 'rar', 'm', 'gp', 'tar.xz'])
-    parser.add_argument("--ignore_in_path", type=str, nargs='*', help="A list of strings that may occur in the path, therefore these files  should be ignored for deletion", required=False)
+    parser.add_argument("--ext", type=str, nargs='+', help="The list of extensions to look for and delete", required=True, choices=['dat', 'png', 'jpg', 'jpeg', 'pdf', 'fig', 'vtu', 'ubx', 'bin', 'rar', 'm', 'gp', 'tar.gz', 'tar.xz', 'eps'])
+    parser.add_argument("--ignore_in_path", type=str, nargs='*', help="A list of strings that may occur in the path, therefore these files should be ignored for deletion", required=False)
         
     # parse args
     args = parser.parse_args()
@@ -55,11 +55,10 @@ def main():
     # --------------------------------------------------------------
     # Information
     # --------------------------------------------------------------
-    print(f"Search for '{args.ext}' files in '{args.root_folder}' directory and all subdirectories ...\n")
+    print(f"Searching for '{args.ext}' files in '{args.root_folder}' directory and all subdirectories ...\n")
     
-    if args.ignore_in_path:
-        for item in args.ignore_in_path:
-            print(f"Ignoring filenames with: {args.ignore_in_path}")
+    for item in args.ignore_in_path:
+        print(f"Ignoring filenames with: {item} string")
     
     print(f"Scanning ...")
     
