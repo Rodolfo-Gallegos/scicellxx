@@ -21,7 +21,7 @@ echo " "
 echo ""
 echo "============================================================= "
 echo ""
-echo "I am going to create a clean distro and package it"
+echo "I am going to create a clean distro and package it!"
 echo ""
 echo "============================================================= "
 echo ""
@@ -48,7 +48,7 @@ echo ""
 # Making a copy
 #====================================================================
 echo "============================================================= "
-echo "Copying the library into'" $tmp_dir"' folder ..."
+echo "Copying the library into the '" $tmp_dir"' folder ..."
 echo "============================================================= "
 if ! cp -r $working_folder $tmp_dir ; then
     echo ""
@@ -68,51 +68,52 @@ echo ""
 # Deleting .git folder
 #====================================================================
 echo "============================================================= "
-echo "I am going to delete the .git folder"
+echo "I am going to delete the .git folder and all .git* files"
 echo "============================================================= "
-if ! rm -rf $tmp_dir/$folder_name/.git ; then
+if ! rm -rf $tmp_dir/$folder_name/.git* ; then
     echo ""
     echo ""
     echo ""
     echo "========================================================= "
-    echo "[FAIL] Delete .git folder"
+    echo "[FAIL] Delete .git folder and all .git* files"
     echo "========================================================= "
     echo ""
     exit 1
 fi
 echo ""
-echo "[DONE] Delete .git folder"
+echo "[DONE] Delete .git folder and all .git* files"
 echo ""
 
 #====================================================================
 # Deleting build folder
 #====================================================================
 echo "============================================================= "
-echo "I am going to delete '$build_dir' folder"
+echo "I am going to delete the '$build_dir' folder"
 echo "============================================================= "
 if ! rm -rf $tmp_dir/$folder_name/$build_dir; then
     echo ""
     echo ""
     echo ""
     echo "========================================================= "
-    echo "[FAIL] Delete '$build_dir' folder"
+    echo "[FAIL] Delete the '$build_dir' folder"
     echo "========================================================= "
     echo ""
     exit 1
 fi
 echo ""
-echo "[DONE] Delete '$build_dir' folder"
+echo "[DONE] Delete the '$build_dir' folder"
 echo ""
 
 #====================================================================
 # Deleting dat png in folders
 #====================================================================
 echo "============================================================= "
-echo "I am going to delete [dat,png,jpeg,tar.gz,bin,vtu,fig,gp,m,rar] files, ignoring those in"
-echo "[demos] folders"
+echo "I am going to delete"
+echo "[dat,png,pdf,jpeg,tar.gz,tar.gx,fig,bin,rar,vtu,ubx,gp,m] files,"
+echo "ignoring those in [demos, external_src, tools] folders"
 echo "============================================================= "
 echo ""
-if ! $tmp_dir/$folder_name/tools/clean_distro.py --root_folder $tmp_dir/$folder_name --ext dat png tar.gz fig bin rar vtu ubx gp m --ignore_in_path demos ; then
+if ! $tmp_dir/$folder_name/tools/clean_distro.py --root_folder $tmp_dir/$folder_name --ext dat png pdf jpg jpeg tar.gz tar.xz fig bin rar vtu ubx gp m eps --ignore_in_path demos external_src tools ; then
     echo ""
     echo ""
     echo ""
@@ -130,8 +131,7 @@ echo ""
 # Create the package of the new distribution
 #====================================================================
 echo "============================================================= "
-echo "I am going to create a package with the new clean"
-echo "distribution and delete temporal folder"
+echo "I am going to package the new clean distribution"
 echo "============================================================= "
 echo ""
 if ! tar cvfz $lib_name.tar.gz $tmp_dir/$folder_name ; then
