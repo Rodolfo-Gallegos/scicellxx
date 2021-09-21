@@ -1,45 +1,6 @@
-.. _installation-label_installation.rst:
-
-Installation
-============
-
-We have two main approaches to install SciCell++ and have it ready to
-go:
-
-  `Docker-based installation`_: Use this installation if you prefer a
-  fast and easier installation of SciCell++.
-
-  `Manual installation`_: Use this installation if you are familiar
-  with Unix based systems, within this installation you have control
-  over the versions of the third-part packages used by SciCell++.
-
-Docker-based installation
--------------------------
-
-This type of installation provides you with a ready-out-of-the-box
-container (a black-box with all software dependencies preinstalled and
-ready to go). You will be able to use SciCell++ just
-right-out-of-the-box.
-
-.. _windows-systems-docker-installation-label_installation.rst:
-
-Windows systems
-^^^^^^^^^^^^^^^
-
-.. warning:: Work in progress
-
-3. Run the docker application
-
-4. Run the docker image
-
-.. warning:: Not finished section.
+Linux installation
+==================
              
-
-.. _linux-systems-docker-installation-label_installation.rst:
-             
-Linux systems
-^^^^^^^^^^^^^
-
 This section presents instructions for the installation of SciCell++
 on a linux type system. The instructions were tested on Ubuntu 18.04
 but we expect them to work on recent versions as well.
@@ -93,15 +54,19 @@ system.
 
    .. code-block:: shell
 
-      ./scicellxx/tools/run_scicellxx_on_docker.sh -f ./autogen.sh -t
-      STATIC -b DEBUG -n 4 -c ./configs/container -d 4 -v
-
       sudo ./scicellxx/tools/run_scicellxx_on_docker.sh
 
-      Inside run the ./autogen script
-      
-Manual installation
--------------------
+   Once in the docker container follow the instruction on section
+   :ref:`Configuration <configuration-label_initial_steps.rst>`
+   starting from step 2. Also check section :ref:`options for the
+   autogen.sh script <autogen.sh-options-label_initial_steps.rst>` for
+   additional parameters than you can pass to the ``autogen.sh``
+   script.
+
+.. _advanced_installation-label_linux_installation.rst:
+   
+Advanced installation
+---------------------
 
 This type of installation gives you full customization of the software
 and hardware resources in your machine.
@@ -134,10 +99,9 @@ and hardware resources in your machine.
   demos and the unit test. We include Python based scripts to plot the
   result for some demos . Tested with Python version 3.7.3.
 
-You need to manually install the previous packages, if you prefer to
-use a container with all the previous packages preinstalled then go to
-the :ref:`docker based linux systems section
-<linux-systems-docker-installation-label_installation.rst>`.
+You need to manually install the previous packages, we suggest to use
+the docker based installation if you are not familiar with Unix based
+systems.
 
 The following software packages are optional (but recommended)
   
@@ -175,130 +139,6 @@ The following step guide you through the installation process:
 
 That is it, now you can move to the configuration of SciCell++ section.
 
-.. _configuration-label_installation.rst:
-
-Configuration
--------------
-
-This section guides you through the configuration process of
-SciCell++. The configuration is performed with help of the
-``autogen.sh`` script which lives in the main SciCell++ folder.
-
-1. Open a terminal and go to the ``scicellxx`` folder.
-2. Execute the automatic generator script by typing:
-
-   .. code-block:: shell
-
-                   ./autogen.sh
-
-   .. important::
-
-      This commands executes a full compilation of SciCell++ and runs
-      all the demos and tests to make sure you are working with an
-      stable copy. If you want a full list of available parameters for
-      this script then add the ``-h`` parameter or review the
-      :ref:`options section for autogen.sh
-      <autogen.sh-options-label_installation.rst>`.
-
-   .. important::
-
-      If you are using a docker container to run SciCell++ then do not
-      forget to pass the ``-c ./configs/container`` option to the
-      ``autogen.sh`` script.
-      
-   A summary of the compilation and testing process is shown once they
-   have finished. If no errors were reported then SciCell++ is ready
-   to go. We recommend you to have a look at the :doc:`tutorials` and
-   :doc:`demos` as follow up.
-
-.. _autogen.sh-options-label_installation.rst:
-        
-Options for the ``autogen.sh`` script
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-If you want to fully configure the compilation process use the ``-i``
-parameter. Check the options for the ``autogen.sh`` section.
-sectionsYou will be able to specify the number of processors to
-compile SciCell++, also the number of processor to run the demos, use
-predefined configuration files for access to third-party libraries and
-many more. For a full list of available options use the ``-h``
-parameter.
-
-Additional features
--------------------
-
-In this section we present some additional features that may help you
-to generate the full documentation of SciCell++ from source code, and
-to move SciCell++ to a computer with no Internet access.
-
-Generate ``doxygen`` documentation for SciCell++
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-This allows you to create class diagrams and browseable documentation
-directly from the source code of SciCell++.
-
-**Requirements**
-
-* `Doxygen <https://www.doxygen.nl/index.html>`_ and `Latex
-  <https://www.latex-project.org/>`_ to generate documentation from
-  source code.
-
-  Check :ref:`this section <doxygen-installation-label_installation.rst>` for doxygen installation.
-  
-**Steps**
-  
-1. Open a command line and go to the upper level folder of the
-   project, probably called ``scicellxx``.
-
-2. In the command line type the following:
-  
-   .. code-block:: shell
-
-                   ./make_doc.sh
-
-   Voila! The documentation will be automatically generated into the
-   ``docs/doxy_doc/html`` folder.
-
-3. Open the file ``index.html`` within your favorite web-browser to
-   read the documentation.
-
-Generate a ``.tar.gz`` file to distribute SciCell++
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The easiest way to distributed SciCell++ is by means of the official
-GitHub repository, however, if you need to move your current copy of
-SciCell++ to a computer with no Internet access (ex. an isolated
-cluster of computers or a SuperComputer) this is an easy way to do
-so. Follow the steps in this section to create a ``.tar.gz`` package
-file with your current version of SciCell++.
-
-**Requirements**
-
-* Save all of your work
-* Make sure that your current version has neither errors nor broken
-  demos. You can verify this by running the ``./autogen.sh`` script at
-  the root directory of SciCell++.
-
-**Steps**
-
-1. Go to the upper level folder of the project, probably called
-   ``scicellxx``.
-
-2. Open a command line and type
-
-   .. code-block:: shell
-
-                   ./make_clean_distro.sh
-
-   The full folder containing SciCell++ will be copied into a
-   temporary location, all the control version information generated
-   by Git will be removed. You will be prompted to remove all files
-   with the extension ``.dat, .png, .tar.gz, .fig, .bin, .rar, .vtu,
-   .ubx, .gp, .m`` (only those in the ``demos`` folder will be
-   keep). The process of creating a compressed file will start.
-
-3. Once finished a file named ``SciCell++.tar.gz`` will be created in
-   the root folder of SciCell++.
 
 Add the ``bin`` folder of SciCell++ to your ``PATH`` variable
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
