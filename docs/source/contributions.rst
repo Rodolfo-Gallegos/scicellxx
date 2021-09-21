@@ -8,30 +8,24 @@ time.
 How to contribute?
 ------------------
 
-**The easy approach**
-
-Create new issues from the GitHub tool or send an email directly to
+Create new issues in the `GitHub repository
+<https://github.com/tachidok/scicellxx>`_ or send an email directly to
 the developer's team (jcp.sansalvador@inaoep.mx)
-
-**A more complicated approach**
-
-For more information please check the contributions section of the
-documentation.
 
 Facts and curiosities
 ---------------------
 
 **How many developers are currently working on the library?**
 
-* At Thrusday, February/09, 2021 there is one and only one developer.
+At Monday, September/20, 2021 there is one and only one developer.
 
 **When did this project start?**
 
-* The first commit to GitHub of this project was on Friday, 11 March 2016.
+The first commit to GitHub of this project was on Friday, 11 March 2016.
 
 **A list (in wikipedia) of some software packages implement the FEM**
 
-* https://en.wikipedia.org/wiki/List_of_finite_element_software_packages  
+https://en.wikipedia.org/wiki/List_of_finite_element_software_packages  
     
 List of contributors
 ^^^^^^^^^^^^^^^^^^^^

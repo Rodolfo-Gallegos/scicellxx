@@ -14,7 +14,7 @@ processes.
 .. toctree::
    :maxdepth: 2
 
-   installation
+   initial_steps
    tutorials
    demos
    contributions
