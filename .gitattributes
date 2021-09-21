@@ -1,0 +1,35 @@
+# Created by Julio C. on 29/07/2021 This file specifies how to handle
+# line endings. This configurations overrides the core.autocrlf for
+# all users.
+
+# Set the default behavior, in case people don't have core.autocrlf set.
+#* text=auto
+
+# Ensure all listed files use LF
+
+# Source code
+*.cpp text eol=lf
+*.hpp text eol=lf
+*.c text eol=lf
+*.h text eol=lf
+
+# Configuration files
+#configs/* text eol=lf
+
+# CMake
+*.txt text eol=lf
+
+# Tools (scripts and python)
+*.sh text eol=lf
+*.py text eol=lf
+
+# Documentations
+*.rst text eol=lf
+*.bat text eol=lf
+
+# Declare files that will always have CRLF line endings on checkout.
+#*.sln text eol=crlf
+
+# Denote all files that are truly binary and should not be modified.
+*.png binary
+*.jpg binary

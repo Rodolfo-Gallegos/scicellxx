@@ -363,15 +363,6 @@ if ! cmake ../ \
     exit 1 # Add this flag for GitHub Actions report
 fi
 
-#if test cmake_output != 0 ; then
-#    echo ""
-#    echo "============================================================= "
-#    echo "[ERROR] CMake"
-#    echo "============================================================= "
-#    echo ""
-#    exit 1
-#fi
-
 echo ""
 echo "============================================================= "
 echo "[Done] CMake"
@@ -445,6 +436,9 @@ if test "$build_test_demos" = "TRUE" ; then
     echo ""
     echo ""
     
+    # Store whether 'make test' sucessed or failed
+    test_failed=0
+    
     # Go into the build folder to run tests
     cd $build_dir
     
@@ -465,7 +459,9 @@ if test "$build_test_demos" = "TRUE" ; then
         echo "[FAILED] make test"
         echo "============================================================= "
         echo ""
-        exit 1 # Add this flag for GitHub Actions report
+
+        # Set the flag to indicate a fail in tests
+        test_failed=1
     fi
     
     # Go one directory up
@@ -504,6 +500,11 @@ if test "$build_test_demos" = "TRUE" ; then
     echo ""
     echo "============================================================= "
     echo ""
+
+    if test $test_failed = 1; then
+        exit 1 # Add this flag for GitHub Actions report
+    fi    
+    
 else
     echo ""
     echo ""

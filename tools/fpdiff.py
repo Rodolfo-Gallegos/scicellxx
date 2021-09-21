@@ -2,7 +2,6 @@
 
 import sys
 
-
 def gettype(a): 
  """ Distinguish between a number and a string:
      
