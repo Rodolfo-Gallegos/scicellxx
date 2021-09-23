@@ -23,7 +23,9 @@ Enable virtualisation on Windows
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The following instructions are based on this `YouTube video
-<https://youtu.be/6cVBG9BHibo>`_ .
+<https://youtu.be/6cVBG9BHibo>`_ and the `official webpage
+<https://docs.microsoft.com/en-us/windows/wsl/install-win10>`_ for
+WSL2 installation for Windows 10.
 
 1. Look for ``bios`` on the windows search tool and select the
    ``Change advanced startup options`` option.
@@ -170,21 +172,64 @@ Install GitHub Desktop
    .. note::
 
          Whenever you start to work with SciCell++ you should ensure
-         that you are working in your own branch. In case you are on a
+         that you are working on your own branch. In case you are on a
          different branch you can switch to your branch (or any other)
-         by selecting it on the popup menu. Any commits to SciCell++
-         must be done to your branch and all test must pass previous
-         to merge with the master branch.
+         by selecting it on the popup menu (`current branch`).
+
+   .. note::
+      
+         Any commits to SciCell++ must be done to your own branch, so
+         make sure the ``Commit to ..`` button spells your branch
+         name.
          
 .. _test-installation-label_windows_installation.rst:
    
-Test your installation
-^^^^^^^^^^^^^^^^^^^^^^
+Starting SciCell++
+^^^^^^^^^^^^^^^^^^
 
-1. Run the Docker Desktop application
+1. Run the Docker Desktop application. If you installed it with the
+   default options then it should be already running on the
+   backgroud. Open the interface by double clicking the docker icon at
+   the botton-right menu of your task bar and check no errors are
+   reported.
 
-2. To modify files open the repository in an external editor, you
-   could use SublimeText. This option is on the GitHubDesktop application.
- 
+2. Open a ``Windows PowerShell`` (there is no need to do so with
+   administrative rights) and type the following.
+
+   .. code-block:: shell
+                   
+                   docker run --name=scicellxx -v C:\Users\tachi\Documents\GitHub\scicellxx:/home/scicellxx -w /home/scicellxx/ -it scicellxx/scicellxx-base-all:0.1
+   
+   .. warning:: 
+   
+      Make sure to change
+      ``C:\Users\tachi\Documents\GitHub\scicellxx`` by the path where
+      you cloned the SciCell++ repository in your local machine.
+
+   You should have a similar output as that shown in the image. Wait
+   for completion.
+
+   .. image:: figures_windows_installation/04_start_scicellxx/01.png
+      :width: 700
+   
+3. Once finished, you should have a prompt as that shown in the
+   image. That means SciCell++ is ready to run.
+
+   .. image:: figures_windows_installation/04_start_scicellxx/02.png
+      :width: 700
+
+   You could also check the docker interface that should show a
+   running image with the name ``scicellxx`` as shown below:
+
+   .. image:: figures_windows_installation/04_start_scicellxx/03.png
+      :width: 600
+
+4. Continue with the :ref:`configuration step
+   <configuration-label_initial_steps.rst>` at the initial steps
+   document.
+
+**What if I am getting an error when running the ``docker`` command**
+
+    
 .. warning:: Not finished section.
              
