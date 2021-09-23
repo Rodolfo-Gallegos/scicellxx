@@ -14,8 +14,9 @@ Overview
    <install-docker-desktop-label_windows_installation.rst>`
 3. :ref:`Install GitHub Desktop
    <install-github-desktop-label_windows_installation.rst>`
-4. :ref:`Test your installation
-   <test-installation-label_windows_installation.rst>`
+4. :ref:`Starting SciCell++
+   <starting_scicellxx-label_windows_installation.rst`
+5. :ref:`Troubleshooting <>
 
 .. _enable-virtualisation-label_windows_installation.rst:
    
@@ -77,12 +78,6 @@ WSL2 installation for Windows 10.
 
    * For x64 systems: Version 1903 or higher, with Build 18362 or higher.
    * For ARM64 systems: Version 2004 or higher, with Build 19041 or higher.
-
-   If that is not the case then use the ``Windows Update settings``
-   tool to install system updates.
-
-   .. image:: figures_windows_installation/01_virtualisation/06.png
-      :width: 300
 
 9. Once again open a ``Windows PowerShell`` with administrative
    rights, type (or copy-paste) the following and wait for completion.
@@ -182,7 +177,7 @@ Install GitHub Desktop
          make sure the ``Commit to ..`` button spells your branch
          name.
          
-.. _test-installation-label_windows_installation.rst:
+.. _starting_scicellxx-label_windows_installation.rst:
    
 Starting SciCell++
 ^^^^^^^^^^^^^^^^^^
@@ -228,8 +223,44 @@ Starting SciCell++
    <configuration-label_initial_steps.rst>` at the initial steps
    document.
 
-**What if I am getting an error when running the ``docker`` command**
+.. _troubleshooting-label_windows_installation.rst:
+   
+Troubleshooting
+^^^^^^^^^^^^^^^
 
+**My Windows version is lower than the recommended one to install WLS**
+
+   .. note::
+      
+         Remember that you require Windows 10 or a higher version.
+
+You may update your system to the required version (or even higher)
+with help of the ``Windows Update settings`` tool.
+
+   .. image:: figures_windows_installation/01_virtualisation/06.png
+      :width: 300
+   
+Within that tool check whether you have pending updates or previous
+not installed updates, to do so, click on the ``Install now`` button
+or on the ``Check for updates`` button, respectively.
+
+   .. image:: figures_windows_installation/01_virtualisation/09.png
+      :width: 300
+
+   .. image:: figures_windows_installation/01_virtualisation/10.png
+      :width: 300
+
+**I am getting an error when running the docker run command**
+
+If you get an error when running the ``docker run`` command stating
+that the name ``scicellxx`` is already in use by another container you
+need to ``DELETE`` the container in your docker interface. Open the
+docker interface and in the ``Containers/Apps`` section find the
+``scicellxx`` container and click on the ``Trash can`` icon to delete
+it.
+
+   .. image:: figures_windows_installation/05_troubleshoot/01.png
+      :width: 500
     
 .. warning:: Not finished section.
              
