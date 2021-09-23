@@ -160,3 +160,18 @@ file with your current version of SciCell++.
 
 3. Once finished a file named ``SciCell++.tar.gz`` will be created in
    the root folder of SciCell++.
+
+Workflow
+--------
+
+The main differences on the workflow for Windows and Linux users are
+on the graphic interfaces. We provide details only for the graphic
+interfaces for those steps that may be required.
+
+:doc:`workflow/windows_workflow`
+     For Windows systems users.
+
+:doc:`workflow/linux_workflow`
+     For Linux systems users.
+
+   
