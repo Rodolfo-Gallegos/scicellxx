@@ -20,10 +20,10 @@ Installation
 The default installations use a container strategy, thus that all
 software dependencies are preinstalled and ready to use for SciCell++.
 
-:doc:`installation/windows_installation`
+:doc:`initial_steps/installation/windows_installation`
      For Windows systems users.
 
-:doc:`installation/linux_installation`
+:doc:`initial_steps/installation/linux_installation`
      For Linux systems users. We also provide instructions for a
      non-container based installation in case you have enough spare
      time.
@@ -33,7 +33,22 @@ software dependencies are preinstalled and ready to use for SciCell++.
      installation only if you are familiar with Unix based systems,
      within this installation you have full control over the versions
      of the third-part packages used by SciCell++.
-         
+
+.. _starting_scicellxx_-label_initial_steps.rst:
+     
+Starting SciCell++
+------------------
+
+Start the container with all the preinstalled packages for SciCell++
+and let it ready for configuration.
+
+:doc:`initial_steps/start_scicellxx/start_scicellxx_windows`
+     Use this option to run SciCell++ using the downloaded container.
+     
+:doc:`initial_steps/start_scicellxx/start_scicellxx_linux`
+     Use this option to run SciCell++ by either using the downloaded
+     container or using your own packages version installation.
+   
 .. _configuration-label_initial_steps.rst:
 
 Configuration

@@ -3,7 +3,9 @@ Windows installation
 
 This section provides instructions for the installation of SciCell++
 on a Windows system. We tested these instructions on Windows 10 but we
-(hopefully) expect them to work on recent versions too.
+(hopefully) expect them to work on recent versions too. Once finished
+this section you should continue with the
+:doc:`../start_scicellxx/start_scicellxx_windows` document.
 
 Overview
 --------
@@ -14,14 +16,13 @@ Overview
    <install-docker-desktop-label_windows_installation.rst>`
 3. :ref:`Install GitHub Desktop
    <install-github-desktop-label_windows_installation.rst>`
-4. :ref:`Starting SciCell++
-   <starting_scicellxx-label_windows_installation.rst`
-5. :ref:`Troubleshooting <>
+4. :ref:`Troubleshooting
+   <troubleshooting-label_windows_installation.rst>`
 
 .. _enable-virtualisation-label_windows_installation.rst:
    
 Enable virtualisation on Windows
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+--------------------------------
 
 The following instructions are based on this `YouTube video
 <https://youtu.be/6cVBG9BHibo>`_ and the `official webpage
@@ -113,7 +114,7 @@ WSL2 installation for Windows 10.
 .. _install-docker-desktop-label_windows_installation.rst:
    
 Install Docker Desktop
-^^^^^^^^^^^^^^^^^^^^^^
+----------------------
 
 1. Download `Docker Desktop
    <https://www.docker.com/products/docker-desktop>`_ for windows (at
@@ -133,7 +134,7 @@ Install Docker Desktop
 .. _install-github-desktop-label_windows_installation.rst:
    
 Install GitHub Desktop
-^^^^^^^^^^^^^^^^^^^^^^
+----------------------
 
 1. Download `GitHub Desktop <https://desktop.github.com/>`_ (you will
    need lo sign up on `GitHub <https://github.com/>`_).
@@ -176,59 +177,14 @@ Install GitHub Desktop
          Any commits to SciCell++ must be done to your own branch, so
          make sure the ``Commit to ..`` button spells your branch
          name.
-         
-.. _starting_scicellxx-label_windows_installation.rst:
-   
-Starting SciCell++
-^^^^^^^^^^^^^^^^^^
-
-1. Run the Docker Desktop application. If you installed it with the
-   default options then it should be already running on the
-   backgroud. Open the interface by double clicking the docker icon at
-   the botton-right menu of your task bar and check no errors are
-   reported.
-
-2. Open a ``Windows PowerShell`` (there is no need to do so with
-   administrative rights) and type the following.
-
-   .. code-block:: shell
-                   
-                   docker run --name=scicellxx -v C:\Users\tachi\Documents\GitHub\scicellxx:/home/scicellxx -w /home/scicellxx/ -it scicellxx/scicellxx-base-all:0.1
-   
-   .. warning:: 
-   
-      Make sure to change
-      ``C:\Users\tachi\Documents\GitHub\scicellxx`` by the path where
-      you cloned the SciCell++ repository in your local machine.
-
-   You should have a similar output as that shown in the image. Wait
-   for completion.
-
-   .. image:: figures_windows_installation/04_start_scicellxx/01.png
-      :width: 700
-   
-3. Once finished, you should have a prompt as that shown in the
-   image. That means SciCell++ is ready to run.
-
-   .. image:: figures_windows_installation/04_start_scicellxx/02.png
-      :width: 700
-
-   You could also check the docker interface that should show a
-   running image with the name ``scicellxx`` as shown below:
-
-   .. image:: figures_windows_installation/04_start_scicellxx/03.png
-      :width: 600
-
-4. Continue with the :ref:`configuration step
-   <configuration-label_initial_steps.rst>` at the initial steps
-   document.
 
 .. _troubleshooting-label_windows_installation.rst:
    
 Troubleshooting
-^^^^^^^^^^^^^^^
+---------------
 
-**My Windows version is lower than the recommended one to install WLS**
+My Windows version is lower than the recommended one to install WLS
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
    .. note::
       
@@ -249,18 +205,4 @@ or on the ``Check for updates`` button, respectively.
 
    .. image:: figures_windows_installation/01_virtualisation/10.png
       :width: 300
-
-**I am getting an error when running the docker run command**
-
-If you get an error when running the ``docker run`` command stating
-that the name ``scicellxx`` is already in use by another container you
-need to ``DELETE`` the container in your docker interface. Open the
-docker interface and in the ``Containers/Apps`` section find the
-``scicellxx`` container and click on the ``Trash can`` icon to delete
-it.
-
-   .. image:: figures_windows_installation/05_troubleshoot/01.png
-      :width: 500
-    
-.. warning:: Not finished section.
              
