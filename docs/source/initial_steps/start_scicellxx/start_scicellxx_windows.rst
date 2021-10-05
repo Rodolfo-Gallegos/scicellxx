@@ -51,9 +51,9 @@ Run Docker container with SciCell++
    .. image:: figures/03.png
       :width: 600
 
-4. Continue with the :ref:`configuration step
-   <configuration-label_initial_steps.rst>` at the initial steps
-   document.
+From here on you can continue with the :ref:`configuration step
+<configuration-label_initial_steps.rst>` at the initial steps
+document.
 
 .. _troubleshooting-label_start_scicellxx_windows.rst:
    
@@ -64,11 +64,12 @@ I am getting an error when running the docker run command
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you get an error when running the ``docker run`` command stating
-that the name ``scicellxx`` is already in use by another container you
-need to ``DELETE`` the container in your docker interface. Open the
-docker interface and in the ``Containers/Apps`` section find the
-``scicellxx`` container and click on the ``Trash can`` icon to delete
-it.
+that the name ``/scicellxx`` is already in use by another container
+then you need to ``DELETE`` that container in your docker interface.
+
+ - Open the docker interface and in the ``Containers/Apps`` section
+   find the ``scicellxx`` container and click on the ``Trash can``
+   icon to delete it.
 
    .. image:: figures/troubleshoot/01.png
       :width: 600

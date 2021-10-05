@@ -3,34 +3,41 @@ Linux installation
              
 This section presents instructions for the installation of SciCell++
 on a linux type system. The instructions were tested on Ubuntu 18.04
-but we expect them to work on recent versions as well.
+but we (hopefully) expect them to work on recent versions as well.
+Once finished this section you should continue with the
+:doc:`../start_scicellxx/start_scicellxx_linux` document.
 
-**Requirements**
+Overview
+--------
 
-* `Docker <https://docs.docker.com/engine/install/>`_ to get the
-  SciCell++ container with the preinstalled software packages.
+1. :ref:`Install Docker <install-docker-label_linux_installation.rst>`
+2. :ref:`Install Git <install-git-label_linux_installation.rst>`
+3. :ref:`Get your own copy of SciCell++ from GitHub
+   <get_own_copy_scicellxx-label_linux_installation.rst>`
 
-* `Git <https://git-scm.com/>`_ to get a copy of SciCell++ in your
-  system.
-
-**Steps**
-  
-1. Install Docker
+.. _install-docker-label_linux_installation.rst:
+   
+Install Docker
+--------------
 
 Follow the instructions in the `docker official installation website
 <https://docs.docker.com/engine/install/>`_ to install Docker in your
 system.
 
-2. Get the docker container from the official repository of SciCell++,
-   to do so just open a terminal an type the following:
+.. _install-git-label_linux_installation.rst:
 
-   .. code-block:: shell
-                   
-                   docker pull scicellxx/scicellxx-base-all:0.1
+Install Git
+-----------
 
-3. Get your own copy of SciCell++
+Follow the instructions in the `Git <https://git-scm.com/>`_ official
+webpage for your system.
 
-   Open a command line and type the following:
+.. _get_own_copy_scicellxx-label_linux_installation.rst:
+
+Get your own copu of SciCell++ from GitHub
+------------------------------------------
+
+1. Open a command line and type the following:
 
    .. code-block:: shell
    
@@ -45,28 +52,15 @@ system.
 
    .. note::
 
-      Feel free to rename the ``john_cool`` folder with your name.
-      
-4. Configure SciCell++
+      Feel free to use your own name for the newly created folder.
 
-   Open a terminal and go to the folder where you ran the `git clone`
-   command and type the following:
-
-   .. code-block:: shell
-
-      sudo ./scicellxx/tools/run_scicellxx_on_docker.sh
-
-   Once in the docker container follow the instruction on section
-   :ref:`Configuration <configuration-label_initial_steps.rst>`
-   starting from step 2. Also check section :ref:`options for the
-   autogen.sh script <autogen.sh-options-label_initial_steps.rst>` for
-   additional parameters than you can pass to the ``autogen.sh``
-   script.
+From here on you can continue with the
+:doc:`../start_scicellxx/start_scicellxx_linux` document.
 
 .. _advanced_installation-label_linux_installation.rst:
    
 Advanced installation
----------------------
+=====================
 
 This type of installation gives you full customization of the software
 and hardware resources in your machine.
@@ -83,6 +77,9 @@ and hardware resources in your machine.
    your software package manager we provide you with our spack
    :download:`file <./spack.yaml>`. Feel free to use it to ease the
    installation process and skip this section.
+
+Overview
+--------
    
 **Software packages requirements**
 

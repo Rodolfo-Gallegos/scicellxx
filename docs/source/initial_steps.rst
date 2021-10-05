@@ -55,10 +55,19 @@ Configuration
 -------------
 
 This section guides you through the configuration process of
-SciCell++. The configuration is performed with help of the
-``autogen.sh`` script which lives in the main SciCell++ folder.
+SciCell++.
 
-1. Open a terminal and go to the ``scicellxx`` folder.
+ .. important::
+
+    We assume that you successfully installed and executued SciCell++
+    on either Windows or Linux. You may be running SciCell++ within a
+    docker container in a command prompt.
+
+The configuration is performed with help of the ``autogen.sh`` script
+which lives in the main SciCell++ folder.
+
+1. In the running terminal make sure you are in the ``scicellxx``
+   folder.
 2. Execute the automatic generator script by typing:
 
    .. code-block:: shell
@@ -71,14 +80,14 @@ SciCell++. The configuration is performed with help of the
       all the demos and tests to make sure you are working with an
       stable copy. If you want a full list of available parameters for
       this script then add the ``-h`` parameter or review the
-      :ref:`options section for autogen.sh
-      <autogen.sh-options-label_initial_steps.rst>`.
+      :ref:`additional options for autogen.sh
+      <autogen.sh-options-label_initial_steps.rst>` section.
 
    .. important::
 
-      If you are using a docker container to run SciCell++ then do not
-      forget to pass the ``-c ./configs/container`` option to the
-      ``autogen.sh`` script.
+      If you are NOT running SciCell++ within a container but used the
+      advanced installation then use the appropiate config files in
+      the ``./configs/advanced/`` folder.
       
    A summary of the compilation and testing process is shown once they
    have finished. If no errors were reported then SciCell++ is ready
@@ -87,16 +96,21 @@ SciCell++. The configuration is performed with help of the
 
 .. _autogen.sh-options-label_initial_steps.rst:
         
-Options for the ``autogen.sh`` script
+Additional Options for ``autogen.sh``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you want to fully configure the compilation process use the ``-i``
-parameter. Check the options for the ``autogen.sh`` section.
-sectionsYou will be able to specify the number of processors to
-compile SciCell++, also the number of processor to run the demos, use
-predefined configuration files for access to third-party libraries and
-many more. For a full list of available options use the ``-h``
-parameter.
+Activate the interactive mode for full configuration by passing the
+``-i`` parameter.
+
+   .. code-block:: shell
+
+                   ./autogen.sh -i
+
+You can specify the number of processors to compile SciCell++ with the
+``-n`` parameter. Set the number of processor to run the demos with
+the ``-d`` parameter. Use predefined configuration files for access to
+third-party libraries with the ``-c`` parameter, and many more. For a
+full list of available options use the ``-h`` parameter.
 
 .. _additional-features-label_initial_steps.rst:
 
