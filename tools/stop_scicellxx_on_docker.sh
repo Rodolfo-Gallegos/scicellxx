@@ -10,7 +10,7 @@ usage()
 cat << EOF
 usage: $0 [OPTIONS]
 
-This script runs SciCell++ inside a Docker container
+This script stops any container running SciCell++
 
 OPTIONS:
    -h      Show this message
@@ -27,24 +27,8 @@ verbose=TRUE
 #====================================================================
 # Variables (and default values)
 #====================================================================
-dockerhub_image_tag=0.1
-dockerhub_image_name=scicellxx/scicellxx-base-all
-dockerhub_image=$dockerhub_image_name:$dockerhub_image_tag
-
 project_name=scicellxx
 container_name=$project_name
-
-# For volume mounting
-#~/local/working/research/tmp/scicellxx/
-folder_in_local_machine=`pwd`/$project_name
-folder_in_container=/home/scicellxx
-working_folder_in_container=/home/scicellxx/
-
-# Command to run in container (default)
-run_this_command=''
-#run_this_command='./autogen.sh -t STATIC -b DEBUG -n 4 -c ./configs/container -d 4 -v'
-#run_this_command='./autogen.sh -t STATIC -b RELEASE -n 4 -c ./configs/container -d 4 -v'
-#run_this_command='./autogen.sh -t STATIC -b RELEASE -n 16 -c ./configs/container -d 16 -v'
 
 #====================================================================
 # Parse arguments
@@ -74,16 +58,12 @@ do
 done
 
 #####################################################################
-                   ## RUN THE DOCKER CONTAINER ##
+                   ## STOP THE DOCKER CONTAINER ##
 #####################################################################
 
-if ! docker run --name=$container_name \
-     -v $folder_in_local_machine:$folder_in_container \
-     -w $working_folder_in_container \
-     -it \
-     $dockerhub_image ; then
+if ! docker rm --force -v $container_name ; then
     echo ""
-    echo "[ERROR] - Executing the docker container"
+    echo "[ERROR] - Removing the docker container"
     echo ""
     exit 1
 fi
