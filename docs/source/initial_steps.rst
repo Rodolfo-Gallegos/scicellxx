@@ -60,8 +60,8 @@ SciCell++.
  .. important::
 
     We assume that you successfully installed and executued SciCell++
-    on either Windows or Linux. You may be running SciCell++ within a
-    docker container in a command prompt.
+    on either Windows or Linux, and you have started the docker
+    container.
 
 The configuration is performed with help of the ``autogen.sh`` script
 which lives in the main SciCell++ folder.
@@ -76,7 +76,7 @@ which lives in the main SciCell++ folder.
 
    .. important::
 
-      This commands executes a full compilation of SciCell++ and runs
+      This command executes a full compilation of SciCell++ and runs
       all the demos and tests to make sure you are working with an
       stable copy. If you want a full list of available parameters for
       this script then add the ``-h`` parameter or review the
@@ -96,7 +96,7 @@ which lives in the main SciCell++ folder.
 
 .. _autogen.sh-options-label_initial_steps.rst:
         
-Additional Options for ``autogen.sh``
+Additional options for ``autogen.sh``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Activate the interactive mode for full configuration by passing the
@@ -106,11 +106,40 @@ Activate the interactive mode for full configuration by passing the
 
                    ./autogen.sh -i
 
-You can specify the number of processors to compile SciCell++ with the
-``-n`` parameter. Set the number of processor to run the demos with
-the ``-d`` parameter. Use predefined configuration files for access to
-third-party libraries with the ``-c`` parameter, and many more. For a
-full list of available options use the ``-h`` parameter.
+   .. important::
+                   
+      We encourage you to check the full list of options by passing
+      the ``-h`` parameter, the following may not reflect the full
+      list of options for the script.
+
+      This script builds [and runs the test suite of] SciCell++
+
+      OPTIONS:
+         -h      Show this message
+         -t      Indicates to generate a 'STATIC' or 'SHARED' version of library files
+         -b      Build version 'DEBUG' or 'RELEASE'
+         -c      Configuration file for additional building tools
+         -n      Number of processors to build the framework
+         -d      Number of processors to run demos (set to '0' to skip demos testing)
+         -i      Interative mode, launches the interactive mode to prompt for FULL configuration options (any other parameters are ignored)
+         -r      Generate code coverage report
+         -v      Verbose
+
+.. _workflow-label_initial_steps.rst:
+
+Workflow
+--------
+
+The main differences on the workflow for Windows and Linux users are
+on the graphic interfaces. We provide details only for the graphic
+interfaces for those steps that may be required.
+
+:doc:`workflow/windows_workflow`
+     For Windows systems users.
+
+:doc:`workflow/linux_workflow`
+     For Linux systems users.
+
 
 .. _additional-features-label_initial_steps.rst:
 
@@ -189,18 +218,5 @@ file with your current version of SciCell++.
 
 3. Once finished a file named ``SciCell++.tar.gz`` will be created in
    the root folder of SciCell++.
-
-Workflow
---------
-
-The main differences on the workflow for Windows and Linux users are
-on the graphic interfaces. We provide details only for the graphic
-interfaces for those steps that may be required.
-
-:doc:`workflow/windows_workflow`
-     For Windows systems users.
-
-:doc:`workflow/linux_workflow`
-     For Linux systems users.
 
    
