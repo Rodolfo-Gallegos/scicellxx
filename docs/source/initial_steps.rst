@@ -129,10 +129,14 @@ Activate the interactive mode for full configuration by passing the
 Create your ``private`` folder
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Every user has its own private folder, use this folder to store all of
-your work, in-development demos and any of your new developed features
-for SciCell++. One of the first things that you should do in order to
-start developing new features for SciCell++ is to create your private
+Every user has its own private folder. Use this folder to store all of
+your work, including in-development demos and any of your new
+developed features for SciCell++. You can review :ref:`the detailed
+description <additional-features-folder-structure_initial_steps.rst>`
+of the folder structure of SciCell++.
+
+One of the first things that you should do in order to start
+developing new features for SciCell++ is to create your private
 folder, to do so follow theses instructions:
 
 1. Open a terminal and go to the ``private`` folder of SciCell++ and
@@ -158,76 +162,6 @@ folder, to do so follow theses instructions:
    double-check that you added your folder inside the ``private``
    folder of SciCell++ and that you are modifying the correct
    ``CMakeLists.txt`` file.         
-
-Folder structure
-^^^^^^^^^^^^^^^^
-
-We encourage you to explore the folder structure. In this section we
-briefly mention what each folder is about:
-    
-* ``build``, this folder is automatically generated when compiling
-  SciCell++, all compilation files are stored inhere.
-
-  .. note::
-
-     You do not need to deal with the files within this folder, just
-     leave them alone.
-  
-* ``configs``, store configuration files, each file corresponds to an
-  specialised configuration of the framework. For example, you can
-  indicate to use ``Armadillo``, ``VTK``, double precision arithmetic,
-  panic mode, etc. Have a look at the :ref:`options for configuration
-  files
-  <options_for_the_configuration_file-label_initial_steps.rst>`. The
-  default configuraton is stored in the ``default_container`` file. If
-  you want to use an specialised configuration of the framework you
-  should store it there and choose it as the `configuration file` when
-  running the ``autogen.sh`` script. Try any other of the
-  configurations in this folder to improve the performance of
-  SciCell++.
-  
-* ``demos``, stores a large set of demos that you may want to use as
-  templates or starting points for your project. These demos provide a
-  good insight on the features available in SciCell++. This folder
-  also helps for testing the framework and report any issues found
-  after any new features are implemented. When you want to update your
-  contributions to the SciCell++ repository make sure all of the demos
-  compile, run and pass the tests. Check the corresponding
-  :doc:`demos` documentation for details.
-
-* ``docs``, the source files for this documentation. If you add a demo
-  to SciCell++ you will be requested to write the documentation to
-  your demo within this folder.
-       
-* ``external_src``, this folder stores any external software packages
-  used within the framework to provide extra features. You should not
-  modify this folder unless you are providing new functionalities that
-  depend on external software packages. Note 
-
-  .. note::
-
-     If you are using a container to run SciCell++ then most of the
-     software within this folder is not used.
-  
-* ``private``, stores private files for each user or
-  collaborator. Each one should have its own private folder here, this
-  should be used as the development folder for each one. We encorage
-  you to fully document your projects so that it can be included in
-  the ``demos`` folder to shown any specialised features of the
-  framework that you contributed with.
-  
-* ``src``, this is SciCell++'s soul, here lives all the source
-  code. Prior to including files in this folder you should test them
-  in your ``private`` folder. Any addition into this folders requires
-  the aprovement of the main developers team since you would be
-  extending SciCell++'s capabilities.
-  
-* ``tools``, a set of tools used for the library, stores scripts used
-  by the framework at compilation time, there are also scripts that
-  help on the generation of *clean distributions* of the framework,
-  check the :ref:`tar.gz section
-  <additional-features-tarfile-label_initial_steps.rst>` for
-  details.
    
 .. _workflow-label_initial_steps.rst:
 
@@ -238,6 +172,18 @@ The main differences on the workflow for Windows and Linux users are
 on the graphic interfaces. We provide you with the details for the
 graphic interfaces when required.
 
+:doc:`workflow/running_demos_workflow`
+     For Windows systems users.
+
+:doc:`workflow/creating_your_own_project_workflow`
+     For Windows systems users.
+
+:doc:`workflow/adding_your_project_to_the_demos_folder_workflow`
+     For Windows systems users.
+
+:doc:`workflow/daily_workflow`
+     For Linux systems users.
+     
 Running demos
 ^^^^^^^^^^^^^
 
@@ -496,16 +442,6 @@ demo.
    please make sure you correctly changed all the tags indicated in
    the previous steps. Your project should be automatically built,
    executed and validated.
-                 
-Daily workflow
-^^^^^^^^^^^^^^
-
-:doc:`workflow/windows_workflow`
-     For Windows systems users.
-
-:doc:`workflow/linux_workflow`
-     For Linux systems users.
-
 
 .. _additional-features-label_initial_steps.rst:
 
@@ -589,6 +525,78 @@ file with your current version of SciCell++.
 3. Once finished a file named ``SciCell++.tar.gz`` will be created in
    the root folder of SciCell++.
 
+.. _additional-features-folder-structure_initial_steps.rst:
+   
+Folder structure
+^^^^^^^^^^^^^^^^
+
+We encourage you to explore the folder structure. In this section we
+briefly mention what each folder is about:
+    
+* ``build``, this folder is automatically generated when compiling
+  SciCell++, all compilation files are stored inhere.
+
+  .. note::
+
+     You do not need to deal with the files within this folder, just
+     leave them alone.
+  
+* ``configs``, store configuration files, each file corresponds to an
+  specialised configuration of the framework. For example, you can
+  indicate to use ``Armadillo``, ``VTK``, double precision arithmetic,
+  panic mode, etc. Have a look at the :ref:`options for configuration
+  files
+  <options_for_the_configuration_file-label_initial_steps.rst>`. The
+  default configuraton is stored in the ``default_container`` file. If
+  you want to use an specialised configuration of the framework you
+  should store it there and choose it as the `configuration file` when
+  running the ``autogen.sh`` script. Try any other of the
+  configurations in this folder to improve the performance of
+  SciCell++.
+  
+* ``demos``, stores a large set of demos that you may want to use as
+  templates or starting points for your project. These demos provide a
+  good insight on the features available in SciCell++. This folder
+  also helps for testing the framework and report any issues found
+  after any new features are implemented. When you want to update your
+  contributions to the SciCell++ repository make sure all of the demos
+  compile, run and pass the tests. Check the corresponding
+  :doc:`demos` documentation for details.
+
+* ``docs``, the source files for this documentation. If you add a demo
+  to SciCell++ you will be requested to write the documentation to
+  your demo within this folder.
+       
+* ``external_src``, this folder stores any external software packages
+  used within the framework to provide extra features. You should not
+  modify this folder unless you are providing new functionalities that
+  depend on external software packages. Note 
+
+  .. note::
+
+     If you are using a container to run SciCell++ then most of the
+     software within this folder is not used.
+  
+* ``private``, stores private files for each user or
+  collaborator. Each one should have its own private folder here, this
+  should be used as the development folder for each one. We encorage
+  you to fully document your projects so that it can be included in
+  the ``demos`` folder to shown any specialised features of the
+  framework that you contributed with.
+  
+* ``src``, this is SciCell++'s soul, here lives all the source
+  code. Prior to including files in this folder you should test them
+  in your ``private`` folder. Any addition into this folders requires
+  the aprovement of the main developers team since you would be
+  extending SciCell++'s capabilities.
+  
+* ``tools``, a set of tools used for the library, stores scripts used
+  by the framework at compilation time, there are also scripts that
+  help on the generation of *clean distributions* of the framework,
+  check the :ref:`tar.gz section
+  <additional-features-tarfile-label_initial_steps.rst>` for
+  details.
+   
 .. _options_for_the_configuration_file-label_initial_steps.rst:
   
 Options for the configuration file
