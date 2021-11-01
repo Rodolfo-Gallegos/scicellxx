@@ -2,15 +2,34 @@ Initial steps
 =============
 
 This document shows you how to :ref:`install
-<installation-label_initial_steps.rst>` and :ref:`configure
-<configuration-label_initial_steps.rst>` SciCell++ on a Windows or
-Linux system. The default installation strategy is based on containers
-so that all software dependencies are preinstalled and ready to use by
-SciCell++. The :ref:`configuration section
-<configuration-label_initial_steps.rst>` shows you how to compile and
-enable special features for SciCell++. :ref:`Additional features
-<additional-features-label_initial_steps.rst>` are included to ease
-your journey with SciCell++.
+<installation-label_initial_steps.rst>`, :ref:`configure
+<configuration-label_initial_steps.rst>` and the most used
+:ref:`workflows <workflow-label_initial_steps.rst>` for SciCell++ on
+Windows and Linux systems. :ref:`Additional features
+<additional-features-label_initial_steps.rst>` can be found at the end
+of the document.
+
+1. The default installation strategy is based on containers so that
+   all software dependencies are preinstalled and ready to use by
+   SciCell++. The :ref:`installation
+   <installation-label_initial_steps.rst>` section will show you how
+   to install the container software for your operating system.
+
+2. Then the :ref:`starting SciCell++
+   <starting_scicellxx_-label_initial_steps.rst>` section will show
+   you how to start SciCell++ using containers.
+
+3. Once running the container with SciCell++ the :ref:`configuration
+   <configuration-label_initial_steps.rst>` section will show you how
+   to compile and enable basic and special features for SciCell++.
+   
+4. The most common uses for SciCell++ are described in the :ref:`worflows <workflow-label_initial_steps.rst>` section, these show you how to run demos, create your own project and include it as part of the demos of SciCell++. .
+
+5. In the :ref:`additional features
+   <additional-features-label_initial_steps.rst>` section you will
+   find information on how to generate additional documentation,
+   transport SciCell++ into a supercomputing cluster, and specialised
+   configurations for SciCell++.
 
 .. _installation-label_initial_steps.rst:
 
@@ -92,8 +111,10 @@ which lives in the main SciCell++ folder.
       
    A summary of the compilation and testing process is shown once they
    have finished. If no errors were reported then SciCell++ is ready
-   to go. We recommend you to have a look at the :doc:`tutorials` and
-   :doc:`demos` as follow up.
+   to go. If this is the first time you have compiled SciCell++ then
+   you need to create your own private folder. Have a look at the
+   workflow section and do not forget to check the :doc:`tutorials`
+   and :doc:`demos` documents.
 
 .. _autogen.sh-options-label_initial_steps.rst:
         
@@ -125,6 +146,39 @@ Activate the interactive mode for full configuration by passing the
          -i      Interative mode, launches the interactive mode to prompt for FULL configuration options (any other parameters are ignored)
          -r      Generate code coverage report
          -v      Verbose
+   
+.. _workflow-label_initial_steps.rst:
+
+Workflow
+--------
+
+The main differences on the workflow for Windows and Linux users are
+on the graphic interfaces. We provide you with the details for the
+graphic interfaces when required.
+
+ .. important::
+
+    All these workflows suppose you have executure SciCell++ on a
+    container and the terminal prompt is at the main folder of
+    SciCell++.
+
+:doc:`workflow/create_your_private_folder_workflow`
+     Every new user requires to create it own private folder to store
+     all of his/her work (new features, demos, tests).
+
+:doc:`workflow/compiling_and_running_demos_workflow`
+     The easiest way to start working with SciCell++ is to run any of
+     its demos and change the values of the parameters to review its
+     effects on the outputs.
+
+:doc:`workflow/creating_your_own_project_workflow`
+     For Windows systems users.
+
+:doc:`workflow/adding_your_project_to_the_demos_folder_workflow`
+     For Windows systems users.
+
+:doc:`workflow/daily_workflow`
+     For Linux systems users.
 
 Create your ``private`` folder
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -162,27 +216,7 @@ folder, to do so follow theses instructions:
    double-check that you added your folder inside the ``private``
    folder of SciCell++ and that you are modifying the correct
    ``CMakeLists.txt`` file.         
-   
-.. _workflow-label_initial_steps.rst:
 
-Workflow
---------
-
-The main differences on the workflow for Windows and Linux users are
-on the graphic interfaces. We provide you with the details for the
-graphic interfaces when required.
-
-:doc:`workflow/running_demos_workflow`
-     For Windows systems users.
-
-:doc:`workflow/creating_your_own_project_workflow`
-     For Windows systems users.
-
-:doc:`workflow/adding_your_project_to_the_demos_folder_workflow`
-     For Windows systems users.
-
-:doc:`workflow/daily_workflow`
-     For Linux systems users.
      
 Running demos
 ^^^^^^^^^^^^^
