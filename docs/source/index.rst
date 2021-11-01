@@ -21,7 +21,7 @@ flow of the program and the tools that you include.
 
 The code that you write becomes part of the framework, this will help
 others to build on your code just as you built on the code wrote by
-others. We encourage you to personalise SciCell++ based on your needs
+them. We encourage you to personalise SciCell++ based on your needs
 **by extending** its current behavior to provide it with extra
 functionalities.
 
