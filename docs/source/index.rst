@@ -29,8 +29,9 @@ functionalities.
    :maxdepth: 2
 
    initial_steps
-   tutorials
+   workflows
    demos
+   tutorials
    contributions
    license
    help
