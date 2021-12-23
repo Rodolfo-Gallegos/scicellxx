@@ -11,80 +11,21 @@ SciCell++ is an object-oriented framework for the simulation of biological and p
 
 ## Table of Contents
 
-1. [Installation](#installation)
-2. [Demos](#demos)
-3. [Documentation](#documentation)
-4. [How to contribute](#how_to_contribute)
-5. [Facts and curiosities](#facts_and_curiosities)
-6. [License](#license)
+1. [Documentation](#documentation)
+2. [Featured demos](#featured_demos)
+3. [How to contribute](#how_to_contribute)
+4. [Facts and curiosities](#facts_and_curiosities)
+5. [License](#license)
 
-## Installation <a name="installation"></a>
+## Documentation <a name="documentation"></a>
 
-### Docker-based installation (Windows/Linux/Mac)
-We are adopting containers to ease the installation and release of
-versions so you do not need to worry about any dependencies. Get your
-image copy from the ofifcial DockerHub of SciCell++ and ta-dah, you
-are ready to go.
+The full documentation is
+[here](https://scicellxx.readthedocs.io/en/latest/?badge=latest). You
+will find installation instructions, demos, tutorials and workflows to
+ease your journey with SciCell++.
 
-Check the documentation for this type of installation in
-[here](https://scicellxx.readthedocs.io/en/latest/?badge=latest).
+## Featured demos <a name="featured_demos"></a>
 
-### Fast installation and starting up (Linux only)!!!
-
-#### What you need to have it running and working nicely?
-* A C++ compiler - demo drivers and library built with version
-  7.4.0. It may work with previous versions as well.
-  
-* CMake - to configure and install it. We tested with version 3.10.2.
-
-* Python - to test output from demo drivers with validation files
-  (also to produce nice plots). We tested with version 3.7.3 but it
-  should work with any version >= 3
-
-##### Optional
-
-* MPI support for parallel features - `not currently supported`.
-
-#### Get your own copy of the project
-You need **git** installed in your computer, then type in a terminal
-
-```shell
-git clone https://github.com/tachidok/scicellxx
-cd scicellxx
-git checkout -b john_cool
-```
-
-After executing the first line you will be prompted with your GitHub
-user name and your password. The third line generates your fully
-customised branch, we assume that your name is _john_cool_
-
-#### Configuration
-* In a terminal (shell command line) go into the `scicellxx` folder
-  and type
-
-```shell
-./autogen.sh
-```
-
-* Follow up the instructions on screen.
-
-## Demos <a name="demos"></a>
-
-Demos live in the `demos` folder. Run them to make sure everything is
-working fine. If you did not run them at installation time (by
-default) you can do it at any time by opening a terminal, going into
-the build folder (the default one is `build`) and typing
-
-```shell
-./ctest
-```
-
-A large number of demos is expected to live in the `demos`
-folder. Review the [corresponding
-documentation](https://scicellxx.readthedocs.io/en/latest/?badge=latest)
-for their full description.
-
-### Featured demos
 * Interpolation
 * Linear solvers
 * Matrices operations
@@ -97,19 +38,21 @@ for their full description.
     implementations)
   * Adaptive time steppers
 
-## Documentation <a name="documentation"></a>
-
-The full documentation is [here](https://scicellxx.readthedocs.io/en/latest/?badge=latest).
-
 ## How to contribute <a name="how_to_contribute"></a>
 
-Please check the [corresponding documentation](https://scicellxx.readthedocs.io/en/latest/?badge=latest) section for contributions.
+Please check the
+[constributions](https://scicellxx.readthedocs.io/en/latest/?badge=latest)
+section in the documentation.
+
+##### Optional
+
+* MPI support for parallel features - `not currently supported`.
 
 ## Facts and curiosities <a name="facts_and_curiosities"></a>
 
 ### How many developers are currently working on this project?
 
-At Thursday, July/29, 2021 there is one and only one developer, me
+At Thursday, December/23, 2021 there is one and only one developer, me
 :no_mouth: :envelope:
 
 :construction: :construction: :construction: :construction: :construction:
