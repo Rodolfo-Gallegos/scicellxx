@@ -47,27 +47,27 @@ ADD_TEST(NAME TEST_demo_odes_chen_run
 # Validate output 
 SET (VALIDATE_FILENAME_demo_odes_chen_rk4_0_200 "validate_rk4_0_200.dat")
 ADD_TEST(NAME TEST_demo_odes_chen_rk4_0_200_check_output
-  COMMAND ${PROJECT_SOURCE_DIR}/tools/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_odes_chen_rk4_0_200} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/rk4_0_200.dat)
+  COMMAND ${PROJECT_SOURCE_DIR}/tools/development/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_odes_chen_rk4_0_200} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/rk4_0_200.dat)
 # Validate output
 SET (VALIDATE_FILENAME_demo_odes_chen_rk4_49800_50000 "validate_rk4_49800_50000.dat")
 ADD_TEST(NAME TEST_demo_odes_chen_rk4_49800_50000_check_output
-  COMMAND ${PROJECT_SOURCE_DIR}/tools/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_odes_chen_rk4_49800_50000} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/rk4_49800_50000.dat)
+  COMMAND ${PROJECT_SOURCE_DIR}/tools/development/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_odes_chen_rk4_49800_50000} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/rk4_49800_50000.dat)
 # Validate output
 SET (VALIDATE_FILENAME_demo_odes_chen_am2pc_2_0_200 "validate_am2pc_2_0_200.dat")
 ADD_TEST(NAME TEST_demo_odes_chen_am2pc_2_0_200_check_output
-  COMMAND ${PROJECT_SOURCE_DIR}/tools/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_odes_chen_am2pc_2_0_200} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/am2pc_2_0_200.dat)
+  COMMAND ${PROJECT_SOURCE_DIR}/tools/development/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_odes_chen_am2pc_2_0_200} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/am2pc_2_0_200.dat)
 # Validate output
 SET (VALIDATE_FILENAME_demo_odes_chen_am2pc_2_49800_50000 "validate_am2pc_2_49800_50000.dat")
 ADD_TEST(NAME TEST_demo_odes_chen_am2pc_2_49800_50000_check_output
-  COMMAND ${PROJECT_SOURCE_DIR}/tools/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_odes_chen_am2pc_2_49800_50000} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/am2pc_2_49800_50000.dat)
+  COMMAND ${PROJECT_SOURCE_DIR}/tools/development/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_odes_chen_am2pc_2_49800_50000} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/am2pc_2_49800_50000.dat)
   # Validate output
 SET (VALIDATE_FILENAME_demo_odes_chen_bepc_2_0_200 "validate_bepc_2_0_200.dat")
 ADD_TEST(NAME TEST_demo_odes_chen_bepc_2_0_200_check_output
-  COMMAND ${PROJECT_SOURCE_DIR}/tools/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_odes_chen_bepc_2_0_200} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/bepc_2_0_200.dat)
+  COMMAND ${PROJECT_SOURCE_DIR}/tools/development/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_odes_chen_bepc_2_0_200} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/bepc_2_0_200.dat)
 # Validate output
 SET (VALIDATE_FILENAME_demo_odes_chen_bepc_2_49800_50000 "validate_bepc_2_49800_50000.dat")
 ADD_TEST(NAME TEST_demo_odes_chen_bepc_2_49800_50000_check_output
-  COMMAND ${PROJECT_SOURCE_DIR}/tools/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_odes_chen_bepc_2_49800_50000} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/bepc_2_49800_50000.dat)
+  COMMAND ${PROJECT_SOURCE_DIR}/tools/development/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_odes_chen_bepc_2_49800_50000} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/bepc_2_49800_50000.dat)
 
 # ===========================================
 # Test execution order

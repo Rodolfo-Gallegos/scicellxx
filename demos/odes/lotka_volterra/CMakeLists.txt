@@ -46,27 +46,27 @@ ADD_TEST(NAME TEST_demo_lotka_volterra_run
 # Validate output
 SET (VALIDATE_FILENAME_demo_lotka_volterra_euler "validate_euler.dat")
 ADD_TEST(NAME TEST_demo_lotka_volterra_euler_check_output
-         COMMAND ${PROJECT_SOURCE_DIR}/tools/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_lotka_volterra_euler} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/euler.dat)
+         COMMAND ${PROJECT_SOURCE_DIR}/tools/development/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_lotka_volterra_euler} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/euler.dat)
 # Validate output
 SET (VALIDATE_FILENAME_demo_lotka_volterra_rk4 "validate_rk4.dat")
 ADD_TEST(NAME TEST_demo_lotka_volterra_rk4_check_output
-         COMMAND ${PROJECT_SOURCE_DIR}/tools/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_lotka_volterra_rk4} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/rk4.dat)
+         COMMAND ${PROJECT_SOURCE_DIR}/tools/development/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_lotka_volterra_rk4} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/rk4.dat)
 # Validate output
 SET (VALIDATE_FILENAME_demo_lotka_volterra_am2pc "validate_am2pc.dat")
 ADD_TEST(NAME TEST_demo_lotka_volterra_am2pc_check_output
-         COMMAND ${PROJECT_SOURCE_DIR}/tools/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_lotka_volterra_am2pc} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/am2pc.dat)
+         COMMAND ${PROJECT_SOURCE_DIR}/tools/development/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_lotka_volterra_am2pc} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/am2pc.dat)
 # Validate output
 SET (VALIDATE_FILENAME_demo_lotka_volterra_bdf1 "validate_bdf1.dat")
 ADD_TEST(NAME TEST_demo_lotka_volterra_bdf1_check_output
-         COMMAND ${PROJECT_SOURCE_DIR}/tools/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_lotka_volterra_bdf1} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/bdf1.dat)
+         COMMAND ${PROJECT_SOURCE_DIR}/tools/development/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_lotka_volterra_bdf1} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/bdf1.dat)
 # Validate output
 SET (VALIDATE_FILENAME_demo_lotka_volterra_am2 "validate_am2.dat")
 ADD_TEST(NAME TEST_demo_lotka_volterra_am2_check_output
-         COMMAND ${PROJECT_SOURCE_DIR}/tools/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_lotka_volterra_am2} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/am2.dat)
+         COMMAND ${PROJECT_SOURCE_DIR}/tools/development/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_lotka_volterra_am2} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/am2.dat)
 # Validate output
 SET (VALIDATE_FILENAME_demo_lotka_volterra_bdf2 "validate_bdf2.dat")
 ADD_TEST(NAME TEST_demo_lotka_volterra_bdf2_check_output
-         COMMAND ${PROJECT_SOURCE_DIR}/tools/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_lotka_volterra_bdf2} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/bdf2.dat)
+         COMMAND ${PROJECT_SOURCE_DIR}/tools/development/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_lotka_volterra_bdf2} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/bdf2.dat)
 
 # ===========================================
 # Test execution order

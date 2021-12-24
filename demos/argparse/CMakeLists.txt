@@ -39,7 +39,7 @@ ELSE (SCICELLXX_USES_DOUBLE_PRECISION)
 ENDIF (SCICELLXX_USES_DOUBLE_PRECISION)
 
 ADD_TEST(NAME TEST_demo_argparse_check_output
-         COMMAND ${PROJECT_SOURCE_DIR}/tools/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_argparse} ${CMAKE_CURRENT_BINARY_DIR}/output_test.dat)
+         COMMAND ${PROJECT_SOURCE_DIR}/tools/development/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_argparse} ${CMAKE_CURRENT_BINARY_DIR}/output_test.dat)
 
 # ===========================================
 # Test execution order

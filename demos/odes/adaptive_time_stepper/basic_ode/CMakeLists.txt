@@ -46,12 +46,12 @@ ADD_TEST(NAME TEST_demo_adaptive_basic_ode_run
 # Validate output
 SET (VALIDATE_FILENAME_demo_adaptive_basic_ode_RK45F "validate_rk45f.dat")
 ADD_TEST(NAME TEST_demo_adaptive_basic_ode_RK45F_check_output
-         COMMAND ${PROJECT_SOURCE_DIR}/tools/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_adaptive_basic_ode_RK45F} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/rk45f.dat)
+         COMMAND ${PROJECT_SOURCE_DIR}/tools/development/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_adaptive_basic_ode_RK45F} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/rk45f.dat)
 
 # Validate output
 SET (VALIDATE_FILENAME_demo_adaptive_basic_ode_RK45DP "validate_rk45dp.dat")
 ADD_TEST(NAME TEST_demo_adaptive_basic_ode_RK45DP_check_output
-         COMMAND ${PROJECT_SOURCE_DIR}/tools/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_adaptive_basic_ode_RK45DP} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/rk45dp.dat)
+         COMMAND ${PROJECT_SOURCE_DIR}/tools/development/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_adaptive_basic_ode_RK45DP} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/rk45dp.dat)
 
 # ===========================================
 # Test execution order

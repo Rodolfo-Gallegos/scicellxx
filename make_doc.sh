@@ -45,7 +45,7 @@ echo "I am going to run doxygen ..."
 echo "============================================================= "
 echo ""
 # Go one folder up since we did a cd into ./build
-if ! doxygen ./tools/doxyfile.config ; then
+if ! doxygen ./tools/development/doxyfile.config ; then
     echo ""
     echo ""
     echo ""
