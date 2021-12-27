@@ -8,7 +8,7 @@ You need to install `Doxygen <https://www.doxygen.nl/index.html>`_ and
 `Latex <https://www.latex-project.org/>`_ to generate documentation
 from source code.
 
-You may heck :ref:`this section
+You may check :ref:`this section
 <doxygen-installation-label_installation.rst>` for doxygen
 installation.
 
@@ -21,10 +21,10 @@ Workflow
   
    .. code-block:: shell
 
-                   ./make_doc.sh
+                   ./tools/user/make_doc.sh
 
    Voila! The documentation will be automatically generated into the
-   ``docs/doxy_doc/html`` folder.
+   ``./doxy_doc/html`` folder.
 
-3. Open the file ``index.html`` within your favorite web-browser to
-   read the documentation.
+3. Open the file ``./doxy_doc/html/index.html`` within your favorite
+   web-browser to browse the documentation.
