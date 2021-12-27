@@ -137,7 +137,7 @@ echo ""
 #====================================================================
 echo "============================================================= "
 echo "I am going to delete"
-echo "[dat,png,pdf,jpeg,tar.gz,tar.gx,fig,bin,rar,vtu,ubx,gp,m] files,"
+echo "[dat,png,pdf,jpg,jpeg,tar.gz,tar.xz,bin,vtu,ubx,eps,fig,gp,m,rar] files,"
 echo "ignoring those in [demos, external_src, tools] folders"
 echo "============================================================= "
 echo ""
@@ -146,7 +146,7 @@ if ! $tmp_dir/$folder_name/tools/development/clean_distro.py --root_folder $tmp_
     echo ""
     echo ""
     echo "========================================================= "
-    echo "[FAIL] Delete [dat,png,jpeg,tar.gz,bin,vtu,fig,gp,m,rar] files"
+    echo "[FAIL] Delete [dat,png,pdf,jpg,jpeg,tar.gz,tar.xz,bin,vtu,ubx,eps,fig,gp,m,rar] files"
     echo "========================================================= "
     echo ""
     exit 1
