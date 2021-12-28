@@ -141,7 +141,7 @@ echo "[dat,png,pdf,jpg,jpeg,tar.gz,tar.xz,bin,vtu,ubx,eps,fig,gp,m,rar] files,"
 echo "ignoring those in [demos, external_src, tools] folders"
 echo "============================================================= "
 echo ""
-if ! $tmp_dir/$folder_name/tools/development/clean_distro.py --root_folder $tmp_dir/$folder_name --ext dat png pdf jpg jpeg tar.gz tar.xz fig bin rar vtu ubx gp m eps --ignore_in_path demos docs external_src tools ; then
+if ! $tmp_dir/$folder_name/tools/development/clean_distro.py --root_folder $tmp_dir/$folder_name --ext dat png pdf jpg jpeg tar.gz tar.xz fig bin rar vtu ubx gp m eps --ignore_in_path demos docs external_src private tools ; then
     echo ""
     echo ""
     echo ""
