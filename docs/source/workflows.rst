@@ -43,11 +43,11 @@ Intermediate workflows
      Generate a ``tar`` file to distribute or move SciCell++ into a
      supercomputing cluster.
 
-Advance workflows
------------------
-
 :doc:`workflow/advanced/generate_doxygen_documentation_workflow`
      Generate full documentation from source code with class diagrams.
+     
+Advanced workflows
+-----------------
 
 Expert workflows
 ----------------
