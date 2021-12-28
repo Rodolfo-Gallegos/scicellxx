@@ -10,7 +10,7 @@ usage()
 cat << EOF
 usage: $0 [OPTIONS]
 
-This script created the folder structure and files to register a new
+This script creates the folder structure and files to register a new
 user of SciCell++
 
 OPTIONS:
@@ -111,14 +111,15 @@ if test "$user_name_given" = "FALSE" ; then
 fi
 
 #====================================================================
-# Check whether the given user is alredy in the users list
+# Check whether the given user is already in the users list
 #====================================================================
 if (test -d  $private_dir/$user_name); then
     echo ""
     echo "$user_name"
     echo ""
     echo "============================================================= "
-    echo "[ERROR] The user name already exist! Choose another user name and try again"
+    echo "[ERROR] The user name already exist!"
+    echo "   Choose another user name and try again"
     echo "============================================================= "
     echo ""
     exit 1 # Error flag
@@ -141,7 +142,7 @@ echo ""
 if ! mkdir -p $private_dir/$user_name ; then
     echo ""
     echo "============================================================= "
-    echo "[ERROR] The new user folder could not be created"
+    echo "[ERROR] The new user folder could not be created!"
     echo "============================================================= "
     echo ""
     exit 1 # Error flag
