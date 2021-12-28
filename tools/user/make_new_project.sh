@@ -189,6 +189,14 @@ if ! mkdir -p $private_dir/$user_name/$project_name ; then
     exit 1 # Error flag
 fi
 
+#====================================================================
+# Add the project folder to the private folder CMakeLists.txt file
+#====================================================================
+echo "ADD_SUBDIRECTORY("$project_name")" >> $private_dir/$user_name/CMakeLists.txt
+
+#====================================================================
+# Create a RESTL folder for the project
+#====================================================================
 if ! mkdir -p $private_dir/$user_name/$project_name/RESLT ; then
     echo ""
     echo "============================================================= "
