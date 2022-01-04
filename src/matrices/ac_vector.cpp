@@ -1,7 +1,7 @@
 // IN THIS FILE: Implementation of an abstract class to represent
 // vectors
 
-#include "ac_vector.tpl.h"
+#include "ac_vector.h"
 
 namespace scicellxx
 {
@@ -9,16 +9,14 @@ namespace scicellxx
  // ===================================================================
  // Empty constructor
  // ===================================================================
- template<class T>
- ACVector<T>::ACVector() 
+ ACVector<Real>::ACVector() 
   : NValues(0), Is_own_memory_allocated(false), Delete_vector(true), Is_column_vector(true)
  { }
  
  // ===================================================================
  // Constructor to create an n size zero vector
  // ===================================================================
- template<class T>
- ACVector<T>::ACVector(const unsigned long n, bool is_column_vector)
+ ACVector<Real>::ACVector(const unsigned long n, bool is_column_vector)
   : NValues(n), Is_own_memory_allocated(false), Delete_vector(true),
     Is_column_vector(is_column_vector)
  { }
@@ -26,8 +24,7 @@ namespace scicellxx
  // ===================================================================
  // Destructor
  // ===================================================================
-template<class T>
-ACVector<T>::~ACVector()
+ACVector<Real>::~ACVector()
 { }
  
 }
