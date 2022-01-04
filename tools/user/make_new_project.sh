@@ -218,12 +218,12 @@ echo ""
 echo "============================================================= "
 echo ""
 
-project_code_filename=$user_name_$project_name.cpp
-SRC_user_project_tag=SRC_$user_name_$project_name
-user_project_name=$user_name_$project_name
-LIB_user_project_tag=LIB_$user_name_$project_name
+SRC_user_project_tag=SRC_"$user_name"_"$project_name"
+LIB_user_project_tag=LIB_"$user_name"_"$project_name"
+project_main_code_filename="$user_name"_"$project_name".cpp
+executable_project_name="$user_name"_"$project_name"
 
-if ! cp ./tools/templates/demo_template.cpp $private_dir/$user_name/$project_name/$project_code_filename ; then
+if ! cp ./tools/templates/demo_template.cpp $private_dir/$user_name/$project_name/$project_main_code_filename ; then
     echo ""
     echo "============================================================= "
     echo "[ERROR] The template code [.cpp] project could not be copied!"
@@ -241,7 +241,7 @@ if ! cp ./tools/templates/CMakeLists.txt.private_template $private_dir/$user_nam
     exit 1 # Error flag
 fi
 
-if ! sed -i 's/SRC_demo_john/$SRC_user_project_tag/g' $private_dir/$user_name/$project_name/CMakeLists.txt ; then
+if ! sed -i "s/SRC_demo_john/$SRC_user_project_tag/g" $private_dir/$user_name/$project_name/CMakeLists.txt ; then
     echo ""
     echo "============================================================= "
     echo "[ERROR] The CMakeLists.txt could not be modified!"
@@ -250,7 +250,7 @@ if ! sed -i 's/SRC_demo_john/$SRC_user_project_tag/g' $private_dir/$user_name/$p
     exit 1 # Error flag
 fi
 
-if ! sed -i 's/demo_john.cpp/$project_code_filename/g' $private_dir/$user_name/$project_name/CMakeLists.txt ; then
+if ! sed -i "s/LIB_demo_john/$LIB_user_project_tag/g" $private_dir/$user_name/$project_name/CMakeLists.txt ; then
     echo ""
     echo "============================================================= "
     echo "[ERROR] The CMakeLists.txt could not be modified!"
@@ -259,7 +259,7 @@ if ! sed -i 's/demo_john.cpp/$project_code_filename/g' $private_dir/$user_name/$
     exit 1 # Error flag
 fi
 
-if ! sed -i 's/demo_john/$user_project_name/g' $private_dir/$user_name/$project_name/CMakeLists.txt ; then
+if ! sed -i "s/demo_john.cpp/$project_main_code_filename/g" $private_dir/$user_name/$project_name/CMakeLists.txt ; then
     echo ""
     echo "============================================================= "
     echo "[ERROR] The CMakeLists.txt could not be modified!"
@@ -268,7 +268,7 @@ if ! sed -i 's/demo_john/$user_project_name/g' $private_dir/$user_name/$project_
     exit 1 # Error flag
 fi
 
-if ! sed -i 's/LIB_demo_john/$LIB_user_project_tag/g' $private_dir/$user_name/$project_name/CMakeLists.txt ; then
+if ! sed -i "s/demo_john/$executable_project_name/g" $private_dir/$user_name/$project_name/CMakeLists.txt ; then
     echo ""
     echo "============================================================= "
     echo "[ERROR] The CMakeLists.txt could not be modified!"
@@ -276,12 +276,26 @@ if ! sed -i 's/LIB_demo_john/$LIB_user_project_tag/g' $private_dir/$user_name/$p
     echo ""
     exit 1 # Error flag
 fi
+
+echo "---------------------------"
+echo "Project information summary"
+echo "---------------------------"
+echo ""
+echo "The TAG to refer to ALL source codes in this project is: $SRC_user_project_tag"
+echo ""
+echo "The TAG to refer to ALL libraries used in this project is: $LIB_user_project_tag"
+echo ""
+echo "The filename with the main function is: $project_main_code_filename"
+echo ""
+echo "The building/executable project name is: $executable_project_name"
+echo ""
+
 
 echo ""
-echo "============================================================= "
-echo "Make sure to include any additional modules to your project"
-echo "prior compilation"
-echo "============================================================= "
+echo "-------------------------------------------------------------"
+echo "Make sure to include any additional modules/libraries to your"
+echo "project prior compilation"
+echo "-------------------------------------------------------------"
 echo ""
 
 echo ""
