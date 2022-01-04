@@ -223,7 +223,7 @@ LIB_user_project_tag=LIB_"$user_name"_"$project_name"
 project_main_code_filename="$user_name"_"$project_name".cpp
 executable_project_name="$user_name"_"$project_name"
 
-if ! cp ./tools/templates/demo_template.cpp $private_dir/$user_name/$project_name/$project_main_code_filename ; then
+if ! cp ./tools/templates/project_template_basic.cpp $private_dir/$user_name/$project_name/$project_main_code_filename ; then
     echo ""
     echo "============================================================= "
     echo "[ERROR] The template code [.cpp] project could not be copied!"

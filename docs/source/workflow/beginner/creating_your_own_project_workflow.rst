@@ -15,6 +15,9 @@ and copies the required files to start your project.
    You will be prompted for your user name and your new project
    name. Make sure not using white spaces or special characters.
 
+   .. important:: Take note of the script summary creation since you
+                  will need those information to build and execute
+                  your project.
 
 2. Open the new ``CMakeLists.txt`` file in your newly created project
    folder and ensure to include any additional modules that you may
@@ -24,44 +27,45 @@ and copies the required files to start your project.
    ``problem_lib`` modules. Check the :doc:`modules` document for the
    full list of module and their details.
 
-3. In the main folder of SciCell++ type:
-
-   .. code-block:: shell
-
-      ./autogen.sh
-
-   to register your project (you may skip running demos). Once
-   building finish without errors then you can build your own project.
-
 Building and executing your project
 -----------------------------------
 
-In a terminal follow these instructions:
+Open a terminal and follow these instructions.
+
+Building your project
+^^^^^^^^^^^^^^^^^^^^^
 
 1. Go to the ``build`` folder in the main SciCell++ folder and type:
 
    .. code-block:: shell
    
-      make demo_sophy
+      make julio_test
       
-   Make sure to substitute ``demo_sophy`` by your project name. It
-   should be a combination of your ``user name`` + ``your project
-   name``. Use ``TAB`` to autocomplete.
+   Make sure to substitute ``julio_test`` by the reported
+   ``building/executable project name`` by the new project creation
+   script. It should be a combination of your ``user name`` + ``your
+   project name``.
    
    The building output should be displayed at your screen. Once no
-   errors have been reported you may run your code.
+   errors have been reported proceed to the following step to execute
+   your project.
 
-2. Go to your ``project folder`` into your ``private`` folder and
+Executing your project
+^^^^^^^^^^^^^^^^^^^^^^
+   
+1. Go to your ``project folder`` into your ``private`` folder and
    type:
 
    .. code-block:: shell
 
-      ./bin/demo_sophy
+      ./bin/julio_test
 
-   Make sure to substitute ``demo_sophy`` by the name of your
-   project. Use ``TAB`` for autocomplete.
+   Make sure to substitute ``julio_test`` by the reported
+   ``building/executable project name`` by the new project creation
+   script. It should be a combination of your ``user name`` + ``your
+   project name``. Use ``TAB`` for autocomplete.
                    
-3. You should see the output of your project at the terminal.
+2. Your project's output should be displayed on your screen.
 
 .. important:: As you noticed, the generation and execution of your
                project is performed in two different folders:
@@ -87,90 +91,3 @@ In a terminal follow these instructions:
                * Whenever you want to execute your project go to your
                  ``private/project_name`` folder and type
                  ``./bin/the-name-of-your-project``.
-                 
-   
-2. Type the following to copy the demo driver into your private folder:
-
-   .. code-block:: shell
-
-      cp ../../demos/interpolation/basic_interpolation/demo_basic_interpolation.cpp demo_john.cpp
-
-3. Copy the ``CMakeLists.txt.private_template`` file from the
-``tools`` folder into your private directory and change its name to
-``CMakeLists.txt``
-
-   .. code-block:: shell
-
-      cp ../../tools/CMakeLists.txt.private_template CMakeLists.txt
-
-4. Change the content of the ``CMakeLists.txt`` file as follow:
-
-  * Change all the instances of the tag ``SRC_demo_john`` for your own
-    tag to identify your source code. For example: ``SRC_project_sophy``.
-
-  * Change all the instances of ``demo_john.cpp`` for the name of your
-    source code file. For example: ``project_sophy.cpp``.
-
-  * Change all the instances of ``demo_john``, this will be the name
-    of your executable and the name you need to type at the terminal
-    to compile your project. For example:``project_sophy``.
-    
-  * Change all the instances of the tag ``LIB_demo_john`` for your own
-    tag to identify libraries required for your code. For example:
-    ``LIB_project_sophy``.
-
-  * Include the modules you need. In the template we only include the
-    ``general_lib`` and the ``problem_lib`` modules. Check the
-    :doc:`modules` document for the full list of module and their
-    details.
-
-5. Go to the root folder of SciCell++ and execute the ``./autogen.sh``
-   script. If you find errors please make sure you correctly changed
-   all the tags indicated in the previous step. Once building has
-   finished without errors you can build your own project.
-
-**Building and executing your project**
-
-Open a terminal and follow these instructions:
-
-1. Go to the ``build`` folder in the root SciCell++ folder and type
-
-   .. code-block:: shell
-   
-      make demo_sophy
-      
-   The building output should be displayed at your screen. Once no
-   errors have been reported you may run your code.
-
-2. Go to your ``private`` folder, create a ``RESLT`` folder if you
-   have no one, and type:
-
-   .. code-block:: shell
-
-      ./bin/demo_sophy
-                   
-3. You should see the output of your project at the terminal.
-
-.. important:: As you noticed, the generation and execution of your
-               project is performed in two different folders:
-
-               * the ``build`` folder (building)
-               * your ``private`` folder (execution)
-
-               We use this two-folders strategy to avoid cluttering
-               the folder structure of SciCell++ with files
-               automatically generated by CMake. By following this
-               strategy we keep a clean folder structure for SciCell++
-               and group all files generated by CMake in the ``build``
-               folder. This help us to keep track for changes easily
-               since we can exclude the whole ``build`` folder from
-               the git repository.
-
-               **Just keep in mind the following:**
-
-               * Whenever you want to build your project you need to do so in the ``build`` folder, inthere just type ``make`` followed by the name of your project.
-
-               * Whenever you want to execute your project go to your
-                 ``private`` folder and type
-                 ``./bin/the-name-of-your-project``.
-                 
