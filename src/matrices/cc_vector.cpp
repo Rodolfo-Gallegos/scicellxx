@@ -1,8 +1,7 @@
-// IN THIS FILE: The implementation of a concrete class to store and
-// work with vector. This implementation makes use of Armadillo's
-// library, thus this is only a wrap for Armadillo's methods
+// IN THIS FILE: Implementation of a concrete class to represent
+// vectors. This is the simplest implementation
 
-#include "cc_vector_armadillo.tpl.h"
+#include "cc_vector.h"
 
 namespace scicellxx
 {
@@ -10,9 +9,8 @@ namespace scicellxx
  // ===================================================================
  // Empty constructor
  // ===================================================================
- template<class T>
- CCVectorArmadillo<T>::CCVectorArmadillo()
-  : ACVector<T>()
+ CCVector::CCVector() 
+  : ACVector()
  {
   // Delete any data in memory
   clean_up();
@@ -21,71 +19,40 @@ namespace scicellxx
  // ===================================================================
  // Constructor to create an n size zero vector (we assume vectors
  // are created as column vectors, if you need a row vector then
- // pass "true" as the second parameter).
+ // pass "false" as the second parameter)
  // ===================================================================
- template<class T>
- CCVectorArmadillo<T>::CCVectorArmadillo(const unsigned long n, bool is_column_vector)
-  : ACVector<T>(n, is_column_vector)
- {  
+ CCVector::CCVector(const unsigned long n, bool is_column_vector)
+  : ACVector(n, is_column_vector)
+ {
   // Allocate memory
-  allocate_memory(n);  
+  allocate_memory(n);
  }
  
  // ===================================================================
  // Constructor where we pass the data for the vector of size n
  // ===================================================================
- template<class T>
- CCVectorArmadillo<T>::CCVectorArmadillo(T *vector_pt, const unsigned long n,
-                                         bool is_column_vector)
-  : ACVector<T>(n, is_column_vector)
+ CCVector::CCVector(Real *vector_pt, const unsigned long n,
+                    bool is_column_vector)
+  : ACVector(n, is_column_vector)
  {
   // Copy the data from the input vector to the Vector_pt vector
   set_vector(vector_pt, n, is_column_vector);
  }
  
  // ===================================================================
- // Constructor that creates an Armadillo's vector from a CCVector
- // ===================================================================
- template<class T>
- CCVectorArmadillo<T>::CCVectorArmadillo(CCVector<T> &vector)
- {
-  // Get the pointer to the vector data
-  T *vector_pt = vector.vector_pt();
-  // Get the dimension of the new vector
-  unsigned long n = vector.n_values();
-  
-  // Copy the data from the vector to the Matrix_pt vector
-  set_vector(vector_pt, n, vector.is_column_vector());
- }
- 
- // ===================================================================
  // Copy constructor
  // ===================================================================
- template<class T>
- CCVectorArmadillo<T>::CCVectorArmadillo(const CCVectorArmadillo<T> &copy)
-  : ACVector<T>(copy.n_values(), copy.is_column_vector())
+ CCVector::CCVector(const CCVector &copy)
+  : ACVector(copy.n_values(), copy.is_column_vector())
  {
-  // Clean any possible previously allocated memory
-  clean_up();
-  
-  // Set the number of values
-  this->NValues = copy.n_values();
-  
-  // Call the copy constructor of Armadillo
-  Arma_vector_pt = new arma::Mat<T>(*(copy.arma_vector_pt())); 
-  
-  // Mark the matrix as having its own memory
-  this->Is_own_memory_allocated = true;
-  
-  // Set the transposed status
-  this->set_as_column_vector(copy.is_column_vector()); 
+  // Copy the data from the input vector to the Vector_pt vector
+  set_vector(copy.vector_pt(), this->NValues, copy.is_column_vector());
  }
  
  // ===================================================================
  // Empty destructor
  // ===================================================================
- template<class T>
- CCVectorArmadillo<T>::~CCVectorArmadillo()
+ CCVector::~CCVector()
  {
   // Deallocate memory
   clean_up();
@@ -93,12 +60,11 @@ namespace scicellxx
  
  // ===================================================================
  // Assignment operator
- // =================================================================== 
- template<class T>
- CCVectorArmadillo<T>& CCVectorArmadillo<T>::operator=(const CCVectorArmadillo<T> &source_vector)
+ // ===================================================================
+ CCVector& CCVector::operator=(const CCVector &source_vector)
  {
   // Clean-up and set values
-  set_vector(source_vector.arma_vector_pt(),
+  set_vector(source_vector.vector_pt(),
              source_vector.n_values(),
              source_vector.is_column_vector());
   // Return this (de-referenced pointer)
@@ -109,8 +75,7 @@ namespace scicellxx
  // ===================================================================
  // += operator
  // ===================================================================
- template<class T>
- CCVectorArmadillo<T>& CCVectorArmadillo<T>::operator+=(const CCVectorArmadillo<T> &vector)
+ CCVector& CCVector::operator+=(const CCVector &vector)
  {  
   // Call the method to perform the addition
   add_vector(vector, *this);
@@ -121,8 +86,7 @@ namespace scicellxx
  // ===================================================================
  // -= operator
  // ===================================================================
- template<class T>
- CCVectorArmadillo<T>& CCVectorArmadillo<T>::operator-=(const CCVectorArmadillo<T> &vector)
+ CCVector& CCVector::operator-=(const CCVector &vector)
  {
   // Call the method to perform the operation
   substract_vector(vector, *this);
@@ -133,11 +97,10 @@ namespace scicellxx
  // ===================================================================
  // Add operator
  // ===================================================================
- template<class T>
- CCVectorArmadillo<T> CCVectorArmadillo<T>::operator+(const CCVectorArmadillo<T> &vector)
+ CCVector CCVector::operator+(const CCVector &vector)
  {
   // Create a zero vector where to store the result
-  CCVectorArmadillo<T> solution(this->NValues);
+  CCVector solution(this->NValues);
   // Call the method to perform the addition
   add_vector(vector, solution);
   // Return the solution vector
@@ -147,30 +110,25 @@ namespace scicellxx
  // ===================================================================
  // Substraction operator
  // ===================================================================
- template<class T>
- CCVectorArmadillo<T> CCVectorArmadillo<T>::operator-(const CCVectorArmadillo<T> &vector)
+ CCVector CCVector::operator-(const CCVector &vector)
  {
   // Create a zero vector where to store the result
-  CCVectorArmadillo<T> solution(this->NValues);
+  CCVector solution(this->NValues);
   // Call the method to perform the operation
   substract_vector(vector, solution);
   return solution;
  }
- 
- // HERE HERE HERE Working on this
- 
+  
  // ===================================================================
  // Multiplication operator (it returns a matrix with the
  // corresponding size, if you require a dot product operation use the
  // dot() method instead
  // ===================================================================
- template<class T>
- CCMatrixArmadillo<T> CCVectorArmadillo<T>::operator*(const CCVectorArmadillo<T> &vector)
- {
+ CCMatrix CCVector::operator*(const CCVector &vector)
+ {  
   // Create two matrices, one from each vector
-  CCMatrixArmadillo<T> left_matrix(*this);
-  CCMatrixArmadillo<T> right_matrix(vector);
-  
+  CCMatrix left_matrix(*this);
+  CCMatrix right_matrix(vector);
   // Store the size of both vectors to create a solution matrix with
   // the corresponding sizes
   // (First dimension for the left vector)
@@ -185,21 +143,20 @@ namespace scicellxx
    {
     n_values_right_vector = 1;
    }
-  // Create a zero vector where to store the result
-  CCMatrixArmadillo<T> solution(n_values_left_vector, n_values_right_vector);
+  // Create a zero matrix where to store the result
+  CCMatrix solution(n_values_left_vector, n_values_right_vector);
   // Perform the multiplication (this method is in charge of verifying
   // whether the matrices fulfill the requirements for matrix
   // multiplication)
   multiply_matrices(left_matrix, right_matrix, solution);
-  // Return the solution vector
+  // Return the solution matrix
   return solution;
  }
  
  // ===================================================================
  // Performs dot product with the current vector
  // ===================================================================
- template<class T>
- T CCVectorArmadillo<T>::dot(const CCVectorArmadillo &right_vector)
+ Real CCVector::dot(const CCVector &right_vector)
  {
   // Check that THIS and the right vector have memory allocated
   if (!this->Is_own_memory_allocated || !right_vector.is_own_memory_allocated())
@@ -256,21 +213,29 @@ namespace scicellxx
                            SCICELLXX_EXCEPTION_LOCATION);
    }
   
+  // Get the vector pointer of the right vector
+  Real *right_vector_pt = right_vector.vector_pt();
+  
   // Store the dot product of the vectors
-  const T dot_product = arma::dot(*Arma_vector_pt, *(right_vector.arma_vector_pt()));
-  // Return the dot product
+  Real dot_product = 0.0;
+  
+  // Compute the dot product
+  for (unsigned long i = 0; i < n_values_this_vector; i++)
+   {
+    dot_product+= Vector_pt[i] * right_vector_pt[i];
+   }
+  
   return dot_product;
   
  }
  
  // ===================================================================
- // Transforms the input vector to an armadillo vector class type
- // (virtual such that each derived class has to implement it)
+ // Transforms the input vector to a vector class type (virtual such
+ // that each derived class has to implement it)
  // ===================================================================
- template<class T>
- void CCVectorArmadillo<T>::set_vector(const T *vector_pt,
-                                       const unsigned long n,
-                                       bool is_column_vector)
+ void CCVector::set_vector(const Real *vector_pt,
+                              const unsigned long n,
+                              bool is_column_vector)
  {
   // Clean any possible previously allocated memory
   clean_up();
@@ -278,44 +243,14 @@ namespace scicellxx
   // Set the number of values
   this->NValues = n;
   
-  // Create an Armadillo's matrix (makes an own copy of the data,
-  // therefore 'matrix_pt' may be deleted safely)
-  if (is_column_vector)
-   {
-    Arma_vector_pt = new arma::Mat<T>(vector_pt, n, 1);
-   }
-  else
-   {
-    Arma_vector_pt = new arma::Mat<T>(vector_pt, 1, n);
-   }
+  // Allocate memory for the vector
+  Vector_pt = new Real[n];
   
   // Mark the vector as allocated its own memory
   this->Is_own_memory_allocated = true;
   
-  // Set the transposed status
-  this->set_as_column_vector(is_column_vector);
-  
- }
- 
- // ===================================================================
- // Receives an armadillo type Mat
- // ===================================================================
- template<class T>
- void CCVectorArmadillo<T>::set_vector(arma::Mat<T> *arma_vector_pt,
-                                       const unsigned long n,
-                                       bool is_column_vector)
- {
-  // Clean any possible previously allocated memory
-  clean_up();
-  
-  // Set the number of values
-  this->NValues = n;
-  
-  // Call the copy constructor of Armadillo
-  Arma_vector_pt = new arma::Mat<T>(*arma_vector_pt);
-  
-  // Mark the matrix as having its own memory
-  this->Is_own_memory_allocated = true;
+  // Copy the vector (an element by element copy, uff!!)
+  std::memcpy(Vector_pt, vector_pt, n*sizeof(Real));
   
   // Set the transposed status
   this->set_as_column_vector(is_column_vector);
@@ -325,8 +260,7 @@ namespace scicellxx
  // ===================================================================
  // Clean up for any dynamically stored data
  // ===================================================================
- template<class T>
- void CCVectorArmadillo<T>::clean_up()
+ void CCVector::clean_up()
  {
   // Check whether the Vector allocated its own memory
   if (this->Is_own_memory_allocated)
@@ -339,7 +273,7 @@ namespace scicellxx
   else // if empty
    {
     // Set the pointer of the vector to NULL
-    Arma_vector_pt = 0;
+    Vector_pt = 0;
    }
   
  }
@@ -347,16 +281,15 @@ namespace scicellxx
  // ===================================================================
  // Free allocated memory for vector
  // ===================================================================
- template<class T>
- void CCVectorArmadillo<T>::free_memory_for_vector()
+ void CCVector::free_memory_for_vector()
  {
   // Is the vector allowed for deletion. If this method is called from
   // an external source we need to check whether the vector has been
   // marked for deletion
   if (this->Delete_vector)
    {
-    delete Arma_vector_pt;
-    Arma_vector_pt = 0; 
+    delete [] Vector_pt;
+    Vector_pt = 0; 
     
     // Mark the vector as not having memory allocated
     this->Is_own_memory_allocated=false;
@@ -378,9 +311,8 @@ namespace scicellxx
  // ===================================================================
  // Performs sum of vectors
  // ===================================================================
- template<class T>
- void CCVectorArmadillo<T>::add_vector(const CCVectorArmadillo<T> &vector,
-                                       CCVectorArmadillo<T> &solution_vector)
+ void CCVector::add_vector(const CCVector &vector,
+                              CCVector &solution_vector)
  {
   // Check that THIS and the other vector have memory allocated
   if (!this->Is_own_memory_allocated || !vector.is_own_memory_allocated())
@@ -453,22 +385,23 @@ namespace scicellxx
    }
   
   // Get the vector pointer of the solution vector
-  arma::Mat<T> *arma_solution_vector_pt = solution_vector.arma_vector_pt();
+  Real *solution_vector_pt = solution_vector.vector_pt();
   
   // Get the vector pointer of the input vector
-  arma::Mat<T> *arma_vector_pt = vector.arma_vector_pt();
-  
+  Real *vector_pt = vector.vector_pt();
   // Perform the addition
-  (*arma_solution_vector_pt) = (*Arma_vector_pt) + (*arma_vector_pt);
+  for (unsigned long i = 0; i < n_values_this_vector; i++)
+   {
+    solution_vector_pt[i] = Vector_pt[i] + vector_pt[i];
+   }
   
  }
  
  // ===================================================================
  // Performs substraction of vectors
  // ===================================================================
- template<class T>
- void CCVectorArmadillo<T>::substract_vector(const CCVectorArmadillo<T> &vector,
-                                    CCVectorArmadillo<T> &solution_vector)
+ void CCVector::substract_vector(const CCVector &vector,
+                                    CCVector &solution_vector)
  {
   // Check that THIS and the other vector have no memory allocated
   if (!this->Is_own_memory_allocated || !vector.is_own_memory_allocated())
@@ -500,7 +433,7 @@ namespace scicellxx
                            SCICELLXX_CURRENT_FUNCTION,
                            SCICELLXX_EXCEPTION_LOCATION);
    }
-  
+
   // Check that the three vectors have the same column vector status
   if (this->is_column_vector() != vector.is_column_vector() ||
       solution_vector.is_column_vector() != vector.is_column_vector())
@@ -541,23 +474,24 @@ namespace scicellxx
    }
   
   // Get the vector pointer of the solution vector
-  arma::Mat<T> *arma_solution_vector_pt = solution_vector.arma_vector_pt();
+  Real *solution_vector_pt = solution_vector.vector_pt();
   
   // Get the vector pointer of the input vector
-  arma::Mat<T> *arma_vector_pt = vector.arma_vector_pt();
+  Real *vector_pt = vector.vector_pt();
+  // Perform the addition
+  for (unsigned long i = 0; i < n_values_this_vector; i++)
+   {
+    solution_vector_pt[i] = Vector_pt[i] - vector_pt[i];
+   }
   
-  // Perform the substraction
-  (*arma_solution_vector_pt) = (*Arma_vector_pt) - (*arma_vector_pt);
-    
  }
  
  // ===================================================================
  // Performs multiplication of vectors (element by element)
  // ===================================================================
- template<class T>
- void CCVectorArmadillo<T>::
- multiply_element_by_element_vector(const CCVectorArmadillo<T> &vector,
-                                    CCVectorArmadillo<T> &solution_vector)
+ void CCVector::
+ multiply_element_by_element_vector(const CCVector &vector,
+                                    CCVector &solution_vector)
  {
   // Check that THIS and the other vector have memory allocated
   if (!this->Is_own_memory_allocated || !vector.is_own_memory_allocated())
@@ -589,7 +523,7 @@ namespace scicellxx
                            SCICELLXX_CURRENT_FUNCTION,
                            SCICELLXX_EXCEPTION_LOCATION);
    }
-
+  
   // Check that the three vectors have the same column vector status
   if (this->is_column_vector() != vector.is_column_vector() ||
       solution_vector.is_column_vector() != vector.is_column_vector())
@@ -630,24 +564,22 @@ namespace scicellxx
    }
   
   // Get the vector pointer of the solution vector
-  arma::Mat<T> *arma_solution_vector_pt = solution_vector.arma_vector_pt();
+  Real *solution_vector_pt = solution_vector.vector_pt();
   
   // Get the vector pointer of the input vector
-  arma::Mat<T> *arma_vector_pt = vector.arma_vector_pt();
-  
-  // Perform the operation
-  for (unsigned long i = 0; i < this->NValues; i++)
+  Real *vector_pt = vector.vector_pt();
+  // Perform the addition
+  for (unsigned long i = 0; i < n_values_this_vector; i++)
    {
-    (*arma_solution_vector_pt)(i) = (*Arma_vector_pt)(i) * (*arma_vector_pt)(i);
+    solution_vector_pt[i] = Vector_pt[i] * vector_pt[i];
    }
   
  }
  
  // ===================================================================
- // Computes the transpose and store in the solution vector
+ // Computes the transpose and store in the transposed vector
  // ===================================================================
- template<class T>
- void CCVectorArmadillo<T>::transpose(CCVectorArmadillo<T> &transposed_vector)
+ void CCVector::transpose(CCVector &transposed_vector)
  {
   // Check that THIS vector has memory allocated
   if (!this->Is_own_memory_allocated)
@@ -662,29 +594,17 @@ namespace scicellxx
                            SCICELLXX_EXCEPTION_LOCATION);
    }
   
-  // Copy all the vector
+  // Copy the vector into the tranposed vector
   transposed_vector = (*this);
-  // Perform tranposition
-  transposed_vector.transpose();  
- }
- 
- // ===================================================================
- // Transpose the vector
- // ===================================================================
- template<class T>
- void CCVectorArmadillo<T>::transpose()
- {
-  // Performs the operation
-  arma::inplace_trans(*Arma_vector_pt);
-  // Change the status
-  this->Is_column_vector=!(this->Is_column_vector);
+  // Get the current "column vector" status of the vector and set the
+  // transposed status of the new vector
+  transposed_vector.set_as_column_vector(!(this->Is_column_vector));
  }
  
  // ===================================================================
  // Get the specified value from the vector (read-only)
  // ===================================================================
- template<class T>
- const T CCVectorArmadillo<T>::value(const unsigned long i) const
+ const Real CCVector::value(const unsigned long i) const
  {
 #ifdef SCICELLXX_RANGE_CHECK
   if (!(this->is_own_memory_allocated()))
@@ -711,14 +631,13 @@ namespace scicellxx
    } 
 #endif // #ifdef SCICELLXX_RANGE_CHECK
   // Return the value at position i
-  return (*Arma_vector_pt)(i);
+  return Vector_pt[i];
  }
  
  // ===================================================================
  // Set values in the vector (write version)
  // ===================================================================
- template<class T>
- T &CCVectorArmadillo<T>::value(const unsigned long i)
+ Real &CCVector::value(const unsigned long i)
  {
 #ifdef SCICELLXX_RANGE_CHECK
   if (!(this->is_own_memory_allocated()))
@@ -745,14 +664,13 @@ namespace scicellxx
    } 
 #endif // #ifdef SCICELLXX_RANGE_CHECK
   // Return the value at row i and column j
-  return (*Arma_vector_pt)(i);
+  return Vector_pt[i];
  }
 
  // ===================================================================
  // Output the vector
  // ===================================================================
- template<class T>
- void CCVectorArmadillo<T>::output(bool output_indexes) const
+ void CCVector::output(bool output_indexes) const
  {
   if (!this->Is_own_memory_allocated)
    {
@@ -776,7 +694,11 @@ namespace scicellxx
      } // if (output_indexes)
     else
      {
-      Arma_vector_pt->print();
+      for (unsigned long i = 0; i < this->NValues; i++)
+       {
+        std::cout << value(i) << " ";
+       } // for (i < this->NValues)
+      std::cout << std::endl;
      } // else if (output_indexes)
    }
   
@@ -785,8 +707,7 @@ namespace scicellxx
  // ===================================================================
  // Output the vector
  // ===================================================================
- template<class T>
- void CCVectorArmadillo<T>::output(std::ofstream &outfile, bool output_indexes) const
+ void CCVector::output(std::ofstream &outfile, bool output_indexes) const
  {
   if (!this->Is_own_memory_allocated)
    {
@@ -810,17 +731,20 @@ namespace scicellxx
      } // if (output_indexes)
     else
      {
-      Arma_vector_pt->print(outfile);
+      for (unsigned long i = 0; i < this->NValues; i++)
+       {
+        outfile << value(i) << " ";
+       } // for (i < this->NValues)
+      outfile << std::endl;
      } // else if (output_indexes)
    }
   
  }
- 
+
  // ===================================================================
  // Computes the norm-1 of the vector
  // ===================================================================
- template<class T>
- T CCVectorArmadillo<T>::norm_1()
+ Real CCVector::norm_1()
  {
   // Sum
   Real sum = 0.0;
@@ -828,7 +752,10 @@ namespace scicellxx
   if (this->Is_own_memory_allocated)
    {
     // Compute the norm
-    sum = arma::norm((*Arma_vector_pt), 1);
+    for (unsigned long i = 0; i < this->NValues; i++)
+     {
+      sum+= std::fabs(Vector_pt[i]);
+     }
    }
   else
    {
@@ -849,16 +776,18 @@ namespace scicellxx
  // ===================================================================
  // Computes the norm-2 of the vector
  // ===================================================================
- template<class T>
- T CCVectorArmadillo<T>::norm_2()
+ Real CCVector::norm_2()
  {
   // Sum
   Real sum = 0.0;
   // Check whether the vector has memory allocated
   if (this->Is_own_memory_allocated)
    {
-    // Compute the norm
-    sum = arma::norm((*Arma_vector_pt), 2);
+    // Compute the norm 2
+    for (unsigned long i = 0; i < this->NValues; i++)
+     {
+      sum+= (Vector_pt[i]*Vector_pt[i]);
+     }
    }
   else
    {
@@ -872,23 +801,28 @@ namespace scicellxx
                            SCICELLXX_EXCEPTION_LOCATION);
    }
   
-  return sum;
+  return sqrt(sum);
   
  }
 
  // ===================================================================
  // Computes the infinite norm
  // ===================================================================
- template<class T>
- T CCVectorArmadillo<T>::norm_inf()
+ Real CCVector::norm_inf()
  {
-  // Infinite norm
-  Real norm;
+  // Maximum
+  Real norm = 0.0;
   // Check whether the vector has memory allocated
   if (this->Is_own_memory_allocated)
    {
+    // Initialise the maximum with the first value
+    norm = std::fabs(Vector_pt[0]);
     // Compute the norm
-    norm = arma::norm((*Arma_vector_pt), "inf");
+    for (unsigned long i = 1; i < this->NValues; i++)
+     {
+      if (std::fabs(Vector_pt[i]) > norm)
+       norm = std::fabs(Vector_pt[i]);
+     }
    }
   else
    {
@@ -903,21 +837,27 @@ namespace scicellxx
    }
   
   return norm;
+  
  }
  
  // ===================================================================
  // Computes the maximum value
  // ===================================================================
- template<class T>
- T CCVectorArmadillo<T>::max()
+ Real CCVector::max()
  {
   // Maximum
-  Real max;
+  Real max = 0.0;
   // Check whether the vector has memory allocated
   if (this->Is_own_memory_allocated)
    {
+    // Initialise the maximum with the first value
+    max = Vector_pt[0];
     // Compute the maximum
-    max = Arma_vector_pt->max();
+    for (unsigned long i = 1; i < this->NValues; i++)
+     {
+      if (Vector_pt[i] > max)
+       max = Vector_pt[i];
+     }
    }
   else
    {
@@ -932,21 +872,27 @@ namespace scicellxx
    }
   
   return max;
+  
  }
-
+ 
  // ===================================================================
  // Computes the minimum value
  // ===================================================================
- template<class T>
- T CCVectorArmadillo<T>::min()
+ Real CCVector::min()
  {
   // Minimum
-  Real min;
+  Real min = 0.0;
   // Check whether the vector has memory allocated
   if (this->Is_own_memory_allocated)
    {
+    // Initialise the minimum with the first value
+    min = Vector_pt[0];
     // Compute the minimum
-    min = Arma_vector_pt->min();
+    for (unsigned long i = 1; i < this->NValues; i++)
+     {
+      if (Vector_pt[i] < min)
+       min = Vector_pt[i];
+     }
    }
   else
    {
@@ -961,32 +907,24 @@ namespace scicellxx
    }
   
   return min;
+  
  }
-
+ 
  // ===================================================================
  // Allows to create a vector with the given size but with no data
  // ===================================================================
- template<class T>
- void CCVectorArmadillo<T>::allocate_memory(const unsigned long n)
+ void CCVector::allocate_memory(const unsigned long n)
  {
   // Clean any possibly stored data
   clean_up();
   
   // Set the number of rows and columns of the matrix
   this->NValues = n;
-  
-  // Allocate memory
+
   //allocate_memory();
   
   // Allocate memory for the vector
-  if (this->Is_column_vector)
-   {    
-    Arma_vector_pt = new arma::Mat<T>(this->NValues, 1);
-   }
-  else
-   {
-    Arma_vector_pt = new arma::Mat<T>(1, this->NValues);
-   }
+  Vector_pt = new Real[this->NValues];
   
   // Mark the vector as allocated its own memory
   this->Is_own_memory_allocated=true;
@@ -996,37 +934,28 @@ namespace scicellxx
  // // ===================================================================
  // // Allocates memory to store entries of the vector
  // // ===================================================================
- // template<class T>
- // void CCVectorArmadillo<T>::allocate_memory()
+ // void CCVector::allocate_memory()
  // {
  //  // Delete any data in memory
  //  clean_up();
-
+  
  //  // Allocate memory for the vector
- //  if (this->Is_column_vector)
- //   {    
- //    Arma_vector_pt = new arma::Mat<T>(this->NValues, 1);
- //   }
- //  else
- //   {
- //    Arma_vector_pt = new arma::Mat<T>(1, this->NValues);
- //   }
+ //  Vector_pt = new Real[this->NValues];
   
  //  // Mark the vector as allocated its own memory
  //  this->Is_own_memory_allocated=true;
  // }
-
+ 
  // ===================================================================
  // Fills the vector with zeroes
  // ===================================================================
- template<class T>
- void CCVectorArmadillo<T>::fill_with_zeroes()
+ void CCVector::fill_with_zeroes()
  {
   // Check that the vector has memory allocated
   if (this->Is_own_memory_allocated)
    {
     // Fill the vector with zeroes
-    Arma_vector_pt->zeros();
+    std::memset(Vector_pt, 0, this->NValues*sizeof(Real));
    }
   else
    {
@@ -1051,8 +980,7 @@ namespace scicellxx
  // ================================================================
  // Dot product of vectors
  // ================================================================
- template<class T>
- T dot_vectors(const CCVectorArmadillo<T> &left_vector, const CCVectorArmadillo<T> &right_vector)
+ Real dot_vectors(const CCVector &left_vector, const CCVector &right_vector)
  {
   // Check that the left and the right vectors have memory allocated
   if (!left_vector.is_own_memory_allocated() || !right_vector.is_own_memory_allocated())
@@ -1109,9 +1037,20 @@ namespace scicellxx
                            SCICELLXX_EXCEPTION_LOCATION);
    }
   
+  // Get the vector pointer of the left vector
+  Real *left_vector_pt = left_vector.vector_pt();
+  // Get the vector pointer of the right vector
+  Real *right_vector_pt = right_vector.vector_pt();
+  
   // Store the dot product of the vectors
-  const T dot_product = arma::dot(*(left_vector.arma_vector_pt()), *(right_vector.arma_vector_pt()));
-  // Return the dot product
+  Real dot_product = 0.0;
+  
+  // Compute the dot product
+  for (unsigned long i = 0; i < n_values_left_vector; i++)
+   {
+    dot_product+= left_vector_pt[i] * right_vector_pt[i];
+   }
+  
   return dot_product;
   
  }
@@ -1119,10 +1058,9 @@ namespace scicellxx
  // ================================================================
  // Addition of vectors
  // ================================================================
- template<class T>
- void add_vectors(const CCVectorArmadillo<T> &vector_one,
-                  const CCVectorArmadillo<T> &vector_two,
-                  CCVectorArmadillo<T> &solution_vector)
+ void add_vectors(const CCVector &vector_one,
+                  const CCVector &vector_two,
+                  CCVector &solution_vector)
  {
   // Check that the vectors have memory allocated
   if (!vector_one.is_own_memory_allocated() || !vector_two.is_own_memory_allocated())
@@ -1195,24 +1133,27 @@ namespace scicellxx
    }
   
   // Get the vector pointer of the solution vector
-  arma::Mat<T> *arma_solution_vector_pt = solution_vector.arma_vector_pt();
+  Real *solution_vector_pt = solution_vector.vector_pt();
   
-  // Get the vector pointer of the input vectors
-  arma::Mat<T> *arma_vector_one_pt = vector_one.arma_vector_pt();
-  arma::Mat<T> *arma_vector_two_pt = vector_two.arma_vector_pt();
+  // Get the vector pointer of the vector one
+  Real *vector_one_pt = vector_one.vector_pt();
+  // Get the vector pointer of the vector two
+  Real *vector_two_pt = vector_two.vector_pt();
   
   // Perform the addition
-  (*arma_solution_vector_pt) = (*arma_vector_one_pt) + (*arma_vector_two_pt);
+  for (unsigned long i = 0; i < n_values_vector_one; i++)
+   {
+    solution_vector_pt[i] = vector_one_pt[i] + vector_two_pt[i];
+   }
   
  }
 
  // ================================================================
  // Substraction of vectors
  // ================================================================
- template<class T>
- void substract_vectors(const CCVectorArmadillo<T> &vector_one,
-                        const CCVectorArmadillo<T> &vector_two,
-                        CCVectorArmadillo<T> &solution_vector)
+ void substract_vectors(const CCVector &vector_one,
+                        const CCVector &vector_two,
+                        CCVector &solution_vector)
  {
   // Check that the vectors have no memory allocated
   if (!vector_one.is_own_memory_allocated() || !vector_two.is_own_memory_allocated())
@@ -1244,7 +1185,7 @@ namespace scicellxx
                            SCICELLXX_CURRENT_FUNCTION,
                            SCICELLXX_EXCEPTION_LOCATION);
    }
-  
+
   // Check that the three vectors have the same column vector status
   if (vector_one.is_column_vector() != vector_two.is_column_vector() ||
       solution_vector.is_column_vector() != vector_two.is_column_vector())
@@ -1285,24 +1226,27 @@ namespace scicellxx
    }
   
   // Get the vector pointer of the solution vector
-  arma::Mat<T> *arma_solution_vector_pt = solution_vector.arma_vector_pt();
+  Real *solution_vector_pt = solution_vector.vector_pt();
+    
+  // Get the vector pointer of the vector one
+  Real *vector_one_pt = vector_one.vector_pt();
+  // Get the vector pointer of the vector two
+  Real *vector_two_pt = vector_two.vector_pt();
   
-  // Get the vector pointer of the input vectors
-  arma::Mat<T> *arma_vector_one_pt = vector_one.arma_vector_pt();
-  arma::Mat<T> *arma_vector_two_pt = vector_two.arma_vector_pt();
-  
-  // Perform the addition
-  (*arma_solution_vector_pt) = (*arma_vector_one_pt) + (*arma_vector_two_pt);
+  // Perform the substraction of vectors
+  for (unsigned long i = 0; i < n_values_vector_one; i++)
+   {
+    solution_vector_pt[i] = vector_one_pt[i] - vector_two_pt[i];
+   }
   
  }
 
  // ================================================================
  // Performs multiplication of vectors (one by one entries)
  // ================================================================
- template<class T>
- void multiply_element_by_element_vectors(const CCVectorArmadillo<T> &vector_one,
-                                          const CCVectorArmadillo<T> &vector_two,
-                                          CCVectorArmadillo<T> &solution_vector)
+ void multiply_element_by_element_vectors(const CCVector &vector_one,
+                                          const CCVector &vector_two,
+                                          CCVector &solution_vector)
  {
   // Check that the vectors have memory allocated
   if (!vector_one.is_own_memory_allocated() || !vector_two.is_own_memory_allocated())
@@ -1310,9 +1254,9 @@ namespace scicellxx
     // Error message
     std::ostringstream error_message;
     error_message << "One of the vectors to operate with has no memory allocated\n"
-                  << "vector_one.is_own_memory_allocated(): "
+                  << "vector_one.is_own_memory_allocated() = "
                   << vector_one.is_own_memory_allocated() << "\n"
-                  << "vector_two.is_own_memory_allocated(): "
+                  << "vector_two.is_own_memory_allocated() = "
                   << vector_two.is_own_memory_allocated() << std::endl;
     throw SciCellxxLibError(error_message.str(),
                            SCICELLXX_CURRENT_FUNCTION,
@@ -1375,222 +1319,19 @@ namespace scicellxx
    }
   
   // Get the vector pointer of the solution vector
-  arma::Mat<T> *arma_solution_vector_pt = solution_vector.arma_vector_pt();
+  Real *solution_vector_pt = solution_vector.vector_pt();
   
-  // Get the vector pointer of the input vectors
-  arma::Mat<T> *arma_vector_one_pt = vector_one.arma_vector_pt();
-  arma::Mat<T> *arma_vector_two_pt = vector_two.arma_vector_pt();
-
-  // Perform the operation
+  // Get the vector pointer of the vector one
+  Real *vector_one_pt = vector_one.vector_pt();
+  // Get the vector pointer of the vector two
+  Real *vector_two_pt = vector_two.vector_pt();
+  
+  // Perform the substraction of vectors
   for (unsigned long i = 0; i < n_values_vector_one; i++)
    {
-    (*arma_solution_vector_pt)(i) = (*arma_vector_one_pt)(i) * (*arma_vector_two_pt)(i);
+    solution_vector_pt[i] = vector_one_pt[i] * vector_two_pt[i];
    }
-  
- }
- 
- // ================================================================
- // Concatenate vector horizontally
- // ================================================================
- template<class T>
-  void concatenate_vectors_horizontally(const CCVectorArmadillo<T> &left_vector,
-                                        const CCVectorArmadillo<T> &right_vector,
-                                        CCVectorArmadillo<T> &concatenated_vector)
- {
-  // Check that both vector have memory allocated
-  if (!left_vector.is_own_memory_allocated() || !right_vector.is_own_memory_allocated())
-   {
-    // Error message
-    std::ostringstream error_message;
-    error_message << "One of the vectors to operate with has no memory allocated\n"
-                  << "left_vector.is_own_memory_allocated(): "
-                  << left_vector.is_own_memory_allocated() << "\n"
-                  << "right_vector.is_own_memory_allocated(): "
-                  << right_vector.is_own_memory_allocated() << std::endl;
-    throw SciCellxxLibError(error_message.str(),
-                           SCICELLXX_CURRENT_FUNCTION,
-                           SCICELLXX_EXCEPTION_LOCATION);
-   }
-  
-  // Check whether both vectors are row vectors
-  if (left_vector.is_column_vector() || right_vector.is_column_vector())
-   {
-    // Error message
-    std::ostringstream error_message;
-    error_message << "One of the vectors is not a row vector, if you need\n"
-                  << "to concatenate two row vectors to create a matrix\n"
-                  << "then BETTER FIRST transform your vectors to matrices\n"
-                  << "then concatenate them\n"
-                  << "left_vector.is_column_vector(): " << left_vector.is_column_vector()
-                  << "\nright_vector.is_column_vector(): " << right_vector.is_column_vector()
-                  << std::endl;
-    throw SciCellxxLibError(error_message.str(),
-                           SCICELLXX_CURRENT_FUNCTION,
-                           SCICELLXX_EXCEPTION_LOCATION);
-   }
-  
-  // Check whether the concatenated vector is a row vector, if not
-  // then transpose it
-  if (concatenated_vector.is_column_vector())
-   {
-    // Warning message
-    std::ostringstream warning_message;
-    warning_message << "The resulting concatenated vector is a column vector\n"
-                    << "concatenated_vector.is_column_vector(): "
-                    << concatenated_vector.is_column_vector()
-                    << "\n\n Thus I am going to transpose it!!!"
-                    << std::endl;
-    SciCellxxLibWarning(warning_message.str(),
-                       SCICELLXX_CURRENT_FUNCTION,
-                       SCICELLXX_EXCEPTION_LOCATION);
-    
-    concatenated_vector.transpose();
-    
-   }
-  
-  // Get the number of elements of each vector and compute the new
-  // number of elements for the new vector
-  const unsigned long n_elements_left_vector = left_vector.n_values();
-  const unsigned long n_elements_right_vector = right_vector.n_values();
-  const unsigned long n_elements_new_concatenated_vector =
-   n_elements_left_vector + n_elements_right_vector;
-  
-  // Check whether the concatenated vector has allocated memory,
-  // otherwise allocate it here!!!
-  if (!concatenated_vector.is_own_memory_allocated())
-   {
-    // Allocate memory for the matrix (create a row vector)
-    concatenated_vector.allocate_memory(n_elements_new_concatenated_vector);
-   }
-  else
-   {
-    // Check that the already allocated memory is correct (n_values)
-    if (concatenated_vector.n_values() != n_elements_new_concatenated_vector)
-     {
-      // Error message
-      std::ostringstream error_message;
-      error_message << "The number of elements for the concatenated vector is\n"
-                    << "not as expected\n"
-                    << "dim(concatenated_vector): " << concatenated_vector.n_values()
-                    << "\nn_elements_new_concatenated_vector: " << n_elements_new_concatenated_vector
-                    << std::endl;
-      throw SciCellxxLibError(error_message.str(),
-                             SCICELLXX_CURRENT_FUNCTION,
-                             SCICELLXX_EXCEPTION_LOCATION);
-     }
-    
-   }
-  
-  // Get the matrix pointer of the concatenated matrix
-  arma::Mat<T> *arma_concatenated_vector_pt = concatenated_vector.arma_vector_pt();
-  
-  // Get the vector pointer of the input vector
-  arma::Mat<T> *arma_left_vector_pt = left_vector.arma_vector_pt();
-  arma::Mat<T> *arma_right_vector_pt = right_vector.arma_vector_pt();
-  
-  // Perform the concatenation of rows/horizontal_concatenation
-  (*arma_concatenated_vector_pt) = arma::join_rows((*arma_left_vector_pt), (*arma_right_vector_pt));
-  
- }
- 
- // ================================================================
- // Concatenate matrices vertically
- // ================================================================
- template<class T>
-  void concatenate_vectors_vertically(const CCVectorArmadillo<T> &upper_vector,
-                                      const CCVectorArmadillo<T> &lower_vector,
-                                      CCVectorArmadillo<T> &concatenated_vector)
- {
-  // Check that both vector have memory allocated
-  if (!upper_vector.is_own_memory_allocated() || !lower_vector.is_own_memory_allocated())
-   {
-    // Error message
-    std::ostringstream error_message;
-    error_message << "One of the vectors to operate with has no memory allocated\n"
-                  << "upper_vector.is_own_memory_allocated(): "
-                  << upper_vector.is_own_memory_allocated() << "\n"
-                  << "lower_vector.is_own_memory_allocated(): "
-                  << lower_vector.is_own_memory_allocated() << std::endl;
-    throw SciCellxxLibError(error_message.str(),
-                           SCICELLXX_CURRENT_FUNCTION,
-                           SCICELLXX_EXCEPTION_LOCATION);
-   }
-  
-  // Check whether both vectors are column vectors
-  if (!upper_vector.is_column_vector() || !lower_vector.is_column_vector())
-   {
-    // Error message
-    std::ostringstream error_message;
-    error_message << "One of the vectors is not a column vector, if you need\n"
-                  << "to concatenate two column vectors to create a matrix\n"
-                  << "then BETTER FIRST transform your vectors to matrices\n"
-                  << "then concatenate them\n"
-                  << "upper_vector.is_column_vector(): " << upper_vector.is_column_vector()
-                  << "\nlower_vector.is_column_vector(): " << lower_vector.is_column_vector()
-                  << std::endl;
-    throw SciCellxxLibError(error_message.str(),
-                           SCICELLXX_CURRENT_FUNCTION,
-                           SCICELLXX_EXCEPTION_LOCATION);
-   }
-  
-  // Check whether the concatenated vector is a column vector
-  if (!concatenated_vector.is_column_vector())
-   {
-    // Error message
-    std::ostringstream error_message;
-    error_message << "The resulting concatenated vector is a row vector\n"
-                  << "concatenated_vector.is_column_vector(): "
-                  << concatenated_vector.is_column_vector()
-                  << std::endl;
-    throw SciCellxxLibError(error_message.str(),
-                           SCICELLXX_CURRENT_FUNCTION,
-                           SCICELLXX_EXCEPTION_LOCATION);
-   }
-  
-  // Get the number of elements of each vector and compute the new
-  // number of elements for the new vector
-  const unsigned long n_elements_upper_vector = upper_vector.n_values();
-  const unsigned long n_elements_lower_vector = lower_vector.n_values();
-  const unsigned long n_elements_new_concatenated_vector =
-   n_elements_upper_vector + n_elements_lower_vector;
-  
-  // Check whether the concatenated vector has allocated memory,
-  // otherwise allocate it here!!!
-  if (!concatenated_vector.is_own_memory_allocated())
-   {
-    // Allocate memory for the matrix (create a column vector)
-    concatenated_vector.allocate_memory(n_elements_new_concatenated_vector);
-   }
-  else
-   {
-    // Check that the already allocated memory is correct (n_values)
-    if (concatenated_vector.n_values() != n_elements_new_concatenated_vector)
-     {
-      // Error message
-      std::ostringstream error_message;
-      error_message << "The number of elements for the concatenated vector is\n"
-                    << "not as expected\n"
-                    << "dim(concatenated_vector): " << concatenated_vector.n_values()
-                    << "\nn_elements_new_concatenated_vector: " << n_elements_new_concatenated_vector
-                    << std::endl;
-      throw SciCellxxLibError(error_message.str(),
-                             SCICELLXX_CURRENT_FUNCTION,
-                             SCICELLXX_EXCEPTION_LOCATION);
-     }
-    
-   }
-  
-  // Get the matrix pointer of the concatenated matrix
-  arma::Mat<T> *arma_concatenated_vector_pt = concatenated_vector.arma_vector_pt();
-  
-  // Get the vector pointer of the input vector
-  arma::Mat<T> *arma_upper_vector_pt = upper_vector.arma_vector_pt();
-  arma::Mat<T> *arma_lower_vector_pt = lower_vector.arma_vector_pt();
-  
-  // Perform the concatenation of rows/horizontal_concatenation
-  (*arma_concatenated_vector_pt) = arma::join_cols((*arma_upper_vector_pt), (*arma_lower_vector_pt));
   
  }
  
 }
-
