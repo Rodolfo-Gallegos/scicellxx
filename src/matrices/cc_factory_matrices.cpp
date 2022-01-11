@@ -1,4 +1,4 @@
-#include "cc_factory_matrices.tpl.h"
+#include "cc_factory_matrices.h"
 
 namespace scicellxx
 {

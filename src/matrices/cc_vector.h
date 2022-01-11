@@ -11,16 +11,6 @@
 namespace scicellxx
 {
  
- // forward CCMatrix class declaration, required for vector
- // overloading operation *
- class CCMatrix;
- 
- // extern method to perform vectors multiplication
- // Performs multiplication of matrices
-  extern void multiply_matrices(const CCMatrix &left_matrix,
-                                const CCMatrix &right_matrix,
-                                CCMatrix &solution_matrix);
- 
  // Concrete class to represent vectors
   class CCVector : public virtual ACVector
   {
@@ -59,11 +49,6 @@ namespace scicellxx
    
    // Substraction operator
    CCVector operator-(const CCVector &vector);
-   
-   // Multiplication operator (it returns a matrix with the
-   // corresponding size, if you require a dot product operation use
-   // the dot() method instead
-   CCMatrix operator*(const CCVector &vector);
    
    // Allows to create a vector with the given size but with no data 
    void allocate_memory(const unsigned long n);

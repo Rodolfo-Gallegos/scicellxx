@@ -19,16 +19,6 @@
 namespace scicellxx
 {
  
- // forward CCMatrixArmadillo class declaration, required for vector
- // overloading operation *
-  class CCMatrixArmadillo;
- 
- // extern method to perform vectors multiplication
- // Performs multiplication of matrices
-  extern void multiply_matrices(const CCMatrixArmadillo &left_matrix,
-                                const CCMatrixArmadillo &right_matrix,
-                                CCMatrixArmadillo &solution_matrix);
- 
  // Concrete class to represent vectors
   class CCVectorArmadillo : public virtual ACVector
   {
@@ -70,11 +60,6 @@ namespace scicellxx
    
    // Substraction operator
    CCVectorArmadillo operator-(const CCVectorArmadillo &vector);
-
-   // Multiplication operator (it returns a matrix with the
-   // corresponding size, if you require a dot product operation use
-   // the dot() method instead
-   CCMatrixArmadillo operator*(const CCVectorArmadillo &vector);
    
    // Allows to create a vector with the given size but with no data 
    void allocate_memory(const unsigned long n);

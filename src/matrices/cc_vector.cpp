@@ -118,40 +118,6 @@ namespace scicellxx
   substract_vector(vector, solution);
   return solution;
  }
-  
- // ===================================================================
- // Multiplication operator (it returns a matrix with the
- // corresponding size, if you require a dot product operation use the
- // dot() method instead
- // ===================================================================
- CCMatrix CCVector::operator*(const CCVector &vector)
- {  
-  // Create two matrices, one from each vector
-  CCMatrix left_matrix(*this);
-  CCMatrix right_matrix(vector);
-  // Store the size of both vectors to create a solution matrix with
-  // the corresponding sizes
-  // (First dimension for the left vector)
-  long unsigned n_values_left_vector = this->NValues;
-  if (!vector.is_column_vector())
-   {
-    n_values_left_vector = 1;
-   }
-  // (Second dimension for the right vector)
-  long unsigned n_values_right_vector = vector.n_values();
-  if (vector.is_column_vector())
-   {
-    n_values_right_vector = 1;
-   }
-  // Create a zero matrix where to store the result
-  CCMatrix solution(n_values_left_vector, n_values_right_vector);
-  // Perform the multiplication (this method is in charge of verifying
-  // whether the matrices fulfill the requirements for matrix
-  // multiplication)
-  multiply_matrices(left_matrix, right_matrix, solution);
-  // Return the solution matrix
-  return solution;
- }
  
  // ===================================================================
  // Performs dot product with the current vector
@@ -183,6 +149,10 @@ namespace scicellxx
     error_message << "The dimension of the vectors is not the same:\n"
                   << "dim(right_vector) = (" << n_values_right_vector << ")\n"
                   << "dim(this) = (" << n_values_this_vector << ")\n"
+                  << "If you require to multiply both vectors to generate a\n"
+                  << "matrix then use the corresponding matrices operations.\n"
+                  << "This requires to create a matrix from at least one of\n"
+                  << "the involved vectors."
                   << std::endl;
     throw SciCellxxLibError(error_message.str(),
                            SCICELLXX_CURRENT_FUNCTION,

@@ -32,7 +32,7 @@ namespace scicellxx
  // ===================================================================
  // Constructor where we pass the data for the vector of size n
  // ===================================================================
- CCVectorArmadillo::CCVectorArmadillo(T *vector_pt, const unsigned long n,
+ CCVectorArmadillo::CCVectorArmadillo(Real *vector_pt, const unsigned long n,
                                          bool is_column_vector)
   : ACVector(n, is_column_vector)
  {
@@ -46,7 +46,7 @@ namespace scicellxx
  CCVectorArmadillo::CCVectorArmadillo(CCVector &vector)
  {
   // Get the pointer to the vector data
-  T *vector_pt = vector.vector_pt();
+  Real *vector_pt = vector.vector_pt();
   // Get the dimension of the new vector
   unsigned long n = vector.n_values();
   
@@ -146,47 +146,10 @@ namespace scicellxx
   return solution;
  }
  
- // HERE HERE HERE Working on this
- 
- // ===================================================================
- // Multiplication operator (it returns a matrix with the
- // corresponding size, if you require a dot product operation use the
- // dot() method instead
- // ===================================================================
- CCMatrixArmadillo CCVectorArmadillo::operator*(const CCVectorArmadillo &vector)
- {
-  // Create two matrices, one from each vector
-  CCMatrixArmadillo left_matrix(*this);
-  CCMatrixArmadillo right_matrix(vector);
-  
-  // Store the size of both vectors to create a solution matrix with
-  // the corresponding sizes
-  // (First dimension for the left vector)
-  long unsigned n_values_left_vector = this->NValues;
-  if (!vector.is_column_vector())
-   {
-    n_values_left_vector = 1;
-   }
-  // (Second dimension for the right vector)
-  long unsigned n_values_right_vector = vector.n_values();
-  if (vector.is_column_vector())
-   {
-    n_values_right_vector = 1;
-   }
-  // Create a zero vector where to store the result
-  CCMatrixArmadillo solution(n_values_left_vector, n_values_right_vector);
-  // Perform the multiplication (this method is in charge of verifying
-  // whether the matrices fulfill the requirements for matrix
-  // multiplication)
-  multiply_matrices(left_matrix, right_matrix, solution);
-  // Return the solution vector
-  return solution;
- }
- 
  // ===================================================================
  // Performs dot product with the current vector
  // ===================================================================
- T CCVectorArmadillo::dot(const CCVectorArmadillo &right_vector)
+ Real CCVectorArmadillo::dot(const CCVectorArmadillo &right_vector)
  {
   // Check that THIS and the right vector have memory allocated
   if (!this->Is_own_memory_allocated || !right_vector.is_own_memory_allocated())
@@ -213,6 +176,10 @@ namespace scicellxx
     error_message << "The dimension of the vectors is not the same:\n"
                   << "dim(right_vector) = (" << n_values_right_vector << ")\n"
                   << "dim(this) = (" << n_values_this_vector << ")\n"
+                  << "If you require to multiply both vectors to generate a\n"
+                  << "matrix then use the corresponding matrices operations.\n"
+                  << "This requires to create a matrix from at least one of\n"
+                  << "the involved vectors."
                   << std::endl;
     throw SciCellxxLibError(error_message.str(),
                            SCICELLXX_CURRENT_FUNCTION,
@@ -244,7 +211,7 @@ namespace scicellxx
    }
   
   // Store the dot product of the vectors
-  const T dot_product = arma::dot(*Arma_vector_pt, *(right_vector.arma_vector_pt()));
+  const Real dot_product = arma::dot(*Arma_vector_pt, *(right_vector.arma_vector_pt()));
   // Return the dot product
   return dot_product;
   
@@ -254,7 +221,7 @@ namespace scicellxx
  // Transforms the input vector to an armadillo vector class type
  // (virtual such that each derived class has to implement it)
  // ===================================================================
- void CCVectorArmadillo::set_vector(const T *vector_pt,
+ void CCVectorArmadillo::set_vector(const Real *vector_pt,
                                        const unsigned long n,
                                        bool is_column_vector)
  {
@@ -661,7 +628,7 @@ namespace scicellxx
  // ===================================================================
  // Get the specified value from the vector (read-only)
  // ===================================================================
- const T CCVectorArmadillo::value(const unsigned long i) const
+ const Real CCVectorArmadillo::value(const unsigned long i) const
  {
 #ifdef SCICELLXX_RANGE_CHECK
   if (!(this->is_own_memory_allocated()))
@@ -694,7 +661,7 @@ namespace scicellxx
  // ===================================================================
  // Set values in the vector (write version)
  // ===================================================================
- T &CCVectorArmadillo::value(const unsigned long i)
+ Real &CCVectorArmadillo::value(const unsigned long i)
  {
 #ifdef SCICELLXX_RANGE_CHECK
   if (!(this->is_own_memory_allocated()))
@@ -793,7 +760,7 @@ namespace scicellxx
  // ===================================================================
  // Computes the norm-1 of the vector
  // ===================================================================
- T CCVectorArmadillo::norm_1()
+ Real CCVectorArmadillo::norm_1()
  {
   // Sum
   Real sum = 0.0;
@@ -822,7 +789,7 @@ namespace scicellxx
  // ===================================================================
  // Computes the norm-2 of the vector
  // ===================================================================
- T CCVectorArmadillo::norm_2()
+ Real CCVectorArmadillo::norm_2()
  {
   // Sum
   Real sum = 0.0;
@@ -851,7 +818,7 @@ namespace scicellxx
  // ===================================================================
  // Computes the infinite norm
  // ===================================================================
- T CCVectorArmadillo::norm_inf()
+ Real CCVectorArmadillo::norm_inf()
  {
   // Infinite norm
   Real norm;
@@ -879,7 +846,7 @@ namespace scicellxx
  // ===================================================================
  // Computes the maximum value
  // ===================================================================
- T CCVectorArmadillo::max()
+ Real CCVectorArmadillo::max()
  {
   // Maximum
   Real max;
@@ -907,7 +874,7 @@ namespace scicellxx
  // ===================================================================
  // Computes the minimum value
  // ===================================================================
- T CCVectorArmadillo::min()
+ Real CCVectorArmadillo::min()
  {
   // Minimum
   Real min;
@@ -1017,7 +984,7 @@ namespace scicellxx
  // ================================================================
  // Dot product of vectors
  // ================================================================
- T dot_vectors(const CCVectorArmadillo &left_vector, const CCVectorArmadillo &right_vector)
+ Real dot_vectors(const CCVectorArmadillo &left_vector, const CCVectorArmadillo &right_vector)
  {
   // Check that the left and the right vectors have memory allocated
   if (!left_vector.is_own_memory_allocated() || !right_vector.is_own_memory_allocated())
@@ -1075,7 +1042,7 @@ namespace scicellxx
    }
   
   // Store the dot product of the vectors
-  const T dot_product = arma::dot(*(left_vector.arma_vector_pt()), *(right_vector.arma_vector_pt()));
+  const Real dot_product = arma::dot(*(left_vector.arma_vector_pt()), *(right_vector.arma_vector_pt()));
   // Return the dot product
   return dot_product;
   
