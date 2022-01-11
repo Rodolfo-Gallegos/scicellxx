@@ -25,7 +25,7 @@ namespace scicellxx
   CCSolverArmadillo();
   
   /// Constructor where we specify the matrix A
-  CCSolverArmadillo(ACMatrix<Real> *const A_mat_pt);
+  CCSolverArmadillo(ACMatrix *const A_mat_pt);
   
   /// Empty destructor
   ~CCSolverArmadillo();
@@ -35,27 +35,27 @@ namespace scicellxx
   /// returned. We assume that the input/output matrices have the
   /// correct dimensions: A_mat.n_columns() x A_mat.n_rows() for B, and
   /// A_mat.n_rows() x A_mat.n_columns() for X.
-  void solve(ACMatrix<Real> *const A_mat_pt, const ACMatrix<Real> *const B_pt, ACMatrix<Real> *const X_pt);
+  void solve(ACMatrix *const A_mat_pt, const ACMatrix *const B_pt, ACMatrix *const X_pt);
    
   /// Solves a system of equations with input A_mat. We specify the
   /// right-hand side b and the x vector where the result is
   /// returned. We assume that the input/output vectors have the
   /// correct dimensions: A_mat.n_columns() for b, and A_mat.n_rows()
   /// for x.
-  void solve(ACMatrix<Real> *const A_mat_pt, const ACVector<Real> *const b_pt, ACVector<Real> *const x_pt);
+  void solve(ACMatrix *const A_mat_pt, const ACVector *const b_pt, ACVector *const x_pt);
    
   /// Solve a system of equations with the already stored matrix A. We
   /// specify the right-hand side B and the X matrices where the
   /// results are returned, B and X may be 1-column matrices
   /// (vectors). We assume that the input/output matrices have the
   /// correct dimensions.
-  void solve(const ACMatrix<Real> *const B_pt, ACMatrix<Real> *const X_pt);
+  void solve(const ACMatrix *const B_pt, ACMatrix *const X_pt);
    
   /// Solve a system of equations with the already stored matrix A. We
   /// specify the right-hand side b and the x vectors where the result
   /// is returned. We assume that the input/output vectors have the
   /// correct dimensions: A.ncolumns() for b, and A.nrows() for x.
-  void solve(const ACVector<Real> *const b_pt, ACVector<Real> *const x_pt);
+  void solve(const ACVector *const b_pt, ACVector *const x_pt);
    
  private:
  

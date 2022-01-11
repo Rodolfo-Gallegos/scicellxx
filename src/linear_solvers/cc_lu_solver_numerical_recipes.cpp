@@ -17,7 +17,7 @@ namespace scicellxx
  // ===================================================================
  /// Constructor where we specify the matrix A of size m X n
  // ===================================================================
- CCLUSolverNumericalRecipes::CCLUSolverNumericalRecipes(ACMatrix<Real> *const A_mat_pt)
+ CCLUSolverNumericalRecipes::CCLUSolverNumericalRecipes(ACMatrix *const A_mat_pt)
   : ACLinearSolver(A_mat_pt), Resolve_enabled(false) { }
  
  // ===================================================================
@@ -32,9 +32,9 @@ namespace scicellxx
  /// correct dimensions: A_mat.n_columns() x A_mat.n_rows() for B, and
  /// A_mat.n_rows() x A_mat.n_columns() for X.
  // ===================================================================
- void CCLUSolverNumericalRecipes::solve(ACMatrix<Real> *const A_mat_pt,
-                                        const ACMatrix<Real> *const B_pt,
-                                        ACMatrix<Real> *const X_pt)
+ void CCLUSolverNumericalRecipes::solve(ACMatrix *const A_mat_pt,
+                                        const ACMatrix *const B_pt,
+                                        ACMatrix *const X_pt)
  {
   // Set the matrix and its size
   set_matrix_A(A_mat_pt);
@@ -50,9 +50,9 @@ namespace scicellxx
  /// returned. We assume that the input/output vectors have the correct
  /// dimensions: A_mat.n_columns() for b, and A_mat.n_rows() for x.
  // ===================================================================
- void CCLUSolverNumericalRecipes::solve(ACMatrix<Real> *const A_mat_pt,
-                                        const ACVector<Real> *const b_pt,
-                                        ACVector<Real> *const x_pt)
+ void CCLUSolverNumericalRecipes::solve(ACMatrix *const A_mat_pt,
+                                        const ACVector *const b_pt,
+                                        ACVector *const x_pt)
  {
   // Set the matrix and its size
   set_matrix_A(A_mat_pt);
@@ -68,8 +68,8 @@ namespace scicellxx
  /// correct dimensions: A.n_columns() x A.n_rows() for B, and A.n_rows()
  /// x A.n_columns() for X.
  // ===================================================================
- void CCLUSolverNumericalRecipes::solve(const ACMatrix<Real> *const B_pt,
-                                        ACMatrix<Real> *const X_pt)
+ void CCLUSolverNumericalRecipes::solve(const ACMatrix *const B_pt,
+                                        ACMatrix *const X_pt)
  {
   // We can only call solve if the matrix A has been set
   if (this->Matrix_A_has_been_set)
@@ -159,8 +159,8 @@ namespace scicellxx
  /// is returned. We assume that the input/output vectors have the
  /// correct dimensions: A.n_columns() for b, and A.n_rows() for x.
  // ===================================================================
- void CCLUSolverNumericalRecipes::solve(const ACVector<Real> *const b_pt,
-                                        ACVector<Real> *const x_pt)
+ void CCLUSolverNumericalRecipes::solve(const ACVector *const b_pt,
+                                        ACVector *const x_pt)
  {
   // We can only call solve if the matrix A has been set
   if (this->Matrix_A_has_been_set)
@@ -246,8 +246,8 @@ namespace scicellxx
  /// the input/output vectors have the correct dimensions: A.n_columns()
  /// x A.n_rows() for B, and A.n_rows() x A.n_columns() for X.
  // ===================================================================
- void CCLUSolverNumericalRecipes::resolve(const ACMatrix<Real> *const B_pt,
-                                          ACMatrix<Real> *const X_pt)
+ void CCLUSolverNumericalRecipes::resolve(const ACMatrix *const B_pt,
+                                          ACMatrix *const X_pt)
  {
   // We can only do back-substitution if a matrix has been factorised
   if (Resolve_enabled)
@@ -315,8 +315,8 @@ namespace scicellxx
  /// vectors have the correct dimensions: A.n_columns() for b, and
  /// A.n_rows() for x.
  // ===================================================================
- void CCLUSolverNumericalRecipes::resolve(const ACVector<Real> *const b_pt,
-                                          ACVector<Real> *const x_pt)
+ void CCLUSolverNumericalRecipes::resolve(const ACVector *const b_pt,
+                                          ACVector *const x_pt)
  {
   // We can only do back-substitution if a matrix has been factorised
   if (Resolve_enabled)
@@ -377,7 +377,7 @@ namespace scicellxx
  /// Performs LU factorisation of the input matrix, the factorisation is
  /// internally stored such that it can be re-used when calling resolve
  // ===================================================================
- void CCLUSolverNumericalRecipes::factorise(ACMatrix<Real> *const A_mat_pt)
+ void CCLUSolverNumericalRecipes::factorise(ACMatrix *const A_mat_pt)
  {
   // Set the matrix and its size
   set_matrix_A(A_mat_pt);
@@ -447,8 +447,8 @@ namespace scicellxx
  // ===================================================================
  /// Performs the back substitution with the LU decomposed matrix
  // ===================================================================
- void CCLUSolverNumericalRecipes::back_substitution(const ACMatrix<Real> *const B_pt,
-                                                    ACMatrix<Real> *const X_output_pt)
+ void CCLUSolverNumericalRecipes::back_substitution(const ACMatrix *const B_pt,
+                                                    ACMatrix *const X_output_pt)
  {
   // Prepare the data to call lubksb()
   
@@ -486,8 +486,8 @@ namespace scicellxx
  // ===================================================================
  /// Performs the back substitution with the LU decomposed matrix
  // ===================================================================
- void CCLUSolverNumericalRecipes::back_substitution(const ACVector<Real> *const b_pt,
-                                                    ACVector<Real> *const x_output_pt)
+ void CCLUSolverNumericalRecipes::back_substitution(const ACVector *const b_pt,
+                                                    ACVector *const x_output_pt)
  {
   // Prepare the data to call lubksb()
   
