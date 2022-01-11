@@ -69,7 +69,7 @@ namespace scicellxx
   
   // Store the Jacobian for FY, used in the computation of the
   // backward Euler Jacobian $J = I - (h * Jacobian_{FY})$
-  ACMatrix<Real> *Jacobian_FY_pt = jacobian_strategy_odes_pt->jacobian_pt();
+  ACMatrix *Jacobian_FY_pt = jacobian_strategy_odes_pt->jacobian_pt();
   
   // Get the number of ODEs
   const unsigned n_dof = odes_pt->n_odes();

@@ -77,7 +77,7 @@ namespace scicellxx
   unsigned N_history_values;
   
   // Factory for matrices and vectors
-  CCFactoryMatrices<Real> Factory_matrices_and_vectors;
+  CCFactoryMatrices Factory_matrices_and_vectors;
   
  };
 

@@ -91,7 +91,7 @@ namespace scicellxx
   
   // Create a vector with the initial guess from the first row (0)
   // since the values have been shift
-  ACVector<Real> *u_initial_guess_pt = this->Factory_matrices_and_vectors.create_vector();
+  ACVector *u_initial_guess_pt = this->Factory_matrices_and_vectors.create_vector();
   u_initial_guess_pt->set_vector(u.history_values_row_pt(0), n_odes);
   
   // It is not required to shift the values to the right to provide

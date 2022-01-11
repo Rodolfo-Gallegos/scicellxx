@@ -64,7 +64,7 @@ namespace scicellxx
   const unsigned n_odes = odes.n_odes();
   
   // The residual vector
-  ACVector<Real> *local_error_vector_pt = this->Factory_matrices_and_vectors.create_vector();
+  ACVector *local_error_vector_pt = this->Factory_matrices_and_vectors.create_vector();
   local_error_vector_pt->allocate_memory(n_odes);
   
   // Initialise local error with 0

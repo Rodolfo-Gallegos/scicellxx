@@ -68,10 +68,10 @@ namespace scicellxx
   
   /// Set the initial guess. You should override this method if you
   /// require to copy the initial guess to some other data structures
-  virtual void set_initial_guess(ACVector<Real> *x_vec_pt);
+  virtual void set_initial_guess(ACVector *x_vec_pt);
   
   /// Gets access to the last stored solution vector
-  const ACVector<Real> *x_pt();
+  const ACVector *x_pt();
   
   /// Set default Newton's relative solver tolerance
   inline void set_default_newton_absolute_solver_tolerance()
@@ -128,7 +128,7 @@ namespace scicellxx
   /// Jacobian and the residual computed by the estalished strategy.
   /// The initial guess is set in the input/ouptut x vector where the
   /// final solution (if any) is returned
-  void solve(ACVector<Real> *x_vec_pt);
+  void solve(ACVector *x_vec_pt);
    
  protected:
    
@@ -207,7 +207,7 @@ namespace scicellxx
    
   /// A pointer to provide access to the current solution during
   /// newton steps
-  ACVector<Real> *X_pt;
+  ACVector *X_pt;
    
   /// Flag to indicate whether output messages are enabled or disabled
   /// (enabled by default)

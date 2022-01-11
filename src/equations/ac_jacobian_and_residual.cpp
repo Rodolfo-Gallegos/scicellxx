@@ -9,7 +9,7 @@ namespace scicellxx
  ACJacobianAndResidual::ACJacobianAndResidual()
  {
   // Create an instance of the factory for matrices and vectors
-  CCFactoryMatrices<Real> factory_matrices_and_vectors;
+  CCFactoryMatrices factory_matrices_and_vectors;
   
   /// Instantiate Jacobian and Residual based on the type of libraries
   /// we are using.
