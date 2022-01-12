@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
  output_test << matrix_pt[(n_rows * n_columns) - 1] << std::endl;
  
  // Create the matrix from the array data
- CCMatrix<Real> A(matrix_pt, n_rows, n_columns);
+ CCMatrix A(matrix_pt, n_rows, n_columns);
  std::cout << std::endl << "CCMatrix (A) created from array" << std::endl << std::endl;
  output_test << std::endl << "CCMatrix (A) created from array" << std::endl << std::endl;
  A.output();
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
  // Create a matrix form a CCVector
  // -------------------------------------------------------------  
  // The vector
- CCVector<Real> b(n_rows);
+ CCVector b(n_rows);
 
  // Allocate memory for the vector
  //b.allocate_memory();
@@ -92,14 +92,14 @@ int main(int argc, char *argv[])
  b.output(output_test);
  
  // Create a matrix form a vector
- CCMatrix<Real> B(b);
+ CCMatrix B(b);
  std::cout << std::endl << "CCMatrix (B) created from a CCVector (b)" << std::endl << std::endl;
  B.output();
  B.output(output_test);
  
  // Create a row vector
  bool is_column_vector = false;
- CCVector<Real> r(n_columns, is_column_vector);
+ CCVector r(n_columns, is_column_vector);
  // Allocate memory for the vector
  //r.allocate_memory();
  
@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
  r.print(output_test, output_indexes);
  
  // Create matrix from row CCVector
- CCMatrix<Real> R(r);
+ CCMatrix R(r);
  std::cout << std::endl << "CCMatrix (R) created from row CCVector (r)" << std::endl << std::endl;
  output_test << std::endl << "CCMatrix (R) created from row CCVector (r)" << std::endl << std::endl;
  R.output();
@@ -125,13 +125,13 @@ int main(int argc, char *argv[])
  // =============================================================
  std::cout << std::endl << "Copy CCMatrix constructor (from CCMatrix A create CCMatrix C)" << std::endl << std::endl;
  output_test << std::endl << "Copy CCMatrix constructor (from CCMatrix A create CCMatrix C)" << std::endl << std::endl;
- CCMatrix<Real> C = A;
+ CCMatrix C = A;
  C.output();
  C.output(output_test);
  
  std::cout << std::endl << "Copy CCMatrix constructor (from CCMatrix B create CCMatrix D)" << std::endl << std::endl;
  output_test << std::endl << "Copy CCMatrix constructor (from CCMatrix B create CCMatrix D)" << std::endl << std::endl;
- CCMatrix<Real> D = B;
+ CCMatrix D = B;
  D.output();
  D.output(output_test);
  
@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
  A.output();
  A.output(output_test); 
  // Transpose the vector
- CCVector<Real> b_t;
+ CCVector b_t;
  b.transpose(b_t);
  std::cout << std::endl<< "Transposed CCVector (b)" << std::endl << std::endl;
  output_test << std::endl<< "Transposed CCVector (b)" << std::endl << std::endl;
@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
  b_t.output(output_test);
  
  // Transpose the matrix but store the result in a new CCMatrix
- CCMatrix<Real> B_t;
+ CCMatrix B_t;
  B.transpose(B_t);
  std::cout << std::endl << "Transposed CCMatrix (B)" << std::endl << std::endl;
  output_test << std::endl << "Transposed CCMatrix (B)" << std::endl << std::endl;
@@ -174,14 +174,14 @@ int main(int argc, char *argv[])
  r.output(output_test, output_indexes);
  
  // Create matrix from column CCVector
- CCMatrix<Real> R_t(r);
+ CCMatrix R_t(r);
  std::cout << std::endl << "CCMatrix (R_t) created from transposed row CCVector (r)" << std::endl << std::endl;
  output_test << std::endl << "CCMatrix (R_t) created from transposed row CCVector (r)" << std::endl << std::endl;
  R_t.output();
  R_t.output(output_test);
  
  // Transpose and store in new matrix
- CCMatrix<Real> C_t; 
+ CCMatrix C_t; 
  C.transpose(C_t);
  std::cout << std::endl << "Transposed CCMatrix (C)" << std::endl << std::endl;
  output_test << std::endl << "Transposed CCMatrix (C)" << std::endl << std::endl;

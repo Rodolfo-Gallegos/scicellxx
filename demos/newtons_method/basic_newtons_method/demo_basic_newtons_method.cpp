@@ -19,6 +19,8 @@
 #include "../../../src/matrices/cc_matrix_armadillo.h"
 #endif // #ifdef SCICELLXX_USES_ARMADILLO
 
+#include "../../../src/matrices/cc_factory_matrices.h"
+
 #include "../../../src/equations/ac_jacobian_and_residual.h"
 #include "../../../src/problem/cc_newtons_method.h"
 
@@ -61,7 +63,7 @@ public:
   (*this->Residual_pt)(0) = -((x*x*x) - 27.0); // -F(x)
  }
  
- inline void set_x_pt(ACVector<Real> *x_pt) {X_pt = x_pt;}
+ inline void set_x_pt(ACVector *x_pt) {X_pt = x_pt;}
  
 private:
  
@@ -87,7 +89,7 @@ private:
  inline Real x_value(){return X_pt->value(0);}
  
  // A pointer to the vector where the values are stored
- ACVector<Real> *X_pt;
+ ACVector *X_pt;
  
 };
 
@@ -102,7 +104,7 @@ int main(int argc, char *argv[])
 {
  // Initialise chapcom
  initialise_scicellxx();
-   
+ 
  // Output for testing/validation
  std::ofstream output_test("output_test.dat", std::ios_base::out);
    
@@ -120,27 +122,39 @@ int main(int argc, char *argv[])
  // Initial guess
  const Real initial_guess = 5.0;
  
+ // Create an instance of the factory for matrices and vectors
+ CCFactoryMatrices factory_matrices_and_vectors;
+ 
+ ACVector *x_pt = factory_matrices_and_vectors.create_vector(n_dof);
+ 
+#if 0
  // Create a vector with the initial guess
 #ifdef SCICELLXX_USES_ARMADILLO
- CCVectorArmadillo<Real> x(n_dof);
+ CCVectorArmadillo x(n_dof);
 #else 
- CCVector<Real> x(n_dof);
+ CCVector x(n_dof);
 #endif
+
+#endif // #if 0
+ 
  //x.allocate_memory();
- x(0) = initial_guess;
+ (*x_pt)(0) = initial_guess;
  
  // Set initial dofs in Jacobian and residual strategy
- jacobian_and_residual.set_x_pt(&x);
+ jacobian_and_residual.set_x_pt(x_pt);
  
  // Change maximum allowed residual
  newtons_method.set_maximum_allowed_residual(100.0);
  
  // Solver using Newton's method
- newtons_method.solve(&x);
+ newtons_method.solve(x_pt);
  
  // Print result
- x.print();
- x.print(output_test);
+ x_pt->print();
+ x_pt->print(output_test);
+ 
+ // Free memory
+ delete x_pt;
  
  // Close the output for test
  output_test.close();

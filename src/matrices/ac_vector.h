@@ -203,7 +203,8 @@ namespace scicellxx
   // Assignment operator (we do not want this class to be
   // copiable. Check
   // http://www.learncpp.com/cpp-tutorial/912-shallow-vs-deep-copying/
-  ACVector& operator=(const ACVector &copy)
+  //ACVector& operator=(const ACVector &copy)
+  void operator=(const ACVector &copy)
    {
     BrokenCopy::broken_assign("ACVector");
    }

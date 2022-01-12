@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
  const unsigned n_cols = n_rows;
  
  // The matrix A
- CCMatrix<Real> A(n_rows, n_cols);
+ CCMatrix A(n_rows, n_cols);
  // Allocate memory
  //A.allocate_memory();
  
@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
  // ----------------------------------------------------------------
  {
   // The right hand side vector
-  CCVector<Real> b(n_rows);
+  CCVector b(n_rows);
   // Allocate memory
   //b.allocate_memory();
   
@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
   
   // The solution vector (with the corresponding number of rows, that
   // in this case refers to the number of cols as well)
-  CCVector<Real> sol(n_cols);
+  CCVector sol(n_cols);
   
   // Solve the system of equations
   linear_solver.solve(&A, &b, &sol);
@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
   output_test << std::endl;
   
   // Apply the solution and check the result
-  CCMatrix<Real> C = A*sol;
+  CCMatrix C = A*sol;
   std::cout << std::endl;
   std::cout << "Matrix C" << std::endl;
   std::cout << std::endl;
@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
  // ----------------------------------------------------------------
  {
   // The right hand side vectors
-  CCMatrix<Real> B(n_rows, n_rows);
+  CCMatrix B(n_rows, n_rows);
   // Allocate memory
   //B.allocate_memory();
   
@@ -161,7 +161,7 @@ int main(int argc, char *argv[])
   CCLUSolverNumericalRecipes linear_solver;
   
   // The solution vector
-  CCMatrix<Real> SOL(A.n_rows(), B.n_columns());
+  CCMatrix SOL(A.n_rows(), B.n_columns());
   
   // Solve the system of equations
   linear_solver.solve(&A, &B, &SOL);
@@ -179,7 +179,7 @@ int main(int argc, char *argv[])
   output_test << std::endl;
   
   // Apply the solution and check the result
-  CCMatrix<Real> C = A*SOL;
+  CCMatrix C = A*SOL;
   std::cout << std::endl;
   std::cout << "Matrix C" << std::endl;
   std::cout << std::endl;

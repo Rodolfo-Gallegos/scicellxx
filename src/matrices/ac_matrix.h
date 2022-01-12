@@ -183,7 +183,8 @@ namespace scicellxx
   // Assignment operator (we do not want this class to be
   // copiable. Check
   // http://www.learncpp.com/cpp-tutorial/912-shallow-vs-deep-copying/
-  ACMatrix& operator=(const ACMatrix &copy)
+  //ACMatrix& operator=(const ACMatrix &copy)
+  void operator=(const ACMatrix &copy)
    {
     BrokenCopy::broken_assign("ACMatrix");
    }
