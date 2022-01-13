@@ -7,9 +7,6 @@
 #include "../data_structures/ac_odes.h"
 #include "../data_structures/cc_data.h"
 
-// Include factory for matrices and vectors
-#include "../matrices/cc_factory_matrices.h"
-
 namespace scicellxx
 { 
  /// @class ACTimeStepper ac_time_stepper.h
@@ -75,9 +72,6 @@ namespace scicellxx
  
   /// The number of history values
   unsigned N_history_values;
-  
-  // Factory for matrices and vectors
-  CCFactoryMatrices Factory_matrices_and_vectors;
   
  };
 
