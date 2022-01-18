@@ -19,14 +19,6 @@ and copies the required files to start your project.
                   will need those information to build and execute
                   your project.
 
-2. Open the new ``CMakeLists.txt`` file in your newly created project
-   folder and ensure to include any additional modules that you may
-   need.
-
-   In this template we only include the ``general_lib`` and the
-   ``problem_lib`` modules. Check the :doc:`modules` document for the
-   full list of module and their details.
-
 Building and executing your project
 -----------------------------------
 
