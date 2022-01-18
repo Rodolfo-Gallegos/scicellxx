@@ -9,7 +9,8 @@ ELSE(${SCICELLXX_BUILD_DEMOS} STREQUAL TRUE)
 ENDIF(${SCICELLXX_BUILD_DEMOS} STREQUAL TRUE)
 
 # Indicate linking libraries
-SET(LIB_demo_lotka_volterra data_structures_lib matrices_lib time_stepper_lib equations_lib problem_lib linear_solvers_lib numerical_recipes_lib general_lib)
+#SET(LIB_demo_lotka_volterra numerical_recipes_lib general_lib data_structures_lib matrices_lib linear_solvers_lib time_stepper_lib equations_lib problem_lib)
+SET(LIB_demo_lotka_volterra ${LIB_src_lib} ${LIB_external_src_lib})
 
 # Check whether scicellxx is using Armadillo
 IF (SCICELLXX_USES_ARMADILLO)

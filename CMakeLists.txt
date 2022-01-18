@@ -224,8 +224,14 @@ MESSAGE( STATUS "CMAKE_VERBOSE_MAKEFILE:       " ${CMAKE_VERBOSE_MAKEFILE} )
 
 MESSAGE( STATUS "-----------------------------------------------------------------------" )
 
+# The VARIABLE holding the names of the external libraries
+SET(LIB_external_src_lib 0)
+
 # Add external source files sub-directories
 ADD_SUBDIRECTORY(external_src)
+
+# The VARIABLE holding the names of the src libraries
+SET(LIB_src_lib 0)
 
 # Add sub-directories with source files
 ADD_SUBDIRECTORY(src)
