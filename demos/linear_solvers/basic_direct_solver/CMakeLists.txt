@@ -9,7 +9,8 @@ ELSE(${SCICELLXX_BUILD_DEMOS} STREQUAL TRUE)
 ENDIF(${SCICELLXX_BUILD_DEMOS} STREQUAL TRUE)
 
 # Indicate linking libraries
-SET(LIB_demo_linear_solver general_lib matrices_lib linear_solvers_lib numerical_recipes_lib)
+SET(LIB_demo_linear_solver ${LIB_scicellxx_lib})
+
 # ... and link againts them  
 TARGET_LINK_LIBRARIES(demo_linear_solver ${LIB_demo_linear_solver})
 

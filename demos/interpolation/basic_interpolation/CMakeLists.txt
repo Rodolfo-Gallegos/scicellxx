@@ -9,7 +9,8 @@ ELSE(${SCICELLXX_BUILD_DEMOS} STREQUAL TRUE)
 ENDIF(${SCICELLXX_BUILD_DEMOS} STREQUAL TRUE)
 
 # Indicate linking libraries
-SET(LIB_demo_basic_interpolation general_lib problem_lib)
+SET(LIB_demo_basic_interpolation ${LIB_scicellxx_lib})
+
 # ... and link againts them  
 TARGET_LINK_LIBRARIES(demo_basic_interpolation ${LIB_demo_basic_interpolation})
 

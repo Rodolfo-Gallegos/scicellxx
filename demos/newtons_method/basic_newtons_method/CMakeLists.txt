@@ -9,12 +9,7 @@ ELSE(${SCICELLXX_BUILD_DEMOS} STREQUAL TRUE)
 ENDIF(${SCICELLXX_BUILD_DEMOS} STREQUAL TRUE)
 
 # Indicate linking libraries
-SET(LIB_demo_basic_newtons_method data_structures_lib matrices_lib equations_lib problem_lib linear_solvers_lib general_lib numerical_recipes_lib)
-
-# Check whether scicellxx is using Armadillo
-IF (SCICELLXX_USES_ARMADILLO)
- LIST(APPEND LIB_demo_basic_newtons_method ${ARMADILLO_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-ENDIF (SCICELLXX_USES_ARMADILLO)
+SET(LIB_demo_basic_newtons_method ${LIB_scicellxx_lib})
 
 # ... and link againts them  
 TARGET_LINK_LIBRARIES(demo_basic_newtons_method ${LIB_demo_basic_newtons_method})

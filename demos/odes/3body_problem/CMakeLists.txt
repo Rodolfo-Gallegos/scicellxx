@@ -9,20 +9,7 @@ ELSE(${SCICELLXX_BUILD_DEMOS} STREQUAL TRUE)
 ENDIF(${SCICELLXX_BUILD_DEMOS} STREQUAL TRUE)
 
 # Indicate linking libraries
-#SET(LIB_demo_basic_3_body numerical_recipes_lib argparse_lib general_lib data_structures_lib matrices_lib linear_solvers_lib time_stepper_lib equations_lib vtk_lib problem_lib)
-SET(LIB_demo_basic_3_body ${LIB_src_lib} ${LIB_external_src_lib})
-
-# Check whether scicellxx is using Armadillo
-IF (SCICELLXX_USES_ARMADILLO)
- LIST(APPEND LIB_demo_basic_3_body ${ARMADILLO_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-ENDIF (SCICELLXX_USES_ARMADILLO)
-
-# Check whether scicellxx is using VTK (either way this demo is not
-# going to work without VTK support, so it should be selected in the
-# ./configs/default file)
-IF (SCICELLXX_USES_VTK)
-  LIST(APPEND LIB_demo_basic_3_body ${VTK_LIBRARIES})
-ENDIF (SCICELLXX_USES_VTK)
+SET(LIB_demo_basic_3_body ${LIB_scicellxx_lib})
 
 # ... and link againts them  
 TARGET_LINK_LIBRARIES(demo_basic_3_body ${LIB_demo_basic_3_body})

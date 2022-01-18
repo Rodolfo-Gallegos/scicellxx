@@ -9,7 +9,7 @@ ELSE(${SCICELLXX_BUILD_DEMOS} STREQUAL TRUE)
 ENDIF(${SCICELLXX_BUILD_DEMOS} STREQUAL TRUE)
 
 # Indicate linking libraries
-SET(LIB_demo_basic_ode_stability_analysis ${LIB_src_lib} ${LIB_external_src_lib})
+SET(LIB_demo_basic_ode_stability_analysis ${LIB_scicellxx_lib})
 
 # Check whether scicellxx is using Armadillo
 IF (SCICELLXX_USES_ARMADILLO)

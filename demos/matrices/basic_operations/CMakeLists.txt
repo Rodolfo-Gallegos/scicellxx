@@ -12,8 +12,8 @@ ELSE(${SCICELLXX_BUILD_DEMOS} STREQUAL TRUE)
 ENDIF(${SCICELLXX_BUILD_DEMOS} STREQUAL TRUE)
 
 # Indicate linking libraries
-SET(LIB_demo_matrix_basic_operations general_lib matrices_lib)
-SET(LIB_demo_copy_matrices general_lib matrices_lib)
+SET(LIB_demo_matrix_basic_operations ${LIB_scicellxx_lib})
+SET(LIB_demo_copy_matrices ${LIB_scicellxx_lib})
 # ... and link againts them  
 TARGET_LINK_LIBRARIES(demo_matrix_basic_operations ${LIB_demo_matrix_basic_operations})
 TARGET_LINK_LIBRARIES(demo_copy_matrices ${LIB_demo_copy_matrices})
