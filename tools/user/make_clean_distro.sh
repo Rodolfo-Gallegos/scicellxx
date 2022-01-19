@@ -27,18 +27,46 @@ echo "============================================================= "
 echo ""
 
 #====================================================================
-# Remove previous distros packages
-#====================================================================
-rm -i $lib_name.tar.gz
-
-#====================================================================
 # Get working folder
 #====================================================================
 working_folder=$(pwd)
 
 #====================================================================
+# Clean for binaries
+#====================================================================
+echo ""
+echo "============================================================= "
+echo ""
+echo "Cleaning distro for binaries"
+echo ""
+echo "============================================================= "
+echo ""
+cd $working_folder/$build_dir
+make clean
+cd $working_folder
+
+#====================================================================
+# Remove previous distros packages
+#====================================================================
+echo ""
+echo "============================================================= "
+echo ""
+echo "Removing any previous old compressed versions"
+echo ""
+echo "============================================================= "
+echo ""
+rm -i $lib_name.tar.gz
+
+#====================================================================
 # Make a temporal directory
 #====================================================================
+echo ""
+echo "============================================================= "
+echo ""
+echo "Create a temporary folder"
+echo ""
+echo "============================================================= "
+echo ""
 tmp_dir=$(mktemp -d -t scicellxx-XXXXXXXXXX)
 echo ""
 echo $tmp_dir
@@ -109,22 +137,22 @@ echo ""
 #====================================================================
 echo "============================================================= "
 echo "I am going to delete"
-echo "[dat,png,pdf,jpeg,tar.gz,tar.gx,fig,bin,rar,vtu,ubx,gp,m] files,"
+echo "[dat,png,pdf,jpg,jpeg,tar.gz,tar.xz,bin,vtu,ubx,eps,fig,gp,m,rar] files,"
 echo "ignoring those in [demos, external_src, tools] folders"
 echo "============================================================= "
 echo ""
-if ! $tmp_dir/$folder_name/tools/clean_distro.py --root_folder $tmp_dir/$folder_name --ext dat png pdf jpg jpeg tar.gz tar.xz fig bin rar vtu ubx gp m eps --ignore_in_path demos external_src tools ; then
+if ! $tmp_dir/$folder_name/tools/development/clean_distro.py --root_folder $tmp_dir/$folder_name --ext dat png pdf jpg jpeg tar.gz tar.xz fig bin rar vtu ubx gp m eps --ignore_in_path demos docs external_src private tools ; then
     echo ""
     echo ""
     echo ""
     echo "========================================================= "
-    echo "[FAIL] Delete [dat,png,jpeg,tar.gz,bin,vtu,fig,gp,m,rar] files"
+    echo "[FAIL] Delete [dat,png,pdf,jpg,jpeg,tar.gz,tar.xz,bin,vtu,ubx,eps,fig,gp,m,rar] files"
     echo "========================================================= "
     echo ""
     exit 1
 fi
 echo ""
-echo "[DONE] Delete [dat,png,jpeg,tar.gz,bin,vtu,fig,gp,m,rar] files"
+echo "[DONE] Delete [dat,png,pdf,jpg,jpeg,tar.gz,tar.xz,bin,vtu,ubx,eps,fig,gp,m,rar] files"
 echo ""
 
 #====================================================================

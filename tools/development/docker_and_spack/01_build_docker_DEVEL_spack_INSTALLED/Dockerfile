@@ -6,7 +6,7 @@ FROM spack/ubuntu-bionic:0.16 as builder
 COPY spack.yaml /opt/spack-environment/spack.yaml
 
 # Install the software, remove unnecessary deps
-RUN cd /opt/spack-environment && spack env activate . && spack install --fail-fast
+RUN cd /opt/spack-environment && spack env activate . && spack install --jobs 4 --fail-fast
 
 # Modifications to the environment that are necessary to run
 RUN cd /opt/spack-environment && \

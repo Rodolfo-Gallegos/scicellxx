@@ -6,9 +6,8 @@
 #include "../../../src/general/utilities.h"
 #include "../../../src/general/initialise.h"
 
-// The class to solve linear systems using numerical recipes
-// implementation
-#include "../../../src/linear_solvers/cc_lu_solver_numerical_recipes.h"
+// Factory for linear solver
+#include "../../../src/linear_solvers/cc_factory_linear_solver.h"
 
 // The class for matrices and vectors
 #include "../../../src/matrices/cc_vector.h"
@@ -29,7 +28,7 @@ int main(int argc, char *argv[])
  const unsigned n_cols = n_rows;
  
  // The matrix A
- CCMatrix<Real> A(n_rows, n_cols);
+ CCMatrix A(n_rows, n_cols);
  // Allocate memory
  //A.allocate_memory();
  
@@ -43,7 +42,7 @@ int main(int argc, char *argv[])
  // ----------------------------------------------------------------
  {
   // The right hand side vector
-  CCVector<Real> b(n_rows);
+  CCVector b(n_rows);
   // Allocate memory
   //b.allocate_memory();
   
@@ -74,15 +73,19 @@ int main(int argc, char *argv[])
   std::cout << std::endl;
   output_test << std::endl;
   
-  // Create a linear solver
-  CCLUSolverNumericalRecipes linear_solver;
+  // Create a factory for the linear solver
+  CCFactoryLinearSolver factory_linear_solver;
+  
+  // Create the numerical recipes linear solver
+  ACLinearSolver *linear_solver_pt =
+   factory_linear_solver.create_linear_solver("numerical_recipes");
   
   // The solution vector (with the corresponding number of rows, that
   // in this case refers to the number of cols as well)
-  CCVector<Real> sol(n_cols);
+  CCVector sol(n_cols);
   
   // Solve the system of equations
-  linear_solver.solve(&A, &b, &sol);
+  linear_solver_pt->solve(&A, &b, &sol);
   
   // Print the solution
   std::cout << std::endl;
@@ -97,7 +100,7 @@ int main(int argc, char *argv[])
   output_test << std::endl;
   
   // Apply the solution and check the result
-  CCMatrix<Real> C = A*sol;
+  CCMatrix C = A*sol;
   std::cout << std::endl;
   std::cout << "Matrix C" << std::endl;
   std::cout << std::endl;
@@ -115,7 +118,7 @@ int main(int argc, char *argv[])
  // ----------------------------------------------------------------
  {
   // The right hand side vectors
-  CCMatrix<Real> B(n_rows, n_rows);
+  CCMatrix B(n_rows, n_rows);
   // Allocate memory
   //B.allocate_memory();
   
@@ -157,14 +160,18 @@ int main(int argc, char *argv[])
   std::cout << std::endl;
   output_test << std::endl;
   
-  // Create a linear solver
-  CCLUSolverNumericalRecipes linear_solver;
+  // Create a factory for the linear solver
+  CCFactoryLinearSolver factory_linear_solver;
+  
+  // Create the numerical recipes linear solver
+  ACLinearSolver *linear_solver_pt =
+   factory_linear_solver.create_linear_solver("numerical_recipes");
   
   // The solution vector
-  CCMatrix<Real> SOL(A.n_rows(), B.n_columns());
+  CCMatrix SOL(A.n_rows(), B.n_columns());
   
   // Solve the system of equations
-  linear_solver.solve(&A, &B, &SOL);
+  linear_solver_pt->solve(&A, &B, &SOL);
   
   // Print the solution
   std::cout << std::endl;
@@ -179,7 +186,7 @@ int main(int argc, char *argv[])
   output_test << std::endl;
   
   // Apply the solution and check the result
-  CCMatrix<Real> C = A*SOL;
+  CCMatrix C = A*SOL;
   std::cout << std::endl;
   std::cout << "Matrix C" << std::endl;
   std::cout << std::endl;

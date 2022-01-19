@@ -22,14 +22,15 @@ Workflow
 
    .. code-block:: shell
 
-                   ./make_clean_distro.sh
+                   ./tools/user/make_clean_distro.sh
 
-   The full folder containing SciCell++ will be copied into a
-   temporary location, all the control version information generated
-   by Git will be removed. You will be prompted to remove all files
-   with the extension ``.dat, .png, .tar.gz, .fig, .bin, .rar, .vtu,
-   .ubx, .gp, .m`` (only those in the ``demos`` folder will be
-   keep). The process of creating a compressed file will start.
+
+   This script will perform a set of instructions to generate a
+   ``.tar.gz`` file package. You will be prompted to whether remove or
+   not all files with extensions ``.dat, .png, .jpeg, .jpg, .tar.gz,
+   .fig, .bin, .rar, .vtu, .ubx, .gp, .m`` (only those in the
+   ``demos`` and ``private`` folders will be ignored for
+   deletion). The process of creating a compressed file will start.
 
 4. Once finished a file named ``SciCell++.tar.gz`` will be created at
    the main folder of SciCell++.

@@ -27,13 +27,13 @@ namespace scicellxx
   ACLinearSolver();
   
   /// Constructor where we specify the matrix A
-  ACLinearSolver(ACMatrix<Real> * const matrix_pt);
+  ACLinearSolver(ACMatrix * const matrix_pt);
   
   /// Empty destructor
   virtual ~ACLinearSolver();
   
   /// Set the matrix A
-  void set_matrix_A(ACMatrix<Real> *const matrix_pt);
+  void set_matrix_A(ACMatrix *const matrix_pt);
   
   /// Clean up for any dynamically stored data
   void clean_up();
@@ -43,28 +43,28 @@ namespace scicellxx
   /// the results are returned. We assume that the input/output
   /// matrices have the correct dimensions: A_mat.ncolumns() x
   /// A_mat.nrows() for B, and A_mat.nrows() x A_mat.ncolumns() for X.
-  virtual void solve(ACMatrix<Real> *const A_mat_pt, const ACMatrix<Real> *const B_pt, ACMatrix<Real> *const X_pt) = 0;
+  virtual void solve(ACMatrix *const A_mat_pt, const ACMatrix *const B_pt, ACMatrix *const X_pt) = 0;
   
   /// Virtual function to solve a system of equations with input
   /// A_mat. We specify the right-hand side b and the x vector where
   /// the result is returned. We assume that the input/output vectors
   /// have the correct dimensions: A_mat.ncolumns() for b, and
   /// A_mat.nrows() for x.
-  virtual void solve(ACMatrix<Real> *const A_mat_pt, const ACVector<Real> *const b_pt, ACVector<Real> *const x_pt) = 0;
+  virtual void solve(ACMatrix *const A_mat_pt, const ACVector *const b_pt, ACVector *const x_pt) = 0;
   
   /// Virtual function to solve a system of equations with the already
   /// stored matrix A. We specify the right-hand side B and the X
   /// matrices where the results are returned. We assume that the
   /// input/output matrices have the correct dimensions: A.ncolumns() x
   /// A.nrows() for B, and A.nrows() x A.ncolumns() for X.
-  virtual void solve(const ACMatrix<Real> *const B_pt, ACMatrix<Real> *const X_pt) = 0;
+  virtual void solve(const ACMatrix *const B_pt, ACMatrix *const X_pt) = 0;
   
   /// Virtual function to solve a system of equations with the already
   /// stored matrix A. We specify the right-hand side b and the x
   /// vectors where the result is returned. We assume that the
   /// input/output vectors have the correct dimensions: A.ncolumns()
   /// for b, and A.nrows() for x.
-  virtual void solve(const ACVector<Real> *const b_pt, ACVector<Real> *const x_pt) = 0;
+  virtual void solve(const ACVector *const b_pt, ACVector *const x_pt) = 0;
   
   /// Virtual function to re-solve a system of equations with the
   /// already stored matrix A (re-use of the LU decomposition or call
@@ -74,7 +74,7 @@ namespace scicellxx
   /// assume that the input/output vectors have the correct dimensions:
   /// A.ncolumns() x A.nrows() for B, and A.nrows() x A.ncolumns() for
   /// X.
-  virtual void resolve(const ACMatrix<Real> *const B_pt, ACMatrix<Real> *const X_pt)
+  virtual void resolve(const ACMatrix *const B_pt, ACMatrix *const X_pt)
   {
    /// Error message
    std::ostringstream error_message;
@@ -92,7 +92,7 @@ namespace scicellxx
   /// side b and the x vector where the result is returned. We assume
   /// that the input/output vectors have the correct dimensions:
   /// A.ncolumns() for b, and A.nrows() for x.
-  virtual void resolve(const ACVector<Real> *const b_pt, ACVector<Real> *const x_pt)
+  virtual void resolve(const ACVector *const b_pt, ACVector *const x_pt)
   {
    // Error message
    std::ostringstream error_message;
@@ -106,7 +106,7 @@ namespace scicellxx
  protected:
   
   /// The matrix A
-  ACMatrix<Real> *A_pt;
+  ACMatrix *A_pt;
   
   /// Flag to indicate whether the matrix A has been set
   bool Matrix_A_has_been_set;

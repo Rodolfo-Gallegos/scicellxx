@@ -63,9 +63,12 @@ namespace scicellxx
   // Get the number of odes
   const unsigned n_odes = odes.n_odes();
   
+  // Create an instance of the factory for matrices and vectors
+  CCFactoryMatrices factory_matrices_and_vectors;
+  
   // The residual vector
-  ACVector<Real> *local_error_vector_pt = this->Factory_matrices_and_vectors.create_vector();
-  local_error_vector_pt->allocate_memory(n_odes);
+  ACVector *local_error_vector_pt = factory_matrices_and_vectors.create_vector(n_odes);
+  //local_error_vector_pt->allocate_memory(n_odes);
   
   // Initialise local error with 0
   Real local_error = 0;

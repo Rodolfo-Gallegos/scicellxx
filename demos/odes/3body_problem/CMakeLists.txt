@@ -9,19 +9,7 @@ ELSE(${SCICELLXX_BUILD_DEMOS} STREQUAL TRUE)
 ENDIF(${SCICELLXX_BUILD_DEMOS} STREQUAL TRUE)
 
 # Indicate linking libraries
-SET(LIB_demo_basic_3_body data_structures_lib matrices_lib time_stepper_lib equations_lib vtk_lib problem_lib linear_solvers_lib numerical_recipes_lib argparse_lib general_lib)
-
-# Check whether scicellxx is using Armadillo
-IF (SCICELLXX_USES_ARMADILLO)
- LIST(APPEND LIB_demo_basic_3_body ${ARMADILLO_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-ENDIF (SCICELLXX_USES_ARMADILLO)
-
-# Check whether scicellxx is using VTK (either way this demo is not
-# going to work without VTK support, so it should be selected in the
-# ./configs/default file)
-IF (SCICELLXX_USES_VTK)
-  LIST(APPEND LIB_demo_basic_3_body ${VTK_LIBRARIES})
-ENDIF (SCICELLXX_USES_VTK)
+SET(LIB_demo_basic_3_body ${LIB_scicellxx_lib})
 
 # ... and link againts them  
 TARGET_LINK_LIBRARIES(demo_basic_3_body ${LIB_demo_basic_3_body})
@@ -51,7 +39,7 @@ ELSE (SCICELLXX_USES_DOUBLE_PRECISION)
 ENDIF (SCICELLXX_USES_DOUBLE_PRECISION)
 
 ADD_TEST(NAME TEST_demo_basic_3_body_check_output
-         COMMAND ${PROJECT_SOURCE_DIR}/tools/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_basic_3_body} ${CMAKE_CURRENT_BINARY_DIR}/output_test.dat)
+         COMMAND ${PROJECT_SOURCE_DIR}/tools/development/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_basic_3_body} ${CMAKE_CURRENT_BINARY_DIR}/output_test.dat)
 
 # ===========================================
 # Test execution order

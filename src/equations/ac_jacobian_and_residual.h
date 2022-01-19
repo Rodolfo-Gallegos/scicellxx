@@ -38,22 +38,22 @@ namespace scicellxx
   virtual void compute_jacobian() = 0;
   
   /// Get access to the Jacobian
-  inline ACMatrix<Real> *jacobian_pt() {return Jacobian_pt;}
+  inline ACMatrix *jacobian_pt() {return Jacobian_pt;}
   
   /// In charge of computing the residual vector based on the
   /// particular strategy implemented in the derived class
   virtual void compute_residual() = 0;
    
   /// Get access to the residual
-  inline ACVector<Real> *residual_pt() {return Residual_pt;}
+  inline ACVector *residual_pt() {return Residual_pt;}
    
  protected:
   
   /// Storage for the Jacobian matrix
-  ACMatrix<Real> *Jacobian_pt;
+  ACMatrix *Jacobian_pt;
   
   /// Storage for the residual vector
-  ACVector<Real> *Residual_pt;
+  ACVector *Residual_pt;
   
  private:
    

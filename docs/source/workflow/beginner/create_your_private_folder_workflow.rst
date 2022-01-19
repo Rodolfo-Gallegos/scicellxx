@@ -7,9 +7,9 @@ demos, and any non-released features you are developing for
 SciCell++.
 
 .. note:: This workflow should be executed only once by every new
-          SciCell++ user, however, if you are collaborating with other
-          SciCell++ users then you may need a private folder for your
-          collaborative work.
+          SciCell++ user. However, if you are collaborating with other
+          SciCell++ users or you require an additional private folder
+          then you may need to execute this workflow again.
 
 .. _folder-structure_create_your_private_folder_workflow.rst:
    
@@ -81,27 +81,15 @@ organization lets create your own private folder.
 Workflow
 --------
 
-1. Open a terminal and go to the ``private`` folder of SciCell++ and
-   typet the following (make sure to substitute ``john_cool`` by
-   your name):
+1. Open a terminal and on the main folder of SciCell++ execute the
+   following script:
 
    .. code-block:: shell
 
-      cd private
-      mkdir john_cool
-      cd john_cool
+      ./tools/user/make_new_user
 
-2. Update the ``CMakeLists.txt`` file in the private folder by adding
-   your folder name at the end of the file as follow (make sure to
-   substitute ``john_cool`` by your name):
+   The script will prompt you for a user name, this should not include
+   whitespaces or any special character.
 
-   .. code-block:: shell
-
-      ADD_SUBDIRECTORY(john_cool)
-
-3. Run the ``autogen.sh`` script at the main folder of SciCell++ and
-   make sure no problems are found.
-
-   If you spot any problem then double-check that you created your
-   folder into the ``private`` folder of SciCell++ and that you
-   modified the correct ``CMakeLists.txt`` file.
+2. Run the ``autogen.sh`` script at the main folder of SciCell++ and
+   check for any errors.

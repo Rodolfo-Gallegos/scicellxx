@@ -117,7 +117,7 @@ namespace scicellxx
  /// Set the initial guess. You should override this method if you
  /// require to copy the initial guess to some other data structures
  // ===================================================================
- void CCNewtonsMethod::set_initial_guess(ACVector<Real> *x_vec_pt)
+ void CCNewtonsMethod::set_initial_guess(ACVector *x_vec_pt)
  {
   // Create a pointer to the initial guess vector
   X_pt = x_vec_pt;
@@ -129,7 +129,7 @@ namespace scicellxx
  // ===================================================================
  /// Gets access to the last stored solution vector
  // ===================================================================
- const ACVector<Real> *CCNewtonsMethod::x_pt()
+ const ACVector *CCNewtonsMethod::x_pt()
  {
   if (X_pt != NULL)
    {
@@ -179,7 +179,7 @@ namespace scicellxx
   // Cleans up
   clean_up();
   
-  // Create a factor for the linear solver
+  // Create a factory for the linear solver
   CCFactoryLinearSolver factory_linear_solver;
   
   // Create the linear solver
@@ -249,7 +249,7 @@ namespace scicellxx
    }
   
   // Create an instance of a factory for matrices and vectors
-  CCFactoryMatrices<Real> factory_matrices_and_vectors;
+  CCFactoryMatrices factory_matrices_and_vectors;
   
   // ----------------------------------------------------------------
   // Initial residual convergence check
@@ -260,7 +260,7 @@ namespace scicellxx
   Jacobian_and_residual_strategy_pt->compute_residual();
   
   // The residual vector
-  ACVector<Real> *residual_pt = Jacobian_and_residual_strategy_pt->residual_pt();
+  ACVector *residual_pt = Jacobian_and_residual_strategy_pt->residual_pt();
   
   // Compute the norm of the residual
   const Real initial_residual_norm = residual_pt->norm_inf();
@@ -310,7 +310,7 @@ namespace scicellxx
   
   // Create the vector to store the solution of the system of
   // equations during Newton's steps
-  ACVector<Real> *dx_pt = factory_matrices_and_vectors.create_vector();
+  ACVector *dx_pt = factory_matrices_and_vectors.create_vector();
   dx_pt->allocate_memory(n_dof);
   
   // Time Newton's method
@@ -362,7 +362,7 @@ namespace scicellxx
      }
     
     // Get a pointer to the Jacobian
-    ACMatrix<Real> *Jacobian_pt = Jacobian_and_residual_strategy_pt->jacobian_pt();
+    ACMatrix *Jacobian_pt = Jacobian_and_residual_strategy_pt->jacobian_pt();
     
     // ---------------------------------------------------------------------
     // Linear solver
@@ -472,7 +472,7 @@ namespace scicellxx
  /// guess is set in the input/output x vector where the final solution
  /// (if any) is returned
  // ===================================================================
- void CCNewtonsMethod::solve(ACVector<Real> *x_vec_pt)
+ void CCNewtonsMethod::solve(ACVector *x_vec_pt)
  {
   // Set the initial guess and perform Newton's method
   set_initial_guess(x_vec_pt);

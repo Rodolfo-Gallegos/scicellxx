@@ -3,6 +3,9 @@
 
 #include "ac_predictor_corrector_time_stepper.h"
 
+// Include factory for matrices and vectors
+#include "../matrices/cc_factory_matrices.h"
+
 namespace scicellxx
 {
 

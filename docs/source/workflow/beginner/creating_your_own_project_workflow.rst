@@ -1,80 +1,69 @@
 Creating your own project
 =========================
 
-The easiest way to start a new project is to use a demo as a
-template. For this example we are going to copy the demo driver
-``demo_basic_interpolation.cpp`` from the folder
-``demos/interpolation/basic_interpolation``.
+The easiest way to start a new project is to use a simple demo as a
+template. This workflow creates a new project into your private folder
+and copies the required files to start your project.
 
-1. Open a terminal and go to your private folder.
-
-2. Type the following to copy the demo driver into your private folder:
+1. Open a terminal and on the main SciCell++ folder execute the
+   following script:
 
    .. code-block:: shell
 
-      cp ../../demos/interpolation/basic_interpolation/demo_basic_interpolation.cpp demo_john.cpp
+      ./tools/user/make_new_project.sh
 
-3. Copy the ``CMakeLists.txt.private_template`` file from the
-``tools`` folder into your private directory and change its name to
-``CMakeLists.txt``
+   You will be prompted for your user name and your new project
+   name. Make sure not using white spaces or special characters.
 
-   .. code-block:: shell
+   .. important:: Take note of the script summary creation since you
+                  will need those information to build and execute
+                  your project.
 
-      cp ../../tools/CMakeLists.txt.private_template CMakeLists.txt
+Building and executing your project
+-----------------------------------
 
-4. Change the content of the ``CMakeLists.txt`` file as follow:
+Open a terminal and follow these instructions.
 
-  * Change all the instances of the tag ``SRC_demo_john`` for your own
-    tag to identify your source code. For example: ``SRC_project_sophy``.
+Building your project
+^^^^^^^^^^^^^^^^^^^^^
 
-  * Change all the instances of ``demo_john.cpp`` for the name of your
-    source code file. For example: ``project_sophy.cpp``.
-
-  * Change all the instances of ``demo_john``, this will be the name
-    of your executable and the name you need to type at the terminal
-    to compile your project. For example:``project_sophy``.
-    
-  * Change all the instances of the tag ``LIB_demo_john`` for your own
-    tag to identify libraries required for your code. For example:
-    ``LIB_project_sophy``.
-
-  * Include the modules you need. In the template we only include the
-    ``general_lib`` and the ``problem_lib`` modules. Check the
-    :doc:`modules` document for the full list of module and their
-    details.
-
-5. Go to the root folder of SciCell++ and execute the ``./autogen.sh``
-   script. If you find errors please make sure you correctly changed
-   all the tags indicated in the previous step. Once building has
-   finished without errors you can build your own project.
-
-**Building and executing your project**
-
-Open a terminal and follow these instructions:
-
-1. Go to the ``build`` folder in the root SciCell++ folder and type
+1. Go to the ``build`` folder in the main SciCell++ folder and type:
 
    .. code-block:: shell
    
-      make demo_sophy
+      make julio_test
       
+   Make sure to substitute ``julio_test`` by the reported
+   ``building/executable project name`` by the new project creation
+   script. It should be a combination of your ``user name`` + ``your
+   project name``.
+   
    The building output should be displayed at your screen. Once no
-   errors have been reported you may run your code.
+   errors have been reported proceed to the following step to execute
+   your project.
 
-2. Go to your ``private`` folder, create a ``RESLT`` folder if you
-   have no one, and type:
+Executing your project
+^^^^^^^^^^^^^^^^^^^^^^
+   
+1. Go to your ``project folder`` into your ``private`` folder and
+   type:
 
    .. code-block:: shell
 
-      ./bin/demo_sophy
+      ./bin/julio_test
+
+   Make sure to substitute ``julio_test`` by the reported
+   ``building/executable project name`` by the new project creation
+   script. It should be a combination of your ``user name`` + ``your
+   project name``. Use ``TAB`` for autocomplete.
                    
-3. You should see the output of your project at the terminal.
+2. Your project's output should be displayed on your screen.
 
 .. important:: As you noticed, the generation and execution of your
                project is performed in two different folders:
 
                * the ``build`` folder (building)
-               * your ``private`` folder (execution)
+               * your ``private/project_name`` folder (execution)
 
                We use this two-folders strategy to avoid cluttering
                the folder structure of SciCell++ with files
@@ -87,9 +76,10 @@ Open a terminal and follow these instructions:
 
                **Just keep in mind the following:**
 
-               * Whenever you want to build your project you need to do so in the ``build`` folder, inthere just type ``make`` followed by the name of your project.
+               * Whenever you want to build your project you need to
+                 do so in the ``build`` folder, inthere just type
+                 ``make`` followed by the name of your project.
 
                * Whenever you want to execute your project go to your
-                 ``private`` folder and type
+                 ``private/project_name`` folder and type
                  ``./bin/the-name-of-your-project``.
-                 

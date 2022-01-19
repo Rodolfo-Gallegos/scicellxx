@@ -1,7 +1,7 @@
 // IN THIS FILE: Implementation of an abstract class to represent
-// matrices
+// vectors
 
-#include "ac_matrix.tpl.h"
+#include "ac_vector.h"
 
 namespace scicellxx
 {
@@ -9,24 +9,22 @@ namespace scicellxx
  // ===================================================================
  // Empty constructor
  // ===================================================================
- template<class T>
- ACMatrix<T>::ACMatrix() 
-  : NRows(0), NColumns(0), Is_own_memory_allocated(false), Delete_matrix(true)
+ ACVector::ACVector() 
+  : NValues(0), Is_own_memory_allocated(false), Delete_vector(true), Is_column_vector(true)
  { }
  
  // ===================================================================
- // Constructor to create an m X n zero matrix
+ // Constructor to create an n size zero vector
  // ===================================================================
- template<class T>
- ACMatrix<T>::ACMatrix(const unsigned long m, const unsigned long n)
-  : NRows(m), NColumns(n), Is_own_memory_allocated(false), Delete_matrix(true)
+ ACVector::ACVector(const unsigned long n, bool is_column_vector)
+  : NValues(n), Is_own_memory_allocated(false), Delete_vector(true),
+    Is_column_vector(is_column_vector)
  { }
  
  // ===================================================================
  // Destructor
  // ===================================================================
- template<class T>
- ACMatrix<T>::~ACMatrix()
- { }
+ACVector::~ACVector()
+{ }
  
 }

@@ -17,7 +17,7 @@ namespace scicellxx
  // ===================================================================
  /// Constructor where we specify the matrix A of size m X n
  // ===================================================================
- ACLinearSolver::ACLinearSolver(ACMatrix<Real> *const matrix_pt)
+ ACLinearSolver::ACLinearSolver(ACMatrix *const matrix_pt)
  {
   set_matrix_A(matrix_pt);
   
@@ -37,7 +37,7 @@ namespace scicellxx
  // ===================================================================
  /// Set the matrix A
  // ===================================================================
- void ACLinearSolver::set_matrix_A(ACMatrix<Real> *const matrix_pt)
+ void ACLinearSolver::set_matrix_A(ACMatrix *const matrix_pt)
  {
   // First clean any other previously stored matrix
   clean_up();

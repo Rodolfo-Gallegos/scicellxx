@@ -1,7 +1,7 @@
 // IN THIS FILE: Implementation of a concrete class to represent
 // vectors. This is the simplest implementation
 
-#include "cc_vector.tpl.h"
+#include "cc_vector.h"
 
 namespace scicellxx
 {
@@ -9,9 +9,8 @@ namespace scicellxx
  // ===================================================================
  // Empty constructor
  // ===================================================================
- template<class T>
- CCVector<T>::CCVector() 
-  : ACVector<T>()
+ CCVector::CCVector() 
+  : ACVector()
  {
   // Delete any data in memory
   clean_up();
@@ -22,9 +21,8 @@ namespace scicellxx
  // are created as column vectors, if you need a row vector then
  // pass "false" as the second parameter)
  // ===================================================================
- template<class T>
- CCVector<T>::CCVector(const unsigned long n, bool is_column_vector)
-  : ACVector<T>(n, is_column_vector)
+ CCVector::CCVector(const unsigned long n, bool is_column_vector)
+  : ACVector(n, is_column_vector)
  {
   // Allocate memory
   allocate_memory(n);
@@ -33,10 +31,9 @@ namespace scicellxx
  // ===================================================================
  // Constructor where we pass the data for the vector of size n
  // ===================================================================
- template<class T>
- CCVector<T>::CCVector(T *vector_pt, const unsigned long n,
-                       bool is_column_vector)
-  : ACVector<T>(n, is_column_vector)
+ CCVector::CCVector(Real *vector_pt, const unsigned long n,
+                    bool is_column_vector)
+  : ACVector(n, is_column_vector)
  {
   // Copy the data from the input vector to the Vector_pt vector
   set_vector(vector_pt, n, is_column_vector);
@@ -45,9 +42,8 @@ namespace scicellxx
  // ===================================================================
  // Copy constructor
  // ===================================================================
- template<class T>
- CCVector<T>::CCVector(const CCVector<T> &copy)
-  : ACVector<T>(copy.n_values(), copy.is_column_vector())
+ CCVector::CCVector(const CCVector &copy)
+  : ACVector(copy.n_values(), copy.is_column_vector())
  {
   // Copy the data from the input vector to the Vector_pt vector
   set_vector(copy.vector_pt(), this->NValues, copy.is_column_vector());
@@ -56,8 +52,7 @@ namespace scicellxx
  // ===================================================================
  // Empty destructor
  // ===================================================================
- template<class T>
- CCVector<T>::~CCVector()
+ CCVector::~CCVector()
  {
   // Deallocate memory
   clean_up();
@@ -66,8 +61,7 @@ namespace scicellxx
  // ===================================================================
  // Assignment operator
  // ===================================================================
- template<class T>
- CCVector<T>& CCVector<T>::operator=(const CCVector<T> &source_vector)
+ CCVector& CCVector::operator=(const CCVector &source_vector)
  {
   // Clean-up and set values
   set_vector(source_vector.vector_pt(),
@@ -81,8 +75,7 @@ namespace scicellxx
  // ===================================================================
  // += operator
  // ===================================================================
- template<class T>
- CCVector<T>& CCVector<T>::operator+=(const CCVector<T> &vector)
+ CCVector& CCVector::operator+=(const CCVector &vector)
  {  
   // Call the method to perform the addition
   add_vector(vector, *this);
@@ -93,8 +86,7 @@ namespace scicellxx
  // ===================================================================
  // -= operator
  // ===================================================================
- template<class T>
- CCVector<T>& CCVector<T>::operator-=(const CCVector<T> &vector)
+ CCVector& CCVector::operator-=(const CCVector &vector)
  {
   // Call the method to perform the operation
   substract_vector(vector, *this);
@@ -105,11 +97,10 @@ namespace scicellxx
  // ===================================================================
  // Add operator
  // ===================================================================
- template<class T>
- CCVector<T> CCVector<T>::operator+(const CCVector<T> &vector)
+ CCVector CCVector::operator+(const CCVector &vector)
  {
   // Create a zero vector where to store the result
-  CCVector<T> solution(this->NValues);
+  CCVector solution(this->NValues);
   // Call the method to perform the addition
   add_vector(vector, solution);
   // Return the solution vector
@@ -119,56 +110,19 @@ namespace scicellxx
  // ===================================================================
  // Substraction operator
  // ===================================================================
- template<class T>
- CCVector<T> CCVector<T>::operator-(const CCVector<T> &vector)
+ CCVector CCVector::operator-(const CCVector &vector)
  {
   // Create a zero vector where to store the result
-  CCVector<T> solution(this->NValues);
+  CCVector solution(this->NValues);
   // Call the method to perform the operation
   substract_vector(vector, solution);
-  return solution;
- }
-  
- // ===================================================================
- // Multiplication operator (it returns a matrix with the
- // corresponding size, if you require a dot product operation use the
- // dot() method instead
- // ===================================================================
- template<class T>
- CCMatrix<T> CCVector<T>::operator*(const CCVector<T> &vector)
- {  
-  // Create two matrices, one from each vector
-  CCMatrix<T> left_matrix(*this);
-  CCMatrix<T> right_matrix(vector);
-  // Store the size of both vectors to create a solution matrix with
-  // the corresponding sizes
-  // (First dimension for the left vector)
-  long unsigned n_values_left_vector = this->NValues;
-  if (!vector.is_column_vector())
-   {
-    n_values_left_vector = 1;
-   }
-  // (Second dimension for the right vector)
-  long unsigned n_values_right_vector = vector.n_values();
-  if (vector.is_column_vector())
-   {
-    n_values_right_vector = 1;
-   }
-  // Create a zero matrix where to store the result
-  CCMatrix<T> solution(n_values_left_vector, n_values_right_vector);
-  // Perform the multiplication (this method is in charge of verifying
-  // whether the matrices fulfill the requirements for matrix
-  // multiplication)
-  multiply_matrices(left_matrix, right_matrix, solution);
-  // Return the solution matrix
   return solution;
  }
  
  // ===================================================================
  // Performs dot product with the current vector
  // ===================================================================
- template<class T>
- T CCVector<T>::dot(const CCVector &right_vector)
+ Real CCVector::dot(const CCVector &right_vector)
  {
   // Check that THIS and the right vector have memory allocated
   if (!this->Is_own_memory_allocated || !right_vector.is_own_memory_allocated())
@@ -195,6 +149,10 @@ namespace scicellxx
     error_message << "The dimension of the vectors is not the same:\n"
                   << "dim(right_vector) = (" << n_values_right_vector << ")\n"
                   << "dim(this) = (" << n_values_this_vector << ")\n"
+                  << "If you require to multiply both vectors to generate a\n"
+                  << "matrix then use the corresponding matrices operations.\n"
+                  << "This requires to create a matrix from at least one of\n"
+                  << "the involved vectors."
                   << std::endl;
     throw SciCellxxLibError(error_message.str(),
                            SCICELLXX_CURRENT_FUNCTION,
@@ -226,10 +184,10 @@ namespace scicellxx
    }
   
   // Get the vector pointer of the right vector
-  T *right_vector_pt = right_vector.vector_pt();
+  Real *right_vector_pt = right_vector.vector_pt();
   
   // Store the dot product of the vectors
-  T dot_product = 0.0;
+  Real dot_product = 0.0;
   
   // Compute the dot product
   for (unsigned long i = 0; i < n_values_this_vector; i++)
@@ -245,8 +203,7 @@ namespace scicellxx
  // Transforms the input vector to a vector class type (virtual such
  // that each derived class has to implement it)
  // ===================================================================
- template<class T>
- void CCVector<T>::set_vector(const T *vector_pt,
+ void CCVector::set_vector(const Real *vector_pt,
                               const unsigned long n,
                               bool is_column_vector)
  {
@@ -257,13 +214,13 @@ namespace scicellxx
   this->NValues = n;
   
   // Allocate memory for the vector
-  Vector_pt = new T[n];
+  Vector_pt = new Real[n];
   
   // Mark the vector as allocated its own memory
   this->Is_own_memory_allocated = true;
   
   // Copy the vector (an element by element copy, uff!!)
-  std::memcpy(Vector_pt, vector_pt, n*sizeof(T));
+  std::memcpy(Vector_pt, vector_pt, n*sizeof(Real));
   
   // Set the transposed status
   this->set_as_column_vector(is_column_vector);
@@ -273,8 +230,7 @@ namespace scicellxx
  // ===================================================================
  // Clean up for any dynamically stored data
  // ===================================================================
- template<class T>
- void CCVector<T>::clean_up()
+ void CCVector::clean_up()
  {
   // Check whether the Vector allocated its own memory
   if (this->Is_own_memory_allocated)
@@ -295,8 +251,7 @@ namespace scicellxx
  // ===================================================================
  // Free allocated memory for vector
  // ===================================================================
- template<class T>
- void CCVector<T>::free_memory_for_vector()
+ void CCVector::free_memory_for_vector()
  {
   // Is the vector allowed for deletion. If this method is called from
   // an external source we need to check whether the vector has been
@@ -326,9 +281,8 @@ namespace scicellxx
  // ===================================================================
  // Performs sum of vectors
  // ===================================================================
- template<class T>
- void CCVector<T>::add_vector(const CCVector<T> &vector,
-                              CCVector<T> &solution_vector)
+ void CCVector::add_vector(const CCVector &vector,
+                              CCVector &solution_vector)
  {
   // Check that THIS and the other vector have memory allocated
   if (!this->Is_own_memory_allocated || !vector.is_own_memory_allocated())
@@ -401,10 +355,10 @@ namespace scicellxx
    }
   
   // Get the vector pointer of the solution vector
-  T *solution_vector_pt = solution_vector.vector_pt();
+  Real *solution_vector_pt = solution_vector.vector_pt();
   
   // Get the vector pointer of the input vector
-  T *vector_pt = vector.vector_pt();
+  Real *vector_pt = vector.vector_pt();
   // Perform the addition
   for (unsigned long i = 0; i < n_values_this_vector; i++)
    {
@@ -416,9 +370,8 @@ namespace scicellxx
  // ===================================================================
  // Performs substraction of vectors
  // ===================================================================
- template<class T>
- void CCVector<T>::substract_vector(const CCVector<T> &vector,
-                                    CCVector<T> &solution_vector)
+ void CCVector::substract_vector(const CCVector &vector,
+                                    CCVector &solution_vector)
  {
   // Check that THIS and the other vector have no memory allocated
   if (!this->Is_own_memory_allocated || !vector.is_own_memory_allocated())
@@ -491,10 +444,10 @@ namespace scicellxx
    }
   
   // Get the vector pointer of the solution vector
-  T *solution_vector_pt = solution_vector.vector_pt();
+  Real *solution_vector_pt = solution_vector.vector_pt();
   
   // Get the vector pointer of the input vector
-  T *vector_pt = vector.vector_pt();
+  Real *vector_pt = vector.vector_pt();
   // Perform the addition
   for (unsigned long i = 0; i < n_values_this_vector; i++)
    {
@@ -506,10 +459,9 @@ namespace scicellxx
  // ===================================================================
  // Performs multiplication of vectors (element by element)
  // ===================================================================
- template<class T>
- void CCVector<T>::
- multiply_element_by_element_vector(const CCVector<T> &vector,
-                                    CCVector<T> &solution_vector)
+ void CCVector::
+ multiply_element_by_element_vector(const CCVector &vector,
+                                    CCVector &solution_vector)
  {
   // Check that THIS and the other vector have memory allocated
   if (!this->Is_own_memory_allocated || !vector.is_own_memory_allocated())
@@ -582,10 +534,10 @@ namespace scicellxx
    }
   
   // Get the vector pointer of the solution vector
-  T *solution_vector_pt = solution_vector.vector_pt();
+  Real *solution_vector_pt = solution_vector.vector_pt();
   
   // Get the vector pointer of the input vector
-  T *vector_pt = vector.vector_pt();
+  Real *vector_pt = vector.vector_pt();
   // Perform the addition
   for (unsigned long i = 0; i < n_values_this_vector; i++)
    {
@@ -597,8 +549,7 @@ namespace scicellxx
  // ===================================================================
  // Computes the transpose and store in the transposed vector
  // ===================================================================
- template<class T>
- void CCVector<T>::transpose(CCVector<T> &transposed_vector)
+ void CCVector::transpose(CCVector &transposed_vector)
  {
   // Check that THIS vector has memory allocated
   if (!this->Is_own_memory_allocated)
@@ -623,8 +574,7 @@ namespace scicellxx
  // ===================================================================
  // Get the specified value from the vector (read-only)
  // ===================================================================
- template<class T>
- const T CCVector<T>::value(const unsigned long i) const
+ const Real CCVector::value(const unsigned long i) const
  {
 #ifdef SCICELLXX_RANGE_CHECK
   if (!(this->is_own_memory_allocated()))
@@ -657,8 +607,7 @@ namespace scicellxx
  // ===================================================================
  // Set values in the vector (write version)
  // ===================================================================
- template<class T>
- T &CCVector<T>::value(const unsigned long i)
+ Real &CCVector::value(const unsigned long i)
  {
 #ifdef SCICELLXX_RANGE_CHECK
   if (!(this->is_own_memory_allocated()))
@@ -691,8 +640,7 @@ namespace scicellxx
  // ===================================================================
  // Output the vector
  // ===================================================================
- template<class T>
- void CCVector<T>::output(bool output_indexes) const
+ void CCVector::output(bool output_indexes) const
  {
   if (!this->Is_own_memory_allocated)
    {
@@ -729,8 +677,7 @@ namespace scicellxx
  // ===================================================================
  // Output the vector
  // ===================================================================
- template<class T>
- void CCVector<T>::output(std::ofstream &outfile, bool output_indexes) const
+ void CCVector::output(std::ofstream &outfile, bool output_indexes) const
  {
   if (!this->Is_own_memory_allocated)
    {
@@ -767,11 +714,10 @@ namespace scicellxx
  // ===================================================================
  // Computes the norm-1 of the vector
  // ===================================================================
- template<class T>
- T CCVector<T>::norm_1()
+ Real CCVector::norm_1()
  {
   // Sum
-  T sum = 0.0;
+  Real sum = 0.0;
   // Check whether the vector has memory allocated
   if (this->Is_own_memory_allocated)
    {
@@ -800,11 +746,10 @@ namespace scicellxx
  // ===================================================================
  // Computes the norm-2 of the vector
  // ===================================================================
- template<class T>
- T CCVector<T>::norm_2()
+ Real CCVector::norm_2()
  {
   // Sum
-  T sum = 0.0;
+  Real sum = 0.0;
   // Check whether the vector has memory allocated
   if (this->Is_own_memory_allocated)
    {
@@ -833,11 +778,10 @@ namespace scicellxx
  // ===================================================================
  // Computes the infinite norm
  // ===================================================================
- template<class T>
- T CCVector<T>::norm_inf()
+ Real CCVector::norm_inf()
  {
   // Maximum
-  T norm = 0.0;
+  Real norm = 0.0;
   // Check whether the vector has memory allocated
   if (this->Is_own_memory_allocated)
    {
@@ -869,11 +813,10 @@ namespace scicellxx
  // ===================================================================
  // Computes the maximum value
  // ===================================================================
- template<class T>
- T CCVector<T>::max()
+ Real CCVector::max()
  {
   // Maximum
-  T max = 0.0;
+  Real max = 0.0;
   // Check whether the vector has memory allocated
   if (this->Is_own_memory_allocated)
    {
@@ -905,11 +848,10 @@ namespace scicellxx
  // ===================================================================
  // Computes the minimum value
  // ===================================================================
- template<class T>
- T CCVector<T>::min()
+ Real CCVector::min()
  {
   // Minimum
-  T min = 0.0;
+  Real min = 0.0;
   // Check whether the vector has memory allocated
   if (this->Is_own_memory_allocated)
    {
@@ -941,8 +883,7 @@ namespace scicellxx
  // ===================================================================
  // Allows to create a vector with the given size but with no data
  // ===================================================================
- template<class T>
- void CCVector<T>::allocate_memory(const unsigned long n)
+ void CCVector::allocate_memory(const unsigned long n)
  {
   // Clean any possibly stored data
   clean_up();
@@ -953,7 +894,7 @@ namespace scicellxx
   //allocate_memory();
   
   // Allocate memory for the vector
-  Vector_pt = new T[this->NValues];
+  Vector_pt = new Real[this->NValues];
   
   // Mark the vector as allocated its own memory
   this->Is_own_memory_allocated=true;
@@ -963,14 +904,13 @@ namespace scicellxx
  // // ===================================================================
  // // Allocates memory to store entries of the vector
  // // ===================================================================
- // template<class T>
- // void CCVector<T>::allocate_memory()
+ // void CCVector::allocate_memory()
  // {
  //  // Delete any data in memory
  //  clean_up();
   
  //  // Allocate memory for the vector
- //  Vector_pt = new T[this->NValues];
+ //  Vector_pt = new Real[this->NValues];
   
  //  // Mark the vector as allocated its own memory
  //  this->Is_own_memory_allocated=true;
@@ -979,14 +919,13 @@ namespace scicellxx
  // ===================================================================
  // Fills the vector with zeroes
  // ===================================================================
- template<class T>
- void CCVector<T>::fill_with_zeroes()
+ void CCVector::fill_with_zeroes()
  {
   // Check that the vector has memory allocated
   if (this->Is_own_memory_allocated)
    {
     // Fill the vector with zeroes
-    std::memset(Vector_pt, 0, this->NValues*sizeof(T));
+    std::memset(Vector_pt, 0, this->NValues*sizeof(Real));
    }
   else
    {
@@ -1011,8 +950,7 @@ namespace scicellxx
  // ================================================================
  // Dot product of vectors
  // ================================================================
- template<class T>
- T dot_vectors(const CCVector<T> &left_vector, const CCVector<T> &right_vector)
+ Real dot_vectors(const CCVector &left_vector, const CCVector &right_vector)
  {
   // Check that the left and the right vectors have memory allocated
   if (!left_vector.is_own_memory_allocated() || !right_vector.is_own_memory_allocated())
@@ -1070,12 +1008,12 @@ namespace scicellxx
    }
   
   // Get the vector pointer of the left vector
-  T *left_vector_pt = left_vector.vector_pt();
+  Real *left_vector_pt = left_vector.vector_pt();
   // Get the vector pointer of the right vector
-  T *right_vector_pt = right_vector.vector_pt();
+  Real *right_vector_pt = right_vector.vector_pt();
   
   // Store the dot product of the vectors
-  T dot_product = 0.0;
+  Real dot_product = 0.0;
   
   // Compute the dot product
   for (unsigned long i = 0; i < n_values_left_vector; i++)
@@ -1090,10 +1028,9 @@ namespace scicellxx
  // ================================================================
  // Addition of vectors
  // ================================================================
- template<class T>
- void add_vectors(const CCVector<T> &vector_one,
-                  const CCVector<T> &vector_two,
-                  CCVector<T> &solution_vector)
+ void add_vectors(const CCVector &vector_one,
+                  const CCVector &vector_two,
+                  CCVector &solution_vector)
  {
   // Check that the vectors have memory allocated
   if (!vector_one.is_own_memory_allocated() || !vector_two.is_own_memory_allocated())
@@ -1166,12 +1103,12 @@ namespace scicellxx
    }
   
   // Get the vector pointer of the solution vector
-  T *solution_vector_pt = solution_vector.vector_pt();
+  Real *solution_vector_pt = solution_vector.vector_pt();
   
   // Get the vector pointer of the vector one
-  T *vector_one_pt = vector_one.vector_pt();
+  Real *vector_one_pt = vector_one.vector_pt();
   // Get the vector pointer of the vector two
-  T *vector_two_pt = vector_two.vector_pt();
+  Real *vector_two_pt = vector_two.vector_pt();
   
   // Perform the addition
   for (unsigned long i = 0; i < n_values_vector_one; i++)
@@ -1184,10 +1121,9 @@ namespace scicellxx
  // ================================================================
  // Substraction of vectors
  // ================================================================
- template<class T>
- void substract_vectors(const CCVector<T> &vector_one,
-                        const CCVector<T> &vector_two,
-                        CCVector<T> &solution_vector)
+ void substract_vectors(const CCVector &vector_one,
+                        const CCVector &vector_two,
+                        CCVector &solution_vector)
  {
   // Check that the vectors have no memory allocated
   if (!vector_one.is_own_memory_allocated() || !vector_two.is_own_memory_allocated())
@@ -1260,12 +1196,12 @@ namespace scicellxx
    }
   
   // Get the vector pointer of the solution vector
-  T *solution_vector_pt = solution_vector.vector_pt();
+  Real *solution_vector_pt = solution_vector.vector_pt();
     
   // Get the vector pointer of the vector one
-  T *vector_one_pt = vector_one.vector_pt();
+  Real *vector_one_pt = vector_one.vector_pt();
   // Get the vector pointer of the vector two
-  T *vector_two_pt = vector_two.vector_pt();
+  Real *vector_two_pt = vector_two.vector_pt();
   
   // Perform the substraction of vectors
   for (unsigned long i = 0; i < n_values_vector_one; i++)
@@ -1278,10 +1214,9 @@ namespace scicellxx
  // ================================================================
  // Performs multiplication of vectors (one by one entries)
  // ================================================================
- template<class T>
- void multiply_element_by_element_vectors(const CCVector<T> &vector_one,
-                                          const CCVector<T> &vector_two,
-                                          CCVector<T> &solution_vector)
+ void multiply_element_by_element_vectors(const CCVector &vector_one,
+                                          const CCVector &vector_two,
+                                          CCVector &solution_vector)
  {
   // Check that the vectors have memory allocated
   if (!vector_one.is_own_memory_allocated() || !vector_two.is_own_memory_allocated())
@@ -1354,12 +1289,12 @@ namespace scicellxx
    }
   
   // Get the vector pointer of the solution vector
-  T *solution_vector_pt = solution_vector.vector_pt();
+  Real *solution_vector_pt = solution_vector.vector_pt();
   
   // Get the vector pointer of the vector one
-  T *vector_one_pt = vector_one.vector_pt();
+  Real *vector_one_pt = vector_one.vector_pt();
   // Get the vector pointer of the vector two
-  T *vector_two_pt = vector_two.vector_pt();
+  Real *vector_two_pt = vector_two.vector_pt();
   
   // Perform the substraction of vectors
   for (unsigned long i = 0; i < n_values_vector_one; i++)

@@ -63,11 +63,12 @@ then check these ones [[http://everything2.com/index.pl?node_id=1709851&displayt
 see what better matches with you.
 
 * Indentation
-This is simple, *indent your code for easy reading*. I use emacs as my
-preferred editor and have it configured to automatically *indent with
-a single white-space* when pressing TAB. You can copy and use my emacs
-configuration file (init.el) from the */tools/* folder, or configure
-your favorite editor to *indent with a single white-space*.
+This is simple, *indent your code for easy reading*. I
+use emacs as my preferred editor and have it configured to
+automatically *indent with a single white-space* when pressing
+TAB. You can copy and use my emacs configuration file (init.el) from
+the */tools/emacs/* folder, or configure your favorite editor to
+*indent with a single white-space*.
 
 * Variables
 We use variables to store values or data that are used frequently in

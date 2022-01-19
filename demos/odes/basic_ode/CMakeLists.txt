@@ -9,12 +9,9 @@ ELSE(${SCICELLXX_BUILD_DEMOS} STREQUAL TRUE)
 ENDIF(${SCICELLXX_BUILD_DEMOS} STREQUAL TRUE)
 
 # Indicate linking libraries
-SET(LIB_demo_basic_ode data_structures_lib matrices_lib time_stepper_lib equations_lib problem_lib linear_solvers_lib numerical_recipes_lib general_lib)
-
-# Check whether scicellxx is using Armadillo
-IF (SCICELLXX_USES_ARMADILLO)
- LIST(APPEND LIB_demo_basic_ode ${ARMADILLO_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-ENDIF (SCICELLXX_USES_ARMADILLO)
+#SET(LIB_demo_basic_ode data_structures_lib matrices_lib time_stepper_lib equations_lib problem_lib linear_solvers_lib numerical_recipes_lib general_lib)
+#SET(LIB_demo_basic_ode time_stepper_lib equations_lib problem_lib linear_solvers_lib matrices_lib data_structures_lib general_lib numerical_recipes_lib argparse_lib)
+SET(LIB_demo_basic_ode ${LIB_scicellxx_lib})
 
 # ... and link againts them  
 TARGET_LINK_LIBRARIES(demo_basic_ode ${LIB_demo_basic_ode})
@@ -46,27 +43,27 @@ ADD_TEST(NAME TEST_demo_basic_ode_run
 # Validate output
 SET (VALIDATE_FILENAME_demo_basic_ode_euler "validate_euler.dat")
 ADD_TEST(NAME TEST_demo_basic_ode_euler_check_output
-         COMMAND ${PROJECT_SOURCE_DIR}/tools/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_basic_ode_euler} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/euler.dat)
+         COMMAND ${PROJECT_SOURCE_DIR}/tools/development/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_basic_ode_euler} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/euler.dat)
 # Validate output
 SET (VALIDATE_FILENAME_demo_basic_ode_rk4 "validate_rk4.dat")
 ADD_TEST(NAME TEST_demo_basic_ode_rk4_check_output
-         COMMAND ${PROJECT_SOURCE_DIR}/tools/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_basic_ode_rk4} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/rk4.dat)
+         COMMAND ${PROJECT_SOURCE_DIR}/tools/development/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_basic_ode_rk4} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/rk4.dat)
 # Validate output
 SET (VALIDATE_FILENAME_demo_basic_ode_am2pc "validate_am2pc.dat")
 ADD_TEST(NAME TEST_demo_basic_ode_am2pc_check_output
-         COMMAND ${PROJECT_SOURCE_DIR}/tools/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_basic_ode_am2pc} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/am2pc.dat)
+         COMMAND ${PROJECT_SOURCE_DIR}/tools/development/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_basic_ode_am2pc} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/am2pc.dat)
 # Validate output
 SET (VALIDATE_FILENAME_demo_basic_ode_bdf1 "validate_bdf1.dat")
 ADD_TEST(NAME TEST_demo_basic_ode_bdf1_check_output
-         COMMAND ${PROJECT_SOURCE_DIR}/tools/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_basic_ode_bdf1} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/bdf1.dat)
+         COMMAND ${PROJECT_SOURCE_DIR}/tools/development/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_basic_ode_bdf1} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/bdf1.dat)
 # Validate output
 SET (VALIDATE_FILENAME_demo_basic_ode_am2 "validate_am2.dat")
 ADD_TEST(NAME TEST_demo_basic_ode_am2_check_output
-         COMMAND ${PROJECT_SOURCE_DIR}/tools/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_basic_ode_am2} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/am2.dat)
+         COMMAND ${PROJECT_SOURCE_DIR}/tools/development/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_basic_ode_am2} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/am2.dat)
 # Validate output
 SET (VALIDATE_FILENAME_demo_basic_ode_bdf2 "validate_bdf2.dat")
 ADD_TEST(NAME TEST_demo_basic_ode_bdf2_check_output
-         COMMAND ${PROJECT_SOURCE_DIR}/tools/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_basic_ode_bdf2} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/bdf2.dat)
+         COMMAND ${PROJECT_SOURCE_DIR}/tools/development/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_basic_ode_bdf2} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/bdf2.dat)
 
 # ===========================================
 # Test execution order

@@ -1,4 +1,4 @@
-#include "cc_factory_matrices.tpl.h"
+#include "cc_factory_matrices.h"
 
 namespace scicellxx
 {
@@ -6,8 +6,7 @@ namespace scicellxx
  // ===================================================================
  /// Empty constructor
  // ===================================================================
- template<class T>
- CCFactoryMatrices<T>::CCFactoryMatrices()
+ CCFactoryMatrices::CCFactoryMatrices()
  { 
 
  }
@@ -15,8 +14,7 @@ namespace scicellxx
  // ===================================================================
  /// Empty destructor
  // ===================================================================
- template<class T>
- CCFactoryMatrices<T>::~CCFactoryMatrices()
+ CCFactoryMatrices::~CCFactoryMatrices()
  { 
 
  }
@@ -24,40 +22,37 @@ namespace scicellxx
  // ===================================================================
  /// Returns a matrix pointer (based on compilation options)
  // ===================================================================
- template<class T>
- ACMatrix<T>* CCFactoryMatrices<T>::create_matrix()
+ ACMatrix* CCFactoryMatrices::create_matrix()
  {
   // ------------------------------------------------------
   // Check what matrix type we need to create
   // ------------------------------------------------------
 #ifdef SCICELLXX_USES_ARMADILLO
-  return new CCMatrixArmadillo<T>();
+  return new CCMatrixArmadillo();
 #else
-  return new CCMatrix<T>();
+  return new CCMatrix();
 #endif // #ifdef SCICELLXX_USES_ARMADILLO
  }
 
  // ===================================================================
  /// Returns a matrix pointer (based on compilation options)
  // ===================================================================
- template<class T>
- ACMatrix<T>* CCFactoryMatrices<T>::create_matrix(const unsigned long m, const unsigned long n)
+ ACMatrix* CCFactoryMatrices::create_matrix(const unsigned long m, const unsigned long n)
  {
     // ------------------------------------------------------
   // Check what matrix type we need to create
   // ------------------------------------------------------
 #ifdef SCICELLXX_USES_ARMADILLO
-  return new CCMatrixArmadillo<T>(m, n);
+  return new CCMatrixArmadillo(m, n);
 #else
-  return new CCMatrix<T>(m, n);
+  return new CCMatrix(m, n);
 #endif // #ifdef SCICELLXX_USES_ARMADILLO
  }
  
  // ===================================================================
  /// Returns the specified matrix pointer
  // ===================================================================
- template<class T>
- ACMatrix<T>* CCFactoryMatrices<T>::create_matrix(std::string matrix_type_name)
+ ACMatrix* CCFactoryMatrices::create_matrix(std::string matrix_type_name)
  {
   // Get the string and change it to lower case 
   std::transform(matrix_type_name.begin(), matrix_type_name.end(),
@@ -69,13 +64,13 @@ namespace scicellxx
   // Default type
   if (matrix_type_name.compare("default")==0)
    {
-    return new CCMatrix<T>();
+    return new CCMatrix();
    }
 #ifdef SCICELLXX_USES_ARMADILLO
   // Armadillo type
   else if (matrix_type_name.compare("armadillo")==0)
    {
-    return new CCMatrixArmadillo<T>();
+    return new CCMatrixArmadillo();
    }
 #endif // #ifdef SCICELLXX_USES_ARMADILLO
   else
@@ -96,8 +91,7 @@ namespace scicellxx
  // ===================================================================
  /// Returns the specified matrix pointer
  // ===================================================================
- template<class T>
- ACMatrix<T>* CCFactoryMatrices<T>::create_matrix(std::string matrix_type_name, const unsigned long m, const unsigned long n)
+ ACMatrix* CCFactoryMatrices::create_matrix(std::string matrix_type_name, const unsigned long m, const unsigned long n)
  {
     // Get the string and change it to lower case 
   std::transform(matrix_type_name.begin(), matrix_type_name.end(),
@@ -109,13 +103,13 @@ namespace scicellxx
   // Default type
   if (matrix_type_name.compare("default")==0)
    {
-    return new CCMatrix<T>(m, n);
+    return new CCMatrix(m, n);
    }
 #ifdef SCICELLXX_USES_ARMADILLO
   // Armadillo type
   else if (matrix_type_name.compare("armadillo")==0)
    {
-    return new CCMatrixArmadillo<T>(m, n);
+    return new CCMatrixArmadillo(m, n);
    }
 #endif // #ifdef SCICELLXX_USES_ARMADILLO
   else
@@ -136,34 +130,31 @@ namespace scicellxx
  // ===================================================================
  /// Returns a vector pointer (based on compilation options)
  // ===================================================================
- template<class T>
- ACVector<T>* CCFactoryMatrices<T>::create_vector()
+ ACVector* CCFactoryMatrices::create_vector()
  {
 #ifdef SCICELLXX_USES_ARMADILLO
-  return new CCVectorArmadillo<T>();
+  return new CCVectorArmadillo();
 #else
-  return new CCVector<T>();
+  return new CCVector();
 #endif // #ifdef SCICELLXX_USES_ARMADILLO
  }
 
  // ===================================================================
  /// Returns a vector pointer (based on compilation options)
  // ===================================================================
- template<class T>
- ACVector<T>* CCFactoryMatrices<T>::create_vector(const unsigned long n, bool is_column_vector)
+ ACVector* CCFactoryMatrices::create_vector(const unsigned long n, bool is_column_vector)
  {
 #ifdef SCICELLXX_USES_ARMADILLO
-  return new CCVectorArmadillo<T>(n, is_column_vector);
+  return new CCVectorArmadillo(n, is_column_vector);
 #else
-  return new CCVector<T>(n, is_column_vector);
+  return new CCVector(n, is_column_vector);
 #endif // #ifdef SCICELLXX_USES_ARMADILLO
  }
  
  // ===================================================================
  /// Returns the specified vector pointer
  // ===================================================================
- template<class T>
- ACVector<T>* CCFactoryMatrices<T>::create_vector(std::string vector_type_name)
+ ACVector* CCFactoryMatrices::create_vector(std::string vector_type_name)
  {
   // Get the string and change it to lower case 
   std::transform(vector_type_name.begin(), vector_type_name.end(),
@@ -175,13 +166,13 @@ namespace scicellxx
   // Default type
   if (vector_type_name.compare("default")==0)
    {
-    return new CCVector<T>();
+    return new CCVector();
    }
 #ifdef SCICELLXX_USES_ARMADILLO
   // Armadillo type
   else if (vector_type_name.compare("armadillo")==0)
    {
-    return new CCVectorArmadillo<T>();
+    return new CCVectorArmadillo();
    }
 #endif // #ifdef SCICELLXX_USES_ARMADILLO
   else
@@ -202,8 +193,7 @@ namespace scicellxx
  // ===================================================================
  /// Returns the specified vector pointer
  // ===================================================================
- template<class T>
- ACVector<T>* create_vector(std::string vector_type_name, const unsigned long n, bool is_column_vector)
+ ACVector* create_vector(std::string vector_type_name, const unsigned long n, bool is_column_vector)
  {
     // Get the string and change it to lower case 
   std::transform(vector_type_name.begin(), vector_type_name.end(),
@@ -215,13 +205,13 @@ namespace scicellxx
   // Default type
   if (vector_type_name.compare("default")==0)
    {
-    return new CCVector<T>(n, is_column_vector);
+    return new CCVector(n, is_column_vector);
    }
 #ifdef SCICELLXX_USES_ARMADILLO
   // Armadillo type
   else if (vector_type_name.compare("armadillo")==0)
    {
-    return new CCVectorArmadillo<T>(n, is_column_vector);
+    return new CCVectorArmadillo(n, is_column_vector);
    }
 #endif // #ifdef SCICELLXX_USES_ARMADILLO
   else

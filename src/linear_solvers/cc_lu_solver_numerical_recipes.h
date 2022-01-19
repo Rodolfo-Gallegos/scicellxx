@@ -30,7 +30,7 @@ namespace scicellxx
   CCLUSolverNumericalRecipes();
   
   /// Constructor where we specify the matrix A
-  CCLUSolverNumericalRecipes(ACMatrix<Real> *const A_mat_pt);
+  CCLUSolverNumericalRecipes(ACMatrix *const A_mat_pt);
   
   /// Empty destructor
   ~CCLUSolverNumericalRecipes();
@@ -40,27 +40,27 @@ namespace scicellxx
   /// returned. We assume that the input/output matrices have the
   /// correct dimensions: A_mat.ncolumns() x A_mat.nrows() for B, and
   /// A_mat.nrows() x A_mat.ncolumns() for X.
-  void solve(ACMatrix<Real> *const A_mat_pt, const ACMatrix<Real> *const B_pt, ACMatrix<Real> *const X_pt);
+  void solve(ACMatrix *const A_mat_pt, const ACMatrix *const B_pt, ACMatrix *const X_pt);
 
   /// Solves a system of equations with input A_mat. We specify the
   /// right-hand side b and the x vector where the result is
   /// returned. We assume that the input/output vectors have the
   /// correct dimensions: A_mat.ncolumns() for b, and A_mat.nrows() for
   /// x.
-  void solve(ACMatrix<Real> *const A_mat_pt, const ACVector<Real> *const b_pt, ACVector<Real> *const x_pt);
+  void solve(ACMatrix *const A_mat_pt, const ACVector *const b_pt, ACVector *const x_pt);
   
   /// Solve a system of equations with the already stored matrix A. We
   /// specify the right-hand side B and the X matrices where the
   /// results are returned. We assume that the input/output matrices
   /// have the correct dimensions: A.ncolumns() x A.nrows() for B, and
   /// A.nrows() x A.ncolumns() for X.
-  void solve(const ACMatrix<Real> *const B_pt, ACMatrix<Real> *const X_pt);
+  void solve(const ACMatrix *const B_pt, ACMatrix *const X_pt);
   
   /// Solve a system of equations with the already stored matrix A. We
   /// specify the right-hand side b and the x vectors where the result
   /// is returned. We assume that the input/output vectors have the
   /// correct dimensions: A.ncolumns() for b, and A.nrows() for x.
-  void solve(const ACVector<Real> *const b_pt, ACVector<Real> *const x_pt);
+  void solve(const ACVector *const b_pt, ACVector *const x_pt);
   
   /// Re-solve a system of equations with the already stored matrix
   /// A. Reusing the LU decomposition. We specify the right-hand
@@ -68,7 +68,7 @@ namespace scicellxx
   /// assume that the input/output vectors have the correct dimensions:
   /// A.ncolumns() x A.nrows() for B, and A.nrows() x A.ncolumns() for
   /// X.
-  void resolve(const ACMatrix<Real> *const B_pt, ACMatrix<Real> *const X_pt);
+  void resolve(const ACMatrix *const B_pt, ACMatrix *const X_pt);
   
   /// Re-solve a system of equations with the already stored matrix A
   /// (re-use of the LU decomposition or call the solve method for an
@@ -77,12 +77,12 @@ namespace scicellxx
   /// where the result is returned. We assume that the input/output
   /// vectors have the correct dimensions: A.ncolumns() for b, and
   /// A.nrows() for x.
-  void resolve(const ACVector<Real> *const b_pt, ACVector<Real> *const x_pt);
+  void resolve(const ACVector *const b_pt, ACVector *const x_pt);
   
   /// Performs LU factorisation of the input matrix, the factorisation
   /// is internally stored such that it can be re-used when calling
   /// resolve
-  void factorise(ACMatrix<Real> *const A_mat_pt);
+  void factorise(ACMatrix *const A_mat_pt);
  
   /// Performs LU factorisation of already stored matrix A, the
   /// factorisation is internally stored such that it can be re-used
@@ -90,10 +90,10 @@ namespace scicellxx
   void factorise();
   
   /// Performs the back substitution with the LU decomposed matrix
-  void back_substitution(const ACMatrix<Real> *const B_pt, ACMatrix<Real> *const X_pt);
+  void back_substitution(const ACMatrix *const B_pt, ACMatrix *const X_pt);
   
   /// Performs the back substitution with the LU decomposed matrix
-  void back_substitution(const ACVector<Real> *const b_pt, ACVector<Real> *const x_pt);
+  void back_substitution(const ACVector *const b_pt, ACVector *const x_pt);
   
  protected:
   

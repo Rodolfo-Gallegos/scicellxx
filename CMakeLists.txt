@@ -224,11 +224,30 @@ MESSAGE( STATUS "CMAKE_VERBOSE_MAKEFILE:       " ${CMAKE_VERBOSE_MAKEFILE} )
 
 MESSAGE( STATUS "-----------------------------------------------------------------------" )
 
+# The VARIABLE holding the names of the external libraries
+SET(LIB_external_src_lib 0)
+
 # Add external source files sub-directories
 ADD_SUBDIRECTORY(external_src)
 
+# The VARIABLE holding the names of the src libraries
+SET(LIB_src_lib 0)
+
 # Add sub-directories with source files
 ADD_SUBDIRECTORY(src)
+
+# Create a VARIABLE to store all scicellxx libraries and dependencies
+SET(LIB_scicellxx_lib ${LIB_src_lib} ${LIB_external_src_lib})
+
+# Check whether scicellxx is using Armadillo
+IF (SCICELLXX_USES_ARMADILLO)
+ LIST(APPEND LIB_scicellxx_lib ${ARMADILLO_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+ENDIF (SCICELLXX_USES_ARMADILLO)
+
+# Check whether scicellxx is using VTK
+IF (SCICELLXX_USES_VTK)
+  LIST(APPEND LIB_scicellxx_lib ${VTK_LIBRARIES})
+ENDIF (SCICELLXX_USES_VTK)
 
 # Add private folders (note that any source code in here is not
 # compiled but only added to the make list)

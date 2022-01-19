@@ -11,6 +11,7 @@ General
    :maxdepth: 1
    :numbered:
 
+   tutorials/create_a_tutorial
    tutorials/a_quick_starting_up_guide
 
 Maths

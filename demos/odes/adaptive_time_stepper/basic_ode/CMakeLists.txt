@@ -9,12 +9,7 @@ ELSE(${SCICELLXX_BUILD_DEMOS} STREQUAL TRUE)
 ENDIF(${SCICELLXX_BUILD_DEMOS} STREQUAL TRUE)
 
 # Indicate linking libraries
-SET(LIB_demo_adaptive_basic_ode data_structures_lib matrices_lib time_stepper_lib equations_lib problem_lib linear_solvers_lib numerical_recipes_lib general_lib)
-
-# Check whether scicellxx is using Armadillo
-IF (SCICELLXX_USES_ARMADILLO)
- LIST(APPEND LIB_demo_adaptive_basic_ode ${ARMADILLO_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-ENDIF (SCICELLXX_USES_ARMADILLO)
+SET(LIB_demo_adaptive_basic_ode ${LIB_scicellxx_lib})
 
 # ... and link againts them  
 TARGET_LINK_LIBRARIES(demo_adaptive_basic_ode ${LIB_demo_adaptive_basic_ode})
@@ -46,12 +41,12 @@ ADD_TEST(NAME TEST_demo_adaptive_basic_ode_run
 # Validate output
 SET (VALIDATE_FILENAME_demo_adaptive_basic_ode_RK45F "validate_rk45f.dat")
 ADD_TEST(NAME TEST_demo_adaptive_basic_ode_RK45F_check_output
-         COMMAND ${PROJECT_SOURCE_DIR}/tools/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_adaptive_basic_ode_RK45F} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/rk45f.dat)
+         COMMAND ${PROJECT_SOURCE_DIR}/tools/development/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_adaptive_basic_ode_RK45F} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/rk45f.dat)
 
 # Validate output
 SET (VALIDATE_FILENAME_demo_adaptive_basic_ode_RK45DP "validate_rk45dp.dat")
 ADD_TEST(NAME TEST_demo_adaptive_basic_ode_RK45DP_check_output
-         COMMAND ${PROJECT_SOURCE_DIR}/tools/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_adaptive_basic_ode_RK45DP} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/rk45dp.dat)
+         COMMAND ${PROJECT_SOURCE_DIR}/tools/development/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_adaptive_basic_ode_RK45DP} ${CMAKE_CURRENT_BINARY_DIR}/RESLT/rk45dp.dat)
 
 # ===========================================
 # Test execution order

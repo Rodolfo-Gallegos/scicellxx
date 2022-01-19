@@ -2,6 +2,10 @@
 #define CCADAMSMOULTON2PREDICTORCORRECTORMETHOD_H
 
 #include "ac_predictor_corrector_time_stepper.h"
+
+// Include factory for matrices and vectors
+#include "../matrices/cc_factory_matrices.h"
+
 #if 0
 // Time stepper to compute the initial guess for Newton's method
 #include "cc_runge_kutta_4_method.h"

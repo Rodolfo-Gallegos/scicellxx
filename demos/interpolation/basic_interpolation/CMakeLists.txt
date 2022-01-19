@@ -9,7 +9,8 @@ ELSE(${SCICELLXX_BUILD_DEMOS} STREQUAL TRUE)
 ENDIF(${SCICELLXX_BUILD_DEMOS} STREQUAL TRUE)
 
 # Indicate linking libraries
-SET(LIB_demo_basic_interpolation general_lib problem_lib)
+SET(LIB_demo_basic_interpolation ${LIB_scicellxx_lib})
+
 # ... and link againts them  
 TARGET_LINK_LIBRARIES(demo_basic_interpolation ${LIB_demo_basic_interpolation})
 
@@ -47,7 +48,7 @@ ENDIF (SCICELLXX_USES_DOUBLE_PRECISION)
 #ADD_TEST(NAME TEST_demo_basic_interpolation_check_output
 #         COMMAND sdiff -s ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_basic_interpolation} ${#CMAKE_CURRENT_BINARY_DIR}/output_test.dat)
 ADD_TEST(NAME TEST_demo_basic_interpolation_check_output
-         COMMAND ${PROJECT_SOURCE_DIR}/tools/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_basic_interpolation} ${CMAKE_CURRENT_BINARY_DIR}/output_test.dat)
+         COMMAND ${PROJECT_SOURCE_DIR}/tools/development/fpdiff.py ${CMAKE_CURRENT_SOURCE_DIR}/validate/${VALIDATE_FILENAME_demo_basic_interpolation} ${CMAKE_CURRENT_BINARY_DIR}/output_test.dat)
 
 # ===========================================
 # Test execution order
