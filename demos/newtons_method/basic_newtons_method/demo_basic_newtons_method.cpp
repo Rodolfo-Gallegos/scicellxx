@@ -22,7 +22,7 @@
 #include "../../../src/matrices/cc_factory_matrices.h"
 
 #include "../../../src/equations/ac_jacobian_and_residual.h"
-#include "../../../src/problem/cc_newtons_method.h"
+#include "../../../src/newtons_method/cc_newtons_method.h"
 
 using namespace scicellxx;
 

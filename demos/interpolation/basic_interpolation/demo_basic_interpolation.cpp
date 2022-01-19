@@ -7,7 +7,7 @@
 #include "../../../src/general/initialise.h"
 
 // The interpolator
-#include "../../../src/problem/cc_newton_interpolator.h"
+#include "../../../src/interpolators/cc_newton_interpolator.h"
 
 using namespace scicellxx;
 

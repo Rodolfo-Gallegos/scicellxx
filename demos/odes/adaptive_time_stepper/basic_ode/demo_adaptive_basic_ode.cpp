@@ -8,7 +8,7 @@
 #include "../../../../src/general/initialise.h"
 
 // An interpolator
-#include "../../../../src/problem/cc_newton_interpolator.h"
+#include "../../../../src/interpolators/cc_newton_interpolator.h"
 
 // The required classes to solve Initial Value Problems (IVP)
 // The factory to create the time stepper (integration method)

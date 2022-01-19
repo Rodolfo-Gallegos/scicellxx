@@ -11,7 +11,7 @@
 
 #include "../data_structures/ac_odes.h"
 #include "../data_structures/cc_data.h"
-#include "../problem/cc_newtons_method.h"
+#include "../newtons_method/cc_newtons_method.h"
 #include "ac_jacobian_and_residual_for_implicit_time_stepper.h"
 
 namespace scicellxx
