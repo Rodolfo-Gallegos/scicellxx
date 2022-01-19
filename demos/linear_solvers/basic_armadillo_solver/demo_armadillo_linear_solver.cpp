@@ -6,8 +6,8 @@
 #include "../../../src/general/utilities.h"
 #include "../../../src/general/initialise.h"
 
-// The class to solve linear systems using Armadillo's type matrices
-#include "../../../src/linear_solvers/cc_solver_armadillo.h"
+// Factory for linear solver
+#include "../../../src/linear_solvers/cc_factory_linear_solver.h"
 
 // The class for matrices and vectors
 #include "../../../src/matrices/cc_vector_armadillo.h"
@@ -73,16 +73,20 @@ int main(int argc, char *argv[])
   b.print(output_test);
   std::cout << std::endl;
   output_test << std::endl;
+
+  // Create a factory for the linear solver
+  CCFactoryLinearSolver factory_linear_solver;   
   
   // Create an Armadillo linear solver
-  CCSolverArmadillo armadillo_linear_solver;
+  ACLinearSolver *armadillo_linear_solver_pt =
+   factory_linear_solver.create_linear_solver("armadillo");
   
   // The solution vector (with the corresponding number of rows, that
   // in this case refers to the number of cols as well)
   CCVectorArmadillo sol(n_cols);
   
   // Solve the system of equations
-  armadillo_linear_solver.solve(&A, &b, &sol);
+  armadillo_linear_solver_pt->solve(&A, &b, &sol);
   
   // Print the solution
   std::cout << std::endl;
@@ -151,15 +155,19 @@ int main(int argc, char *argv[])
   B.print(output_test);
   std::cout << std::endl;
   output_test << std::endl;
+
+  // Create a factory for the linear solver
+  CCFactoryLinearSolver factory_linear_solver;   
   
   // Create an Armadillo linear solver
-  CCSolverArmadillo armadillo_linear_solver;
+  ACLinearSolver *armadillo_linear_solver_pt =
+   factory_linear_solver.create_linear_solver("armadillo");
   
   // The solution vector
   CCMatrixArmadillo SOL(A.n_rows(), B.n_columns());
   
   // Solve the system of equations
-  armadillo_linear_solver.solve(&A, &B, &SOL);
+  armadillo_linear_solver_pt->solve(&A, &B, &SOL);
   
   // Print the solution
   std::cout << std::endl;

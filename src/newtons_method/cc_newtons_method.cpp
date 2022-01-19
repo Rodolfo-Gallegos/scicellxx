@@ -179,7 +179,7 @@ namespace scicellxx
   // Cleans up
   clean_up();
   
-  // Create a factor for the linear solver
+  // Create a factory for the linear solver
   CCFactoryLinearSolver factory_linear_solver;
   
   // Create the linear solver
