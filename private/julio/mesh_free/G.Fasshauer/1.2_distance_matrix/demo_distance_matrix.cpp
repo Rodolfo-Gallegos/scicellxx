@@ -342,15 +342,12 @@ int main(int argc, char *argv[])
  // --------------------------------------------------------------
  compute_distance_matrix(approx_solution_position_pt, nodes_position_pt, approx_distance_matrix_pt);
  //approx_distance_matrix.print();
- 
+
  // Approximated solution
-#ifdef SCICELLXX_USES_ARMADILLO
- CCVectorArmadillo<Real> approx_sol(n_evaluation_points_per_dimension);
-#else
- CCVector<Real> approx_sol(n_evaluation_points_per_dimension);
-#endif // #ifdef SCICELLXX_USES_ARMADILLO
- // Approximate solutin at given points
- multiply_matrix_times_vector(approx_distance_matrix, sol, approx_sol);
+ ACVector *approx_sol_pt = factory_matrices_and_vectors->create_vector(n_evaluation_points_per_dimension);
+ 
+ // Approximate solution at given points
+ multiply_matrix_times_vector(approx_distance_matrix_pt, sol_pt, approx_sol_pt);
  
  // --------------------------------------------------------------
  // Output data for plotting
