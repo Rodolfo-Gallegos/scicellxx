@@ -8,16 +8,6 @@
 #include "../general/common_includes.h"
 #include "../general/utilities.h"
 
-#include "../matrices/ac_vector.h"
-#include "../matrices/ac_matrix.h"
-
-#include "../matrices/cc_vector.h"
-#include "../matrices/cc_matrix.h"
-#ifdef SCICELLXX_USES_ARMADILLO
-#include "../matrices/cc_vector_armadillo.h"
-#include "../matrices/cc_matrix_armadillo.h"
-#endif // #ifdef SCICELLXX_USES_ARMADILLO
-
 // Factory for matrices
 #include "../matrices/cc_factory_matrices.h"
 

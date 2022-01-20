@@ -10,8 +10,6 @@ namespace scicellxx
  ACProblem::ACProblem()
   : Time(0.0), Time_step(0.0), Output_file_index(0)
  { 
-  initialise_problem();
-  
   // Create an empty time steppers vector
   Time_stepper_pt.clear();
   // Create an empty time vector
@@ -26,27 +24,9 @@ namespace scicellxx
  // ===================================================================
  ACProblem::~ACProblem()
  {
-  finalise_problem();
+  
  }
  
- // ===================================================================
- /// Initialise problem (sets framework ready to work)
- // ===================================================================
- void ACProblem::initialise_problem()
- {
-  // Initialise scicellxx
-  initialise_scicellxx();
- }
-
- // =================================================================== 
- /// Finalise problem (performs operations to free resources)
- // ===================================================================
- void ACProblem::finalise_problem()
- {
-  // Finalise chapcom
-  finalise_scicellxx();
- }
-
  // ===================================================================
  /// Write access to the current time
  // ===================================================================

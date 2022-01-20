@@ -7,50 +7,41 @@
 #include "../../../../../src/general/utilities.h"
 #include "../../../../../src/general/initialise.h"
 
-// Matrices
-#include "../../../../../src/matrices/cc_matrix.h"
-#include "../../../../../src/data_structures/cc_node.h"
+// Factory for matrices
+#include "../../../../../src/matrices/cc_factory_matrices.h"
 
-// The class to solve linear systems using numerical recipes
-#include "../../../../../src/linear_solvers/cc_lu_solver_numerical_recipes.h"
+// Factory for linear solver
+#include "../../../../../src/linear_solvers/cc_factory_linear_solver.h"
 
-#ifdef SCICELLXX_USES_ARMADILLO
-// Include Armadillo type matrices since the templates may include
-// Armadillo type matrices
-#include "../../../../../src/matrices/cc_matrix_armadillo.h"
-
-// The class to solve linear systems using Armadillo's type matrices
-#include "../../../../../src/linear_solvers/cc_solver_armadillo.h"
-#endif // #ifdef SCICELLXX_USES_ARMADILLO
+//#include "../../../../../src/data_structures/cc_node.h"
 
 using namespace scicellxx;
 
 // This fucntion has it maximum value at the center, depending on the
 // dimension s. At the boundaries it is zero.
-template<class VEC_TYPE>
-const Real test_function(VEC_TYPE &x, const unsigned s)
+const Real test_function(ACVector *x_pt, const unsigned s)
 {
  Real prod=1.0;
  for (unsigned i = 0; i < s; i++)
   {
-   prod*=x(i)*(1.0-x(i));
+   Real x_i = x_pt->get_value(i);
+   prod*=x_i*(1.0-x_i);
   }
  return pow(4, s)*prod;
 }
 
-template<class MAT_TYPE, class VEC_TYPE>
-void compute_distance_matrix(MAT_TYPE &data_sites, MAT_TYPE &centers,
-                             MAT_TYPE &distance_matrix)
+void compute_distance_matrix(ACMatrix *data_sites_pt, ACMatrix *centers_pt,
+                             ACMatrix *distance_matrix_pt)
 {
- // Get the number of "vector points" on "data_sites"
- // Get the number of "vector points" on "centers"
- const unsigned n_vector_points_data_sites = data_sites.n_columns();
- const unsigned n_vector_points_centers = centers.n_columns();
+ // Get the number of "vector points" on "data_sites_pt"
+ // Get the number of "vector points" on "centers_pt"
+ const unsigned n_vector_points_data_sites = data_sites_pt->n_columns();
+ const unsigned n_vector_points_centers = centers_pt->n_columns();
 
  // The dimension of input vector points must be the same, otherwise
  // there is an error
- const unsigned dimension = data_sites.n_rows();
- const unsigned tmp_dimension = centers.n_rows();
+ const unsigned dimension = data_sites_pt->n_rows();
+ const unsigned tmp_dimension = centers_pt->n_rows();
 
  if (dimension != tmp_dimension)
   {
@@ -66,22 +57,28 @@ void compute_distance_matrix(MAT_TYPE &data_sites, MAT_TYPE &centers,
                           SCICELLXX_EXCEPTION_LOCATION);
   }
  
+ // A factory to create matrices and vectors
+ CCFactoryMatrices factory_matrices_and_vectors;
+ ACVector *distance_pt = factory_matrices_and_vectors->create_vector(dimension);
+ 
  // Loop over all the data points in the first matrix
  for (unsigned m = 0; m < n_vector_points_data_sites; m++)
   {
    // Loop over all the data points in the second matrix
    for (unsigned n = 0; n < n_vector_points_centers; n++)
     {
-     VEC_TYPE distance(dimension);
-     //distance.allocate_memory();
      // Loop over the elements of both vectors
      for (unsigned k = 0; k < dimension; k++)
       {
-       distance(k) = data_sites(k, m) - centers(k, n);
+       Real dis = data_sites_pt->get_value(k, m) - centers_pt->get_value(k, n);
+       distance_pt->set_value(k, dis);
       }
-     distance_matrix(m,n)=distance.norm_2();
+     Real norm2 = distance_pt->norm_2();
+     distance_matrix_pt->set_value(m,n, norm2);
     }
   }
+
+ delete distance_pt;
  
 }
 
@@ -103,6 +100,12 @@ int main(int argc, char *argv[])
  // Initialise scicellxx
  initialise_scicellxx();
 
+ // A factory to create matrices and vectors
+ CCFactoryMatrices factory_matrices_and_vectors;
+ 
+ // A factory to create the linear solver
+ CCFactoryLinearSolver factory_linear_solver;
+ 
  // Instantiate parser
  Args args;
  auto parser = argparse::ArgumentParser(argv[0], "Distance Matrix");
@@ -149,7 +152,7 @@ int main(int argc, char *argv[])
  // The number of nodes
  const unsigned n_nodes = pow(n_nodes_per_dim, dim);
  // A vector of nodes
- std::vector<CCNode<Real> *> nodes_pt(n_nodes);
+ std::vector<CCNode *> nodes_pt(n_nodes);
  
  // Number of variables stored in the node
  const unsigned n_variables = 1;
@@ -162,7 +165,7 @@ int main(int argc, char *argv[])
  // Create the nodes
  for (unsigned i = 0; i < n_nodes; i++)
   {
-   nodes_pt[i] = new CCNode<Real>(dim, n_variables, n_history_values);
+   nodes_pt[i] = new CCNode(dim, n_variables, n_history_values);
   }
 
  // --------------------------------------------------------------
@@ -226,89 +229,56 @@ int main(int argc, char *argv[])
  // Loop over the nodes and extract their position and store them in a
  // matrix
  // --------------------------------------------------------------
-#ifdef SCICELLXX_USES_ARMADILLO
- CCMatrixArmadillo<Real> nodes_position(dim, n_nodes);
-#else
- CCMatrix<Real> nodes_position(dim, n_nodes);
-#endif // #ifdef SCICELLXX_USES_ARMADILLO
+ ACMatrix *nodes_position_pt = factory_matrices_and_vectors.create_matrix(dim, n_nodes);
  // Each column stores the vector position of a node
- //nodes_position.allocate_memory();
   for (unsigned i = 0; i < n_nodes; i++)
   {
    for (unsigned j = 0; j < dim; j++)
     {
-     nodes_position(j, i) = nodes_pt[i]->get_position(j);
+     Real pos = nodes_pt[i]->get_position(j);
+     nodes_position_pt->set_value(j, i, pos);
     }
   }
  
  // -------------------------------------------------------------- 
  // Create the distance matrix
  // --------------------------------------------------------------
-#ifdef SCICELLXX_USES_ARMADILLO
-  CCMatrixArmadillo<Real> distance_matrix(n_nodes, n_nodes);
-#else
- CCMatrix<Real> distance_matrix(n_nodes, n_nodes);
-#endif // #ifdef SCICELLXX_USES_ARMADILLO
+  ACMatrix *distance_matrix_pt = factory_matrices_and_vectors.create_matrix(n_nodes, n_nodes);
  // --------------------------------------------------------------
  // Generate the distance matrix using the nodes position centers
  // shifted by the same nodes position
  // --------------------------------------------------------------
- //distance_matrix.allocate_memory();
-#ifdef SCICELLXX_USES_ARMADILLO
- compute_distance_matrix<CCMatrixArmadillo<Real>, CCVectorArmadillo<Real> >(nodes_position, nodes_position, distance_matrix);
-#else
- compute_distance_matrix<CCMatrix<Real>, CCVector<Real> >(nodes_position, nodes_position, distance_matrix);
-#endif // #ifdef SCICELLXX_USES_ARMADILLO
- 
- // --------------------------------------------------------------
- // Set right-hand side
- // --------------------------------------------------------------
-#ifdef SCICELLXX_USES_ARMADILLO
- CCVectorArmadillo<Real> rhs(n_nodes);
-#else 
- CCVector<Real> rhs(n_nodes);
-#endif // #ifdef SCICELLXX_USES_ARMADILLO 
- //rhs.allocate_memory();
+  
+  compute_distance_matrix(nodes_position_pt, nodes_position_pt, distance_matrix_pt);
+  
+  // --------------------------------------------------------------
+  // Set right-hand side
+  // --------------------------------------------------------------
+  ACVector *rhs_pt = factory_matrices_and_vectors.create_vector(n_nodes);
+  ACVector *tmp_v_pt = factory_matrices_and_vectors.create_vector(dim);
  for (unsigned i = 0; i < n_nodes; i++)
   {
-#ifdef SCICELLXX_USES_ARMADILLO
-   CCVectorArmadillo<Real> tmp_v(dim);
-#else
-   CCVector<Real> tmp_v(dim);
-#endif // #ifdef SCICELLXX_USES_ARMADILLO
-   //tmp_v.allocate_memory();
    for (unsigned j = 0; j < dim; j++)
     {
-     tmp_v(j) = nodes_pt[i]->get_position(j);
+     Real pos = nodes_pt[i]->get_position(j);
+     tmp_v_pt->set_value(j, pos);
     }
    // --------------------------------------------------------------
    // Evaluate the KNOWN function at the centers positions
    // --------------------------------------------------------------
-#ifdef SCICELLXX_USES_ARMADILLO
-   rhs(i) = test_function<CCVectorArmadillo<Real> >(tmp_v, dim);
-#else
-   rhs(i) = test_function<CCVector<Real> >(tmp_v, dim);
-#endif // #ifdef SCICELLXX_USES_ARMADILLO
+   Real test_function_value = test_function(tmp_v_pt, dim);
+   rhs_pt->set_value(i, test_function_value);
   }
  
  // The solution vector (with the respective number of rows) stores
  // the coefficients for the interpolant polynomials
-#ifdef SCICELLXX_USES_ARMADILLO
- CCVectorArmadillo<Real> sol(n_nodes);
-#else
- CCVector<Real> sol(n_nodes);
-#endif // #ifdef SCICELLXX_USES_ARMADILLO
+ ACVector *sol_pt = factory_matrices_and_vectors.create_vector(n_nodes);
  
  // --------------------------------------------------------------
  // Solve
- // --------------------------------------------------------------
-#ifdef SCICELLXX_USES_ARMADILLO
-  // Create an Armadillo linear solver
-  CCSolverArmadillo<Real> linear_solver;
-#else
- // Create a linear solver
- CCLUSolverNumericalRecipes<Real> linear_solver;
-#endif // #ifdef SCICELLXX_USES_ARMADILLO
+ // -------------------------------------------------------------- 
+ // Create the linear solver
+ ACLinearSolver *linear_solver_pt = factory_linear_solver.create_linear_solver();
  
  std::cerr << "Distance matrix" << std::endl;
  //distance_matrix.print();
@@ -316,7 +286,7 @@ int main(int argc, char *argv[])
  // --------------------------------------------------------------
  // Solve the system of equations
  // --------------------------------------------------------------
- linear_solver.solve(distance_matrix, rhs, sol);
+ linear_solver_pt->solve(distance_matrix_pt, rhs_pt, sol_pt);
  std::cerr << "Solution vector" << std::endl;
  //sol.print();
 
@@ -345,11 +315,7 @@ int main(int argc, char *argv[])
  const Real h_test = L / (Real)(n_evaluation_points_per_dimension - 1);
  
  // Compute approximated solution at new positions
-#ifdef SCICELLXX_USES_ARMADILLO
- CCMatrixArmadillo<Real> approx_solution_position(dim, n_evaluation_points_per_dimension);
-#else
- CCMatrix<Real> approx_solution_position(dim, n_evaluation_points_per_dimension);
-#endif // #ifdef SCICELLXX_USES_ARMADILLO
+ ACMatrix *approx_solution_position_pt = factory_matrices_and_vectors->create_matrix(dim, n_evaluation_points_per_dimension);
  //approx_solution_position.allocate_memory();
  // --------------------------------------------------------------
  // Assign positions
@@ -363,27 +329,18 @@ int main(int argc, char *argv[])
      const Real position = static_cast<Real>(r / RAND_MAX) * L;
      // Generate position and assign it
      //const Real position = x_eval[k];
-     approx_solution_position(k, i) = position;
+     approx_solution_position_pt->set_value(k, i, position);
      //x_eval[k]+=h_test;
     }
   }
  
  // Compute distance matrix with new positions
-#ifdef SCICELLXX_USES_ARMADILLO
- CCMatrixArmadillo<Real> approx_distance_matrix(n_evaluation_points_per_dimension, n_nodes);
-#else
- CCMatrix<Real> approx_distance_matrix(n_evaluation_points_per_dimension, n_nodes);
-#endif // #ifdef SCICELLXX_USES_ARMADILLO
+ ACMatrix *approx_distance_matrix_pt = factory_matrices_and_vectors->create_matrix(n_evaluation_points_per_dimension, n_nodes);
  // --------------------------------------------------------------
  // Generate the distance matrix using the nodes position centers
  // shifted by the new positions
  // --------------------------------------------------------------
- //approx_distance_matrix.allocate_memory();
-#ifdef SCICELLXX_USES_ARMADILLO
- compute_distance_matrix<CCMatrixArmadillo<Real>, CCVectorArmadillo<Real> >(approx_solution_position, nodes_position, approx_distance_matrix);
-#else
- compute_distance_matrix<CCMatrix<Real>, CCVector<Real> >(approx_solution_position, nodes_position, approx_distance_matrix);
-#endif // #ifdef SCICELLXX_USES_ARMADILLO
+ compute_distance_matrix(approx_solution_position_pt, nodes_position_pt, approx_distance_matrix_pt);
  //approx_distance_matrix.print();
  
  // Approximated solution
@@ -483,6 +440,15 @@ int main(int argc, char *argv[])
  
  // ==============================================================
  // ==============================================================
+
+ // Free memory
+ delete linear_solver_pt;
+ 
+ delete sol_pt;
+ delete tmp_v_pt;
+ delete rhs_pt;
+ delete distance_matrix_pt;
+ delete nodes_position_pt;
  
  // --------------------------------------------------------------
  // Delete nodes storage

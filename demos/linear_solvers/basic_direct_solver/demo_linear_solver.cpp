@@ -111,6 +111,10 @@ int main(int argc, char *argv[])
   C.print(output_test);
   std::cout << std::endl;
   output_test << std::endl;
+
+  // Free memory for linear solver
+  delete linear_solver_pt;
+  
  }
  
  // ----------------------------------------------------------------
@@ -195,6 +199,10 @@ int main(int argc, char *argv[])
   output_test << std::endl;
   C.print();
   C.print(output_test);
+  
+  // Free memory for linear solver
+  delete linear_solver_pt;
+  
  }
  
  // Close the output for test
