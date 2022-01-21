@@ -39,7 +39,7 @@ namespace scicellxx
  // ===================================================================
  ACMatrix* CCFactoryMatrices::create_matrix(const unsigned long m, const unsigned long n)
  {
-    // ------------------------------------------------------
+  // ------------------------------------------------------
   // Check what matrix type we need to create
   // ------------------------------------------------------
 #ifdef SCICELLXX_USES_ARMADILLO

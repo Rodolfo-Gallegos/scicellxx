@@ -33,7 +33,7 @@ namespace scicellxx
    
   // Destructor
   virtual ~ACMatrix();
-   
+  
   // Allows to create a matrix with the given size but with no data
   virtual void allocate_memory(const unsigned long m,
                                const unsigned long n) = 0;
@@ -179,7 +179,7 @@ namespace scicellxx
    {
     BrokenCopy::broken_copy("ACMatrix");
    }
-   
+  
   // Assignment operator (we do not want this class to be
   // copiable. Check
   // http://www.learncpp.com/cpp-tutorial/912-shallow-vs-deep-copying/

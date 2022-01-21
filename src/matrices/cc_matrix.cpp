@@ -157,6 +157,19 @@ namespace scicellxx
  }
  
  // ===================================================================
+ // Multiplication operator
+ // ===================================================================
+ CCVector CCMatrix::operator*(const CCVector &right_vector)
+ { 
+  // Create a zero vector where to store the result
+  CCVector solution(this->NColumns);
+  // Perform the multiplication
+  multiply_by_vector(right_vector, solution);
+  // Return the solution vector
+  return solution;
+ }
+ 
+ // ===================================================================
  // Transforms the input vector to a matrix class type (virtual such
  // that each derived class has to implement it)
  // ===================================================================
@@ -496,6 +509,98 @@ namespace scicellxx
         solution_matrix_pt[offset_right_matrix+j]+=
          Matrix_pt[offset_left_matrix+k] * right_matrix_pt[k*n_columns_right_matrix+j];
        }
+     }
+   }
+  
+ }
+ 
+ // ===================================================================
+ // Performs multiplication of matrix times vector
+ // ===================================================================
+ void CCMatrix::multiply_by_vector(const CCVector &right_vector,
+                                   CCVector &solution_vector)
+ {
+  // Check that THIS and the right vector have memory allocated
+  if (!this->Is_own_memory_allocated || !right_vector.is_own_memory_allocated())
+   {
+    // Error message
+    std::ostringstream error_message;
+    error_message << "One of the matrices to operate with has no memory allocated\n"
+                  << "this->Is_own_memory_allocated = "
+                  << this->Is_own_memory_allocated << "\n"
+                  << "right_vector.is_own_memory_allocated() = "
+                  << right_vector.is_own_memory_allocated() << std::endl;
+    throw SciCellxxLibError(error_message.str(),
+                           SCICELLXX_CURRENT_FUNCTION,
+                           SCICELLXX_EXCEPTION_LOCATION);
+   }
+  
+  // Check whether the dimensions of the matrices allow for
+  // multiplication
+  const unsigned long n_rows_right_vector = right_vector.n_values();
+  const unsigned long n_rows_left_matrix = this->NRows;
+  const unsigned long n_columns_left_matrix = this->NColumns;
+  if (n_columns_left_matrix != n_rows_right_vector)
+   {
+    // Error message
+    std::ostringstream error_message;
+    error_message << "The dimension of the matrices does not allow "
+                  << "multiplication:\n"
+                  << "dim(left_matrix) = (" << n_rows_left_matrix << ", "
+                  << n_columns_left_matrix << ")\n"
+                  << "dim(right_vector) = (" << n_rows_right_vector << ")\n" << std::endl;
+    throw SciCellxxLibError(error_message.str(),
+                           SCICELLXX_CURRENT_FUNCTION,
+                           SCICELLXX_EXCEPTION_LOCATION);
+   }
+  
+  // Check whether the dimension of the solution vector is correct
+  const unsigned long n_rows_solution_vector = solution_vector.n_values();
+  
+  // Check whether the solution vector has allocated memory, otherwise
+  // allocate it here!!!
+  if (!solution_vector.is_own_memory_allocated())
+   {
+    // Allocate memory for the vector
+    solution_vector.allocate_memory(n_rows_right_vector);
+   }
+  else
+   {    
+    if (n_columns_left_matrix != n_rows_solution_vector)
+     {
+      // Error message
+      std::ostringstream error_message;
+      error_message << "The dimension of the solution vector is not appropiate for\n"
+                    << "the operation:\n"
+                    << "dim(left_matrix) = (" << n_rows_left_matrix << ", "
+                    << n_columns_left_matrix << ")\n"
+                    << "dim(right_vector) = (" << n_rows_right_vector << ")\n"
+                    << "dim(solution_vector) = (" << n_rows_solution_vector
+                    << ")\n" << std::endl;
+      throw SciCellxxLibError(error_message.str(),
+                             SCICELLXX_CURRENT_FUNCTION,
+                             SCICELLXX_EXCEPTION_LOCATION);
+     }
+    
+   }
+  
+  // Get the vector pointer of the solution vector
+  Real *solution_vector_pt = solution_vector.vector_pt();
+  
+  // Get the matrix pointer of the right vector
+  Real *right_vector_pt = right_vector.vector_pt();
+
+  // Perform the multiplication
+  for (unsigned long i = 0; i < n_rows_solution_vector; i++)
+   {
+    const unsigned offset_matrix = i * n_columns_left_matrix;
+    
+    // Initialise
+    solution_vector_pt[i] = 0;
+    for (unsigned long k = 0; k < n_columns_left_matrix; k++)
+     {
+      solution_vector_pt[i]+=
+       Matrix_pt[offset_matrix+k] * right_vector_pt[k];
      }
    }
   

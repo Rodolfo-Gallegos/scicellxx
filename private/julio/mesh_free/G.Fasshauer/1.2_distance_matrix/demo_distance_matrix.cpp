@@ -345,9 +345,12 @@ int main(int argc, char *argv[])
 
  // Approximated solution
  ACVector *approx_sol_pt = factory_matrices_and_vectors->create_vector(n_evaluation_points_per_dimension);
- 
+
+ // HERE HERE HERE
  // Approximate solution at given points
  multiply_matrix_times_vector(approx_distance_matrix_pt, sol_pt, approx_sol_pt);
+ (*approx_sol_pt) = (*approx_distance_matrix_pt) * (*sol_pt);
+ approx_distance_matrix_pt->multiply by vector
  
  // --------------------------------------------------------------
  // Output data for plotting

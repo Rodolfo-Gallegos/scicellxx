@@ -57,6 +57,9 @@ namespace scicellxx
   // Multiplication operator
   CCMatrix operator*(const CCMatrix &right_matrix);
   
+  // Multiplication operator
+  CCVector operator*(const CCVector &right_vector);
+  
   // Allows to create a matrix with the given size but with no data
   void allocate_memory(const unsigned long m,
                        const unsigned long n); 
@@ -87,6 +90,9 @@ namespace scicellxx
   
   // Performs multiplication of matrices
   void multiply_by_matrix(const CCMatrix &right_matrix, CCMatrix &solution_matrix);
+  
+  // Performs multiplication of matrix times vector
+  void multiply_by_vector(const CCVector &right_vector, CCVector &solution_vector);
   
   // Computes the transpose and store it in the transpose matrix
   void transpose(CCMatrix &transposed_matrix);
