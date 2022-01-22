@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
   output_test << std::endl;
   
   // Apply the solution and check the result
-  CCMatrix C = A*sol;
+  CCMatrix C = A * sol;
   std::cout << std::endl;
   std::cout << "Matrix C" << std::endl;
   std::cout << std::endl;

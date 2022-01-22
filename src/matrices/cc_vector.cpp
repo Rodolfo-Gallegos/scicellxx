@@ -118,87 +118,26 @@ namespace scicellxx
   substract_vector(vector, solution);
   return solution;
  }
- 
+
+ // ===================================================================
+ // Element by element multipliation
+ // ===================================================================
+ CCVector CCVector::operator*(const CCVector &vector)
+ {
+  // Create a zero vector where to store the result
+  CCVector solution_vector(this->NValues);
+  multiply_element_by_element_vector(vector, solution_vector);
+  return solution_vector;
+ }
+
  // ===================================================================
  // Performs dot product with the current vector
  // ===================================================================
  Real CCVector::dot(const CCVector &right_vector)
  {
-  // Check that THIS and the right vector have memory allocated
-  if (!this->Is_own_memory_allocated || !right_vector.is_own_memory_allocated())
-   {
-    // Error message
-    std::ostringstream error_message;
-    error_message << "One of the vectors to operate with has no memory allocated\n"
-                  << "this->Is_own_memory_allocated = "
-                  << this->Is_own_memory_allocated << "\n"
-                  << "right_vector.is_own_memory_allocated() = "
-                  << right_vector.is_own_memory_allocated() << std::endl;
-    throw SciCellxxLibError(error_message.str(),
-                           SCICELLXX_CURRENT_FUNCTION,
-                           SCICELLXX_EXCEPTION_LOCATION);
-   }
-  
-  // Check whether the dimensions of the vectors allow the operation
-  const unsigned long n_values_right_vector = right_vector.n_values();
-  const unsigned long n_values_this_vector = this->n_values();
-  if (n_values_this_vector != n_values_right_vector)
-   {
-    // Error message
-    std::ostringstream error_message;
-    error_message << "The dimension of the vectors is not the same:\n"
-                  << "dim(right_vector) = (" << n_values_right_vector << ")\n"
-                  << "dim(this) = (" << n_values_this_vector << ")\n"
-                  << "If you require to multiply both vectors to generate a\n"
-                  << "matrix then use the corresponding matrices operations.\n"
-                  << "This requires to create a matrix from at least one of\n"
-                  << "the involved vectors."
-                  << std::endl;
-    throw SciCellxxLibError(error_message.str(),
-                           SCICELLXX_CURRENT_FUNCTION,
-                           SCICELLXX_EXCEPTION_LOCATION);
-   }
-  
-  // Check that THIS vector is a row vector and that the right vector
-  // is a column vector
-  if (this->is_column_vector())
-   {
-    // Error message
-    std::ostringstream error_message;
-    error_message << "THIS vector should be a row vector\n"
-                  << std::endl;
-    throw SciCellxxLibError(error_message.str(),
-                           SCICELLXX_CURRENT_FUNCTION,
-                           SCICELLXX_EXCEPTION_LOCATION);
-   }
-  
-  if (!right_vector.is_column_vector())
-   {
-    // Error message
-    std::ostringstream error_message;
-    error_message << "The right vector should be a column vector\n"
-                  << std::endl;
-    throw SciCellxxLibError(error_message.str(),
-                           SCICELLXX_CURRENT_FUNCTION,
-                           SCICELLXX_EXCEPTION_LOCATION);
-   }
-  
-  // Get the vector pointer of the right vector
-  Real *right_vector_pt = right_vector.vector_pt();
-  
-  // Store the dot product of the vectors
-  Real dot_product = 0.0;
-  
-  // Compute the dot product
-  for (unsigned long i = 0; i < n_values_this_vector; i++)
-   {
-    dot_product+= Vector_pt[i] * right_vector_pt[i];
-   }
-  
-  return dot_product;
-  
+  return dot_vectors(*this, right_vector);
  }
- 
+  
  // ===================================================================
  // Transforms the input vector to a vector class type (virtual such
  // that each derived class has to implement it)
@@ -277,94 +216,14 @@ namespace scicellxx
    }
  
  }
-
+ 
  // ===================================================================
  // Performs sum of vectors
  // ===================================================================
  void CCVector::add_vector(const CCVector &vector,
                               CCVector &solution_vector)
  {
-  // Check that THIS and the other vector have memory allocated
-  if (!this->Is_own_memory_allocated || !vector.is_own_memory_allocated())
-   {
-    // Error message
-    std::ostringstream error_message;
-    error_message << "One of the vectors to operate with has no memory allocated\n"
-                  << "this->Is_own_memory_allocated = "
-                  << this->Is_own_memory_allocated << "\n"
-                  << "vector.is_own_memory_allocated() = "
-                  << vector.is_own_memory_allocated() << std::endl;
-    throw SciCellxxLibError(error_message.str(),
-                           SCICELLXX_CURRENT_FUNCTION,
-                           SCICELLXX_EXCEPTION_LOCATION);
-   }
-  
-  // Check whether the dimensions of the vectors are the same
-  const unsigned long n_values_input_vector = vector.n_values();
-  const unsigned long n_values_this_vector = this->n_values();
-  if (n_values_this_vector != n_values_input_vector)
-   {
-    // Error message
-    std::ostringstream error_message;
-    error_message << "The dimension of the vectors is not the same:\n"
-                  << "dim(vector) = (" << n_values_input_vector << ")\n"
-                  << "dim(this) = (" << n_values_this_vector << ")\n"
-                  << std::endl;
-    throw SciCellxxLibError(error_message.str(),
-                           SCICELLXX_CURRENT_FUNCTION,
-                           SCICELLXX_EXCEPTION_LOCATION);
-   }
-  
-  // Check that the three vectors have the same column vector status
-  if (this->is_column_vector() != vector.is_column_vector() ||
-      solution_vector.is_column_vector() != vector.is_column_vector())
-   {
-    // Error message
-    std::ostringstream error_message;
-    error_message << "The three vectors MUST BE either column or row vectors\n"
-                  << std::endl;
-    throw SciCellxxLibError(error_message.str(),
-                           SCICELLXX_CURRENT_FUNCTION,
-                           SCICELLXX_EXCEPTION_LOCATION);
-   }
-  
-  // Check whether the solution vector has allocated memory, otherwise
-  // allocate it here!!!
-  if (!solution_vector.is_own_memory_allocated())
-   {
-    // Allocate memory for the vector
-    solution_vector.allocate_memory(n_values_input_vector);
-   }
-  else
-   {
-    // Check that the already allocated memory is correct (n_values)
-    if (solution_vector.n_values() != vector.n_values())
-     {
-      // Error message
-      std::ostringstream error_message;
-      error_message << "The number of elements for the solution vector is\n"
-                    << "not as expected\n"
-                    << "dim(solution_vector): " << solution_vector.n_values()
-                    << "\ndim(vector): " << vector.n_values()
-                    << std::endl;
-      throw SciCellxxLibError(error_message.str(),
-                             SCICELLXX_CURRENT_FUNCTION,
-                             SCICELLXX_EXCEPTION_LOCATION);
-     }
-    
-   }
-  
-  // Get the vector pointer of the solution vector
-  Real *solution_vector_pt = solution_vector.vector_pt();
-  
-  // Get the vector pointer of the input vector
-  Real *vector_pt = vector.vector_pt();
-  // Perform the addition
-  for (unsigned long i = 0; i < n_values_this_vector; i++)
-   {
-    solution_vector_pt[i] = Vector_pt[i] + vector_pt[i];
-   }
-  
+  add_vectors(*this, vector, solution_vector);
  }
  
  // ===================================================================
@@ -373,89 +232,9 @@ namespace scicellxx
  void CCVector::substract_vector(const CCVector &vector,
                                     CCVector &solution_vector)
  {
-  // Check that THIS and the other vector have no memory allocated
-  if (!this->Is_own_memory_allocated || !vector.is_own_memory_allocated())
-   {
-    // Error message
-    std::ostringstream error_message;
-    error_message << "One of the vectors to operate with has no memory allocated\n"
-                  << "this->Is_own_memory_allocated = "
-                  << this->Is_own_memory_allocated << "\n"
-                  << "vector.is_own_memory_allocated() = "
-                  << vector.is_own_memory_allocated() << std::endl;
-    throw SciCellxxLibError(error_message.str(),
-                           SCICELLXX_CURRENT_FUNCTION,
-                           SCICELLXX_EXCEPTION_LOCATION);
-   }
-  
-  // Check whether the dimensions of the vectors are the same
-  const unsigned long n_values_input_vector = vector.n_values();
-  const unsigned long n_values_this_vector = this->n_values();
-  if (n_values_this_vector != n_values_input_vector)
-   {
-    // Error message
-    std::ostringstream error_message;
-    error_message << "The dimension of the vectors is not the same:\n"
-                  << "dim(vector) = (" << n_values_input_vector << ")\n"
-                  << "dim(this) = (" << n_values_this_vector << ")\n"
-                  << std::endl;
-    throw SciCellxxLibError(error_message.str(),
-                           SCICELLXX_CURRENT_FUNCTION,
-                           SCICELLXX_EXCEPTION_LOCATION);
-   }
-
-  // Check that the three vectors have the same column vector status
-  if (this->is_column_vector() != vector.is_column_vector() ||
-      solution_vector.is_column_vector() != vector.is_column_vector())
-   {
-    // Error message
-    std::ostringstream error_message;
-    error_message << "The three vectors MUST BE either column or row vectors\n"
-                  << std::endl;
-    throw SciCellxxLibError(error_message.str(),
-                           SCICELLXX_CURRENT_FUNCTION,
-                           SCICELLXX_EXCEPTION_LOCATION);
-   }
-  
-  // Check whether the solution vector has allocated memory, otherwise
-  // allocate it here!!!
-  if (!solution_vector.is_own_memory_allocated())
-   {
-    // Allocate memory for the vector
-    solution_vector.allocate_memory(n_values_input_vector);
-   }
-  else
-   {
-    // Check that the already allocated memory is correct (n_values)
-    if (solution_vector.n_values() != vector.n_values())
-     {
-      // Error message
-      std::ostringstream error_message;
-      error_message << "The number of elements for the solution vector is\n"
-                    << "not as expected\n"
-                    << "dim(solution_vector): " << solution_vector.n_values()
-                    << "\ndim(vector): " << vector.n_values()
-                    << std::endl;
-      throw SciCellxxLibError(error_message.str(),
-                             SCICELLXX_CURRENT_FUNCTION,
-                             SCICELLXX_EXCEPTION_LOCATION);
-     }
-    
-   }
-  
-  // Get the vector pointer of the solution vector
-  Real *solution_vector_pt = solution_vector.vector_pt();
-  
-  // Get the vector pointer of the input vector
-  Real *vector_pt = vector.vector_pt();
-  // Perform the addition
-  for (unsigned long i = 0; i < n_values_this_vector; i++)
-   {
-    solution_vector_pt[i] = Vector_pt[i] - vector_pt[i];
-   }
-  
+  substract_vectors(*this, vector, solution_vector);
  }
- 
+
  // ===================================================================
  // Performs multiplication of vectors (element by element)
  // ===================================================================
@@ -463,87 +242,7 @@ namespace scicellxx
  multiply_element_by_element_vector(const CCVector &vector,
                                     CCVector &solution_vector)
  {
-  // Check that THIS and the other vector have memory allocated
-  if (!this->Is_own_memory_allocated || !vector.is_own_memory_allocated())
-   {
-    // Error message
-    std::ostringstream error_message;
-    error_message << "One of the vectors to operate with has no memory allocated\n"
-                  << "this->Is_own_memory_allocated = "
-                  << this->Is_own_memory_allocated << "\n"
-                  << "vector.is_own_memory_allocated() = "
-                  << vector.is_own_memory_allocated() << std::endl;
-    throw SciCellxxLibError(error_message.str(),
-                           SCICELLXX_CURRENT_FUNCTION,
-                           SCICELLXX_EXCEPTION_LOCATION);
-   }
-  
-  // Check whether the dimensions of the vectors are the same
-  const unsigned long n_values_input_vector = vector.n_values();
-  const unsigned long n_values_this_vector = this->n_values();
-  if (n_values_this_vector != n_values_input_vector)
-   {
-    // Error message
-    std::ostringstream error_message;
-    error_message << "The dimension of the vectors is not the same:\n"
-                  << "dim(vector) = (" << n_values_input_vector << ")\n"
-                  << "dim(this) = (" << n_values_this_vector << ")\n"
-                  << std::endl;
-    throw SciCellxxLibError(error_message.str(),
-                           SCICELLXX_CURRENT_FUNCTION,
-                           SCICELLXX_EXCEPTION_LOCATION);
-   }
-  
-  // Check that the three vectors have the same column vector status
-  if (this->is_column_vector() != vector.is_column_vector() ||
-      solution_vector.is_column_vector() != vector.is_column_vector())
-   {
-    // Error message
-    std::ostringstream error_message;
-    error_message << "The three vectors MUST BE either column or row vectors\n"
-                  << std::endl;
-    throw SciCellxxLibError(error_message.str(),
-                           SCICELLXX_CURRENT_FUNCTION,
-                           SCICELLXX_EXCEPTION_LOCATION);
-   }
-  
-  // Check whether the solution vector has allocated memory, otherwise
-  // allocate it here!!!
-  if (!solution_vector.is_own_memory_allocated())
-   {
-    // Allocate memory for the vector
-    solution_vector.allocate_memory(n_values_input_vector);
-   }
-  else
-   {
-    // Check that the already allocated memory is correct (n_values)
-    if (solution_vector.n_values() != vector.n_values())
-     {
-      // Error message
-      std::ostringstream error_message;
-      error_message << "The number of elements for the solution vector is\n"
-                    << "not as expected\n"
-                    << "dim(solution_vector): " << solution_vector.n_values()
-                    << "\ndim(vector): " << vector.n_values()
-                    << std::endl;
-      throw SciCellxxLibError(error_message.str(),
-                             SCICELLXX_CURRENT_FUNCTION,
-                             SCICELLXX_EXCEPTION_LOCATION);
-     }
-    
-   }
-  
-  // Get the vector pointer of the solution vector
-  Real *solution_vector_pt = solution_vector.vector_pt();
-  
-  // Get the vector pointer of the input vector
-  Real *vector_pt = vector.vector_pt();
-  // Perform the addition
-  for (unsigned long i = 0; i < n_values_this_vector; i++)
-   {
-    solution_vector_pt[i] = Vector_pt[i] * vector_pt[i];
-   }
-  
+  multiply_element_by_element_vectors(*this, vector, solution_vector);
  }
  
  // ===================================================================

@@ -40,7 +40,7 @@ namespace scicellxx
  // ===================================================================
  // Constructor a matrix from a CCVector
  // ===================================================================
- CCMatrix::CCMatrix(CCVector &vector)
+ CCMatrix::CCMatrix(const CCVector &vector)
   : ACMatrix()
  {
   // Get the pointer to the vector data
@@ -144,20 +144,7 @@ namespace scicellxx
  }
 
  // ===================================================================
- // Multiplication operator
- // ===================================================================
- CCMatrix CCMatrix::operator*(const CCMatrix &right_matrix)
- { 
-  // Create a zero matrix where to store the result
-  CCMatrix solution(this->NRows, right_matrix.n_columns());
-  // Perform the multiplication
-  multiply_by_matrix(right_matrix, solution);
-  // Return the solution matrix
-  return solution;
- }
- 
- // ===================================================================
- // Multiplication operator
+ // Multiplication operator with vector
  // ===================================================================
  CCVector CCMatrix::operator*(const CCVector &right_vector)
  { 
@@ -166,6 +153,19 @@ namespace scicellxx
   // Perform the multiplication
   multiply_by_vector(right_vector, solution);
   // Return the solution vector
+  return solution;
+ }
+ 
+ // ===================================================================
+ // Multiplication operator with matrix
+ // ===================================================================
+ CCMatrix CCMatrix::operator*(const CCMatrix &right_matrix)
+ { 
+  // Create a zero matrix where to store the result
+  CCMatrix solution(this->NRows, right_matrix.n_columns());
+  // Perform the multiplication
+  multiply_by_matrix(right_matrix, solution);
+  // Return the solution matrix
   return solution;
  }
  
@@ -245,273 +245,32 @@ namespace scicellxx
    }
   
  }
- 
+
  // ===================================================================
  // Performs sum of matrices
  // ===================================================================
  void CCMatrix::add_matrix(const CCMatrix &matrix,
-                              CCMatrix &solution_matrix)
+                           CCMatrix &solution_matrix)
  {
-  // Check that THIS and the other matrix have memory allocated
-  if (!this->Is_own_memory_allocated || !matrix.is_own_memory_allocated())
-   {
-    // Error message
-    std::ostringstream error_message;
-    error_message << "One of the matrices to operate with has no memory allocated\n"
-                  << "this->Is_own_memory_allocated = "
-                  << this->Is_own_memory_allocated << "\n"
-                  << "matrix.is_own_memory_allocated() = "
-                  << matrix.is_own_memory_allocated() << std::endl;
-    throw SciCellxxLibError(error_message.str(),
-                           SCICELLXX_CURRENT_FUNCTION,
-                           SCICELLXX_EXCEPTION_LOCATION);
-   }
-  
-  // Check whether the dimensions of the matrices are the same
-  const unsigned long n_rows_input_matrix = matrix.n_rows();
-  const unsigned long n_columns_input_matrix = matrix.n_columns();
-  const unsigned long n_rows = this->NRows;
-  const unsigned long n_columns = this->NColumns;
-  if (n_rows != n_rows_input_matrix || n_columns != n_columns_input_matrix)
-   {
-    // Error message
-    std::ostringstream error_message;
-    error_message << "The dimension of the matrices is not the same:\n"
-                  << "dim(matrix) = (" << n_rows_input_matrix << ", "
-                  << n_columns_input_matrix << ")\n"
-                  << "dim(this) = (" << n_rows << ", " << n_columns
-                  << ")\n" << std::endl;
-    throw SciCellxxLibError(error_message.str(),
-                           SCICELLXX_CURRENT_FUNCTION,
-                           SCICELLXX_EXCEPTION_LOCATION);
-   }
-  
-  // Check whether the solution matrix has allocated memory, otherwise
-  // allocate it here!!!
-  if (!solution_matrix.is_own_memory_allocated())
-   {
-    // Allocate memory for the matrix
-    solution_matrix.allocate_memory(n_rows, n_columns);
-   }
-  else
-   {
-    // Check whether the dimension of the solution matrix are correct
-    const unsigned long n_rows_solution_matrix = solution_matrix.n_rows();
-    const unsigned long n_columns_solution_matrix = solution_matrix.n_columns();
-    if (n_rows != n_rows_solution_matrix || n_columns != n_columns_solution_matrix)
-     {
-      // Error message
-      std::ostringstream error_message;
-      error_message << "The dimensions of the matrices are not the same:\n"
-                    << "dim(this) = (" << n_rows << ", "
-                    << n_columns << ")\n"
-                    << "dim(solution_matrix) = (" << n_rows_solution_matrix
-                    << ", " << n_columns_solution_matrix << ")\n" << std::endl;
-      throw SciCellxxLibError(error_message.str(),
-                             SCICELLXX_CURRENT_FUNCTION,
-                             SCICELLXX_EXCEPTION_LOCATION);
-     }
-    
-   }
-  
-  // Get the matrix pointer of the solution matrix
-  Real *solution_matrix_pt = solution_matrix.matrix_pt();
-  
-  // Get the matrix pointer of the input matrix
-  Real *matrix_pt = matrix.matrix_pt();
-  // Perform the addition
-  for (unsigned long i = 0; i < n_rows; i++)
-   {
-    const unsigned long offset = i*n_columns;
-    for (unsigned long j = 0; j < n_columns; j++)
-     {
-      solution_matrix_pt[offset+j] = Matrix_pt[offset+j] + matrix_pt[offset+j];
-     }
-   }
-  
+  add_matrices(*this, matrix, solution_matrix);
  }
  
  // ===================================================================
  // Performs substraction of matrices
  // ===================================================================
  void CCMatrix::substract_matrix(const CCMatrix &matrix,
-                                    CCMatrix &solution_matrix)
+                                 CCMatrix &solution_matrix)
  {
-  // Check that THIS and the other matrix have memory allocated
-  if (!this->Is_own_memory_allocated || !matrix.is_own_memory_allocated())
-   {
-    // Error message
-    std::ostringstream error_message;
-    error_message << "One of the matrices to operate with has no memory allocated\n"
-                  << "this->Is_own_memory_allocated = "
-                  << this->Is_own_memory_allocated << "\n"
-                  << "matrix.is_own_memory_allocated() = "
-                  << matrix.is_own_memory_allocated() << std::endl;
-    throw SciCellxxLibError(error_message.str(),
-                           SCICELLXX_CURRENT_FUNCTION,
-                           SCICELLXX_EXCEPTION_LOCATION);
-   }
-  
-  // Check whether the dimensions of the matrices are the same
-  const unsigned long n_rows_input_matrix = matrix.n_rows();
-  const unsigned long n_columns_input_matrix = matrix.n_columns();
-  const unsigned long n_rows = this->NRows;
-  const unsigned long n_columns = this->NColumns;
-  if (n_rows != n_rows_input_matrix || n_columns != n_columns_input_matrix)
-   {
-    // Error message
-    std::ostringstream error_message;
-    error_message << "The dimension of the matrices is not the same:\n"
-                  << "dim(matrix) = (" << n_rows_input_matrix << ", "
-                  << n_columns_input_matrix << ")\n"
-                  << "dim(this) = (" << n_rows << ", " << n_columns
-                  << ")\n" << std::endl;
-    throw SciCellxxLibError(error_message.str(),
-                           SCICELLXX_CURRENT_FUNCTION,
-                           SCICELLXX_EXCEPTION_LOCATION);
-   }
-  
-  // Check whether the solution matrix has allocated memory, otherwise
-  // allocate it here!!!
-  if (!solution_matrix.is_own_memory_allocated())
-   {
-    // Allocate memory for the matrix
-    solution_matrix.allocate_memory(n_rows, n_columns);
-   }
-  else
-   {
-    // Check whether the dimension of the solution matrix are correct
-    const unsigned long n_rows_solution_matrix = solution_matrix.n_rows();
-    const unsigned long n_columns_solution_matrix = solution_matrix.n_columns();
-    if (n_rows != n_rows_solution_matrix || n_columns != n_columns_solution_matrix)
-     {
-      // Error message
-      std::ostringstream error_message;
-      error_message << "The dimension of the matrices is not the same:\n"
-                    << "dim(this) = (" << n_rows << ", "
-                    << n_columns << ")\n"
-                    << "dim(solution_matrix) = (" << n_rows_solution_matrix
-                    << ", " << n_columns_solution_matrix << ")\n" << std::endl;
-      throw SciCellxxLibError(error_message.str(),
-                             SCICELLXX_CURRENT_FUNCTION,
-                             SCICELLXX_EXCEPTION_LOCATION);
-     }
-
-   }
-  
-  // Get the matrix pointer of the solution matrix
-  Real *solution_matrix_pt = solution_matrix.matrix_pt();
-  
-  // Get the matrix pointer of the input matrix
-  Real *matrix_pt = matrix.matrix_pt();
-  // Perform the addition
-  for (unsigned long i = 0; i < n_rows; i++)
-   {
-    const unsigned long offset = i*n_columns;
-    for (unsigned long j = 0; j < n_columns; j++)
-     {
-      solution_matrix_pt[offset+j] = Matrix_pt[offset+j] - matrix_pt[offset+j];
-     }
-   }
- 
+  substract_matrices(*this, matrix, solution_matrix);
  }
-
+ 
  // ===================================================================
  // Performs multiplication of matrices
  // ===================================================================
  void CCMatrix::multiply_by_matrix(const CCMatrix &right_matrix,
-                                      CCMatrix &solution_matrix)
+                                   CCMatrix &solution_matrix)
  {
-  // Check that THIS and the right matrix have memory allocated
-  if (!this->Is_own_memory_allocated || !right_matrix.is_own_memory_allocated())
-   {
-    // Error message
-    std::ostringstream error_message;
-    error_message << "One of the matrices to operate with has no memory allocated\n"
-                  << "this->Is_own_memory_allocated = "
-                  << this->Is_own_memory_allocated << "\n"
-                  << "right_matrix.is_own_memory_allocated() = "
-                  << right_matrix.is_own_memory_allocated() << std::endl;
-    throw SciCellxxLibError(error_message.str(),
-                           SCICELLXX_CURRENT_FUNCTION,
-                           SCICELLXX_EXCEPTION_LOCATION);
-   }
-  
-  // Check whether the dimensions of the matrices allow for
-  // multiplication
-  const unsigned long n_rows_right_matrix = right_matrix.n_rows();
-  const unsigned long n_columns_right_matrix = right_matrix.n_columns();
-  const unsigned long n_rows_left_matrix = this->NRows;
-  const unsigned long n_columns_left_matrix = this->NColumns;
-  if (n_columns_left_matrix != n_rows_right_matrix)
-   {
-    // Error message
-    std::ostringstream error_message;
-    error_message << "The dimension of the matrices does not allow "
-                  << "multiplication:\n"
-                  << "dim(left_matrix) = (" << n_rows_left_matrix << ", "
-                  << n_columns_left_matrix << ")\n"
-                  << "dim(right_matrix) = (" << n_rows_right_matrix << ", "
-                  << n_columns_right_matrix << ")\n" << std::endl;
-    throw SciCellxxLibError(error_message.str(),
-                           SCICELLXX_CURRENT_FUNCTION,
-                           SCICELLXX_EXCEPTION_LOCATION);
-   }
-  
-  // Check whether the solution matrix has allocated memory, otherwise
-  // allocate it here!!!
-  if (!solution_matrix.is_own_memory_allocated())
-   {
-    // Allocate memory for the matrix
-    solution_matrix.allocate_memory(n_rows_left_matrix, n_columns_right_matrix);
-   }
-  else
-   {
-    // Check whether the dimension of the solution matrix are correct
-    const unsigned long n_rows_solution_matrix = solution_matrix.n_rows();
-    const unsigned long n_columns_solution_matrix = solution_matrix.n_columns();
-    if (n_rows_left_matrix != n_rows_solution_matrix ||
-        n_columns_right_matrix != n_columns_solution_matrix)
-     {
-      // Error message
-      std::ostringstream error_message;
-      error_message << "The dimension of the solution matrix is not appropiate for\n"
-                    << "the operation:\n"
-                    << "dim(left_matrix) = (" << n_rows_left_matrix << ", "
-                    << n_columns_left_matrix << ")\n"
-                    << "dim(right_matrix) = (" << n_rows_right_matrix << ", "
-                    << n_columns_right_matrix << ")\n"
-                    << "dim(solution_matrix) = (" << n_rows_solution_matrix
-                    << ", " << n_columns_solution_matrix << ")\n" << std::endl;
-      throw SciCellxxLibError(error_message.str(),
-                             SCICELLXX_CURRENT_FUNCTION,
-                             SCICELLXX_EXCEPTION_LOCATION);
-     }
-    
-   }
-  
-  // Get the matrix pointer of the solution matrix
-  Real *solution_matrix_pt = solution_matrix.matrix_pt();
-  
-  // Get the matrix pointer of the right matrix
-  Real *right_matrix_pt = right_matrix.matrix_pt();
-  // Perform the multiplication
-  for (unsigned long i = 0; i < n_rows_left_matrix; i++)
-   {
-    const unsigned offset_right_matrix = i * n_columns_right_matrix;
-    const unsigned offset_left_matrix = i * n_columns_left_matrix;
-    for (unsigned long j = 0; j < n_columns_right_matrix; j++)
-     {
-      // Initialise
-      solution_matrix_pt[offset_right_matrix+j] = 0;
-      for (unsigned long k = 0; k < n_columns_left_matrix; k++)
-       {
-        solution_matrix_pt[offset_right_matrix+j]+=
-         Matrix_pt[offset_left_matrix+k] * right_matrix_pt[k*n_columns_right_matrix+j];
-       }
-     }
-   }
-  
+  multiply_matrices(*this, right_matrix, solution_matrix);
  }
  
  // ===================================================================
@@ -520,90 +279,7 @@ namespace scicellxx
  void CCMatrix::multiply_by_vector(const CCVector &right_vector,
                                    CCVector &solution_vector)
  {
-  // Check that THIS and the right vector have memory allocated
-  if (!this->Is_own_memory_allocated || !right_vector.is_own_memory_allocated())
-   {
-    // Error message
-    std::ostringstream error_message;
-    error_message << "One of the matrices to operate with has no memory allocated\n"
-                  << "this->Is_own_memory_allocated = "
-                  << this->Is_own_memory_allocated << "\n"
-                  << "right_vector.is_own_memory_allocated() = "
-                  << right_vector.is_own_memory_allocated() << std::endl;
-    throw SciCellxxLibError(error_message.str(),
-                           SCICELLXX_CURRENT_FUNCTION,
-                           SCICELLXX_EXCEPTION_LOCATION);
-   }
-  
-  // Check whether the dimensions of the matrices allow for
-  // multiplication
-  const unsigned long n_rows_right_vector = right_vector.n_values();
-  const unsigned long n_rows_left_matrix = this->NRows;
-  const unsigned long n_columns_left_matrix = this->NColumns;
-  if (n_columns_left_matrix != n_rows_right_vector)
-   {
-    // Error message
-    std::ostringstream error_message;
-    error_message << "The dimension of the matrices does not allow "
-                  << "multiplication:\n"
-                  << "dim(left_matrix) = (" << n_rows_left_matrix << ", "
-                  << n_columns_left_matrix << ")\n"
-                  << "dim(right_vector) = (" << n_rows_right_vector << ")\n" << std::endl;
-    throw SciCellxxLibError(error_message.str(),
-                           SCICELLXX_CURRENT_FUNCTION,
-                           SCICELLXX_EXCEPTION_LOCATION);
-   }
-  
-  // Check whether the dimension of the solution vector is correct
-  const unsigned long n_rows_solution_vector = solution_vector.n_values();
-  
-  // Check whether the solution vector has allocated memory, otherwise
-  // allocate it here!!!
-  if (!solution_vector.is_own_memory_allocated())
-   {
-    // Allocate memory for the vector
-    solution_vector.allocate_memory(n_rows_right_vector);
-   }
-  else
-   {    
-    if (n_columns_left_matrix != n_rows_solution_vector)
-     {
-      // Error message
-      std::ostringstream error_message;
-      error_message << "The dimension of the solution vector is not appropiate for\n"
-                    << "the operation:\n"
-                    << "dim(left_matrix) = (" << n_rows_left_matrix << ", "
-                    << n_columns_left_matrix << ")\n"
-                    << "dim(right_vector) = (" << n_rows_right_vector << ")\n"
-                    << "dim(solution_vector) = (" << n_rows_solution_vector
-                    << ")\n" << std::endl;
-      throw SciCellxxLibError(error_message.str(),
-                             SCICELLXX_CURRENT_FUNCTION,
-                             SCICELLXX_EXCEPTION_LOCATION);
-     }
-    
-   }
-  
-  // Get the vector pointer of the solution vector
-  Real *solution_vector_pt = solution_vector.vector_pt();
-  
-  // Get the matrix pointer of the right vector
-  Real *right_vector_pt = right_vector.vector_pt();
-
-  // Perform the multiplication
-  for (unsigned long i = 0; i < n_rows_solution_vector; i++)
-   {
-    const unsigned offset_matrix = i * n_columns_left_matrix;
-    
-    // Initialise
-    solution_vector_pt[i] = 0;
-    for (unsigned long k = 0; k < n_columns_left_matrix; k++)
-     {
-      solution_vector_pt[i]+=
-       Matrix_pt[offset_matrix+k] * right_vector_pt[k];
-     }
-   }
-  
+  multiply_matrix_times_vector(*this, right_vector, solution_vector);
  }
  
  // ===================================================================

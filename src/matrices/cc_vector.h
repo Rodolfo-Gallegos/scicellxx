@@ -50,6 +50,9 @@ namespace scicellxx
    // Substraction operator
    CCVector operator-(const CCVector &vector);
    
+   // Element by element multipliation
+   CCVector operator*(const CCVector &vector);
+   
    // Allows to create a vector with the given size but with no data 
    void allocate_memory(const unsigned long n);
    
@@ -129,31 +132,31 @@ namespace scicellxx
    Real *Vector_pt;
    
   };
- 
- // ================================================================
- // Extra methods to work with vectors, we do not need them to be
- // friends of the class since all their operations are performed
- // using the class methods
- // ================================================================
- 
- // Dot product of vectors
+  
+  // ================================================================
+  // Extra methods to work with vectors, we do not need them to be
+  // friends of the class since all their operations are performed
+  // using the class methods
+  // ================================================================
+  
+  // Dot product of vectors
   Real dot_vectors(const CCVector &left_vector, const CCVector &right_vector);
   
- // Addition of vectors
+  // Addition of vectors
   void add_vectors(const CCVector &vector_one,
                    const CCVector &vector_two,
                    CCVector &solution_vector);
- 
- // Substraction of vectors
+  
+  // Substraction of vectors
   void substract_vectors(const CCVector &vector_one,
                          const CCVector &vector_two,
                          CCVector &solution_vector);
  
- // Performs multiplication of vectors (one by one entries)
+  // Performs multiplication of vectors (one by one entries)
   void multiply_element_by_element_vectors(const CCVector &vector_one,
                                            const CCVector &vector_two,
                                            CCVector &solution_vector);
- 
+  
 }
 
 #endif // #ifndef CCVECTOR_H
