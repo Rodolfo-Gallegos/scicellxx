@@ -8,11 +8,11 @@
 #include "../general/common_includes.h"
 #include "../general/utilities.h"
 
-// Factory for matrices
-#include "../matrices/cc_factory_matrices.h"
+// Matrices
+#include "../matrices/matrices.h"
 
-// Factory for linear solver
-#include "../linear_solvers/cc_factory_linear_solver.h"
+// Linear solvers
+#include "../linear_solvers/linear_solvers.h"
 
 // Includes the abstract class for strategies to compute the Jacobian
 // and the residual

@@ -566,6 +566,7 @@ int main(int argc, char *argv[])
   // Get the difference between the ORIGINAL gravity vector and the
   // DOUBLE rotated gravity
   CCVectorArmadillo diff = g - drg;
+  
   // Get the norm
   const double norm = diff.norm_2();
   std::cout << std::endl << ""

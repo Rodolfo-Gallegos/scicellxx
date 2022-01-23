@@ -54,10 +54,10 @@ namespace scicellxx
   // Substraction operator
   CCMatrix operator-(const CCMatrix &matrix);
   
-  // Multiplication operator
+  // Multiplication operator with vector
   CCVector operator*(const CCVector &right_vector);
   
-  // Multiplication operator
+  // Multiplication operator with matrix
   CCMatrix operator*(const CCMatrix &right_matrix);
   
   // Allows to create a matrix with the given size but with no data

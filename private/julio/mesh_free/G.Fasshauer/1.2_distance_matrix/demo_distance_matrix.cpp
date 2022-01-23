@@ -17,6 +17,19 @@
 
 using namespace scicellxx;
 
+template<class MAT_TYPE, class VEC_TYPE>
+class Problem
+{
+oublic:
+ Problem();
+ ~Problem();
+ 
+ void initialise_problem();
+ void configure_problem();
+ void solve_problem();
+ void document_solution();
+};
+
 // This fucntion has it maximum value at the center, depending on the
 // dimension s. At the boundaries it is zero.
 const Real test_function(ACVector *x_pt, const unsigned s)

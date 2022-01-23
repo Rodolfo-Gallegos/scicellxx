@@ -50,7 +50,7 @@ namespace scicellxx
  // ===================================================================
  // Constructor that creates an Armadillo's matrix from a CCMatrix
  // ===================================================================
- CCMatrixArmadillo::CCMatrixArmadillo(CCMatrix &matrix)
+ CCMatrixArmadillo::CCMatrixArmadillo(const CCMatrix &matrix)
   : ACMatrix()
  {
   // Get the pointer to the matrix data
@@ -66,7 +66,7 @@ namespace scicellxx
  // ===================================================================
  // Constructor that creates an Armadillo's matrix from a CCVector
  // ===================================================================
- CCMatrixArmadillo::CCMatrixArmadillo(CCVector &vector)
+ CCMatrixArmadillo::CCMatrixArmadillo(const CCVector &vector)
   : ACMatrix()
  {
   // Get the pointer to the vector data
@@ -93,7 +93,7 @@ namespace scicellxx
  // ===================================================================
  // Constructor that creates an Armadillo's matrix from a CCVectorArmadillo
  // ===================================================================
- CCMatrixArmadillo::CCMatrixArmadillo(CCVectorArmadillo &vector)
+ CCMatrixArmadillo::CCMatrixArmadillo(const CCVectorArmadillo &vector)
  {
   // Compute the dimension of the new matrix by checking whether the
   // vector is transposed or not
@@ -200,7 +200,20 @@ namespace scicellxx
  }
 
  // ===================================================================
- // Multiplication operator
+ // Multiplication operator with vector
+ // ===================================================================
+ CCVectorArmadillo CCMatrixArmadillo::operator*(const CCVectorArmadillo &right_vector)
+ {
+  // Create a zero vector where to store the result
+  CCVectorArmadillo solution(this->NColumns);
+  // Perform the multiplication
+  multiply_by_vector(right_vector, solution);
+  // Return the solution vector
+  return solution; 
+ }
+ 
+ // ===================================================================
+ // Multiplication operator with matrix
  // ===================================================================
  CCMatrixArmadillo CCMatrixArmadillo::operator*(const CCMatrixArmadillo &right_matrix)
  { 
@@ -309,6 +322,34 @@ namespace scicellxx
   
  }
  
+ // ===================================================================
+ // Performs sum of matrices
+ // ===================================================================
+ void CCMatrixArmadillo::add_matrix(const CCMatrixArmadillo &matrix,
+                                       CCMatrixArmadillo &solution_matrix)
+ {
+  add_matrices(*this, matrix, solution_matrix);
+ }
+
+ // ===================================================================
+ // Performs substraction of matrices
+ // ===================================================================
+ void CCMatrixArmadillo::substract_matrix(const CCMatrixArmadillo &matrix,
+                                    CCMatrixArmadillo &solution_matrix)
+ {
+  substract_matrices(*this, matrix, solution_matrix);
+ }
+
+ // ===================================================================
+ // Performs multiplication of matrices
+ // ===================================================================
+ void CCMatrixArmadillo::multiply_by_matrix(const CCMatrixArmadillo &right_matrix,
+                                               CCMatrixArmadillo &solution_matrix)
+ {
+  multiply_matrices(*this, right_matrix,solution_matrix);
+ }
+ 
+#if 0
  // ===================================================================
  // Performs sum of matrices
  // ===================================================================
@@ -466,7 +507,7 @@ namespace scicellxx
   (*arma_solution_matrix_pt) = (*Arma_matrix_pt) - (*arma_matrix_pt);
   
  }
-
+ 
  // ===================================================================
  // Performs multiplication of matrices
  // ===================================================================
@@ -550,6 +591,16 @@ namespace scicellxx
   // Perform the operation
   (*arma_solution_matrix_pt) = (*Arma_matrix_pt) * (*arma_right_matrix_pt);
   
+ }
+# endif //  #if 0
+ 
+ // ===================================================================
+ // Performs multiplication of matrix times vector
+ // ===================================================================
+ void CCMatrixArmadillo::multiply_by_vector(const CCVectorArmadillo &right_vector,
+                                            CCVectorArmadillo &solution_vector)
+ {
+  multiply_matrix_times_vector(*this, right_vector, solution_vector);
  }
  
  // ===================================================================

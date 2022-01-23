@@ -40,13 +40,13 @@ namespace scicellxx
    CCMatrixArmadillo(Real *matrix_pt, const unsigned long m, const unsigned long n);
    
    // Constructor that creates an Armadillo's matrix from a CCMatrix
-   CCMatrixArmadillo(CCMatrix &matrix);
+   CCMatrixArmadillo(const CCMatrix &matrix);
    
    // Constructor that creates an Armadillo's matrix from a CCVector
-   CCMatrixArmadillo(CCVector &vector);
+   CCMatrixArmadillo(const CCVector &vector);
    
    // Constructor that creates an Armadillo's matrix from a CCVectorArmadillo
-   CCMatrixArmadillo(CCVectorArmadillo &vector);
+   CCMatrixArmadillo(const CCVectorArmadillo &vector);
    
    // Copy constructor (we require to define this if we want to use
    // operators overloading as sum and assignment)
@@ -70,7 +70,10 @@ namespace scicellxx
    // Substraction operator
    CCMatrixArmadillo operator-(const CCMatrixArmadillo &matrix);
    
-   // Multiplication operator
+   // Multiplication operator with vector
+   CCVectorArmadillo operator*(const CCVectorArmadillo &right_vector);
+   
+   // Multiplication operator with matrix
    CCMatrixArmadillo operator*(const CCMatrixArmadillo &right_matrix);
    
    // Allows to create a matrix with the given size but with no data
@@ -104,7 +107,10 @@ namespace scicellxx
   
    // Performs substraction of matrices
    void substract_matrix(const CCMatrixArmadillo &matrix, CCMatrixArmadillo &solution_matrix);
-  
+   
+   // Performs multiplication of matrix times vector
+   void multiply_by_vector(const CCVectorArmadillo &right_vector, CCVectorArmadillo &solution_vector);
+    
    // Performs multiplication of matrices
    void multiply_by_matrix(const CCMatrixArmadillo &right_matrix, CCMatrixArmadillo &solution_matrix);
    
