@@ -145,7 +145,29 @@ namespace scicellxx
   substract_vector(vector, solution);
   return solution;
  }
+
+ // ===================================================================
+ // Element by element multiplication
+ // ===================================================================
+ CCVectorArmadillo CCVectorArmadillo::operator*(const CCVectorArmadillo &vector)
+ {
+  // Create a zero vector where to store the result
+  CCVectorArmadillo solution(this->NValues);
+  // Performs multiplication of vectors (one by one entries)
+  multiply_element_by_element_vector(vector, solution);
+  return solution;
+ }
+
+ // ===================================================================
+ // Performs dot product with the current vector
+ // ===================================================================
+ Real CCVectorArmadillo::dot(const CCVectorArmadillo &right_vector)
+ {
+  // Dot product of vectors
+  return dot_vectors(*this, right_vector);
+ }
  
+#if 0 
  // ===================================================================
  // Performs dot product with the current vector
  // ===================================================================
@@ -216,6 +238,7 @@ namespace scicellxx
   return dot_product;
   
  }
+#endif // #if 0
  
  // ===================================================================
  // Transforms the input vector to an armadillo vector class type
@@ -325,6 +348,36 @@ namespace scicellxx
  
  }
 
+ // ===================================================================
+ // Performs sum of vectors
+ // ===================================================================
+ void CCVectorArmadillo::add_vector(const CCVectorArmadillo &vector,
+                                    CCVectorArmadillo &solution_vector)
+ {
+  add_vectors(*this, vector, solution_vector);
+ }
+
+ // ===================================================================
+ // Performs substraction of vectors
+ // ===================================================================
+ void CCVectorArmadillo::substract_vector(const CCVectorArmadillo &vector,
+                                    CCVectorArmadillo &solution_vector)
+ {
+  substract_vectors(*this, vector, solution_vector);
+ }
+
+ // ===================================================================
+ // Performs multiplication of vectors (element by element)
+ // ===================================================================
+ void CCVectorArmadillo::
+ multiply_element_by_element_vector(const CCVectorArmadillo &vector,
+                                    CCVectorArmadillo &solution_vector)
+ {
+  // Performs multiplication of vectors (one by one entries)
+  multiply_element_by_element_vectors(*this, vector, solution_vector);
+ }
+ 
+ #if 0
  // ===================================================================
  // Performs sum of vectors
  // ===================================================================
@@ -589,6 +642,8 @@ namespace scicellxx
    }
   
  }
+
+#endif // #if 0
  
  // ===================================================================
  // Computes the transpose and store in the solution vector
@@ -1222,7 +1277,7 @@ namespace scicellxx
   arma::Mat<Real> *arma_vector_two_pt = vector_two.arma_vector_pt();
   
   // Perform the addition
-  (*arma_solution_vector_pt) = (*arma_vector_one_pt) + (*arma_vector_two_pt);
+  (*arma_solution_vector_pt) = (*arma_vector_one_pt) - (*arma_vector_two_pt);
   
  }
 

@@ -63,12 +63,12 @@ namespace scicellxx
   // Get the number of odes
   const unsigned n_odes = odes.n_odes();
   
-  // Create an instance of the factory for matrices and vectors
-  CCFactoryMatrices factory_matrices_and_vectors;
-  
   // The residual vector
-  ACVector *local_error_vector_pt = factory_matrices_and_vectors.create_vector(n_odes);
-  //local_error_vector_pt->allocate_memory(n_odes);
+#ifdef SCICELLXX_USES_ARMADILLO
+  CCVectorArmadillo local_error_vector(n_odes);
+#else
+  CCVector local_error_vector(n_odes);
+#endif // #ifdef SCICELLXX_USES_ARMADILLO
   
   // Initialise local error with 0
   Real local_error = 0;
@@ -115,11 +115,11 @@ namespace scicellxx
    // Compute error
    for (unsigned i = 0; i < n_odes; i++)
     {
-     local_error_vector_pt->value(i) = (u_p(i,k) - u(i,k)) / u_p(i,k);
+     local_error_vector(i) = (u_p(i,k) - u(i,k)) / u_p(i,k);
     }
    
    // Get the maximum norm
-   local_error = local_error_vector_pt->norm_inf();
+   local_error = local_error_vector.norm_inf();
    // Is local error smaller than allowed tolerance
    if (local_error < minimum_tolerance())
     {

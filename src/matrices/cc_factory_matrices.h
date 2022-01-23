@@ -20,8 +20,9 @@ namespace scicellxx
  /// @class CCFactoryMatrices cc_factory_matrices.h
  
  /// This class implements a factory for the instantiation of
- /// matrices, it helps to choose the right matrices types based on
- /// compilation flags
+ /// matrices. The class is templated so that it will return matrices
+ /// and vectors of the templated typeit helps to choose the right
+ /// matrices types based on compilation flags
  class CCFactoryMatrices
  {
   

@@ -72,12 +72,12 @@ namespace scicellxx
 
   // Create a vector with the initial guess from the first row (0)
   // since the values have been shift
-  
-  // Create an instance of the factory for matrices and vectors
-  CCFactoryMatrices factory_matrices_and_vectors;
-  
-  ACVector *u_initial_guess_pt = factory_matrices_and_vectors.create_vector();
-  u_initial_guess_pt->set_vector(u.history_values_row_pt(0), n_odes);
+
+#ifdef SCICELLXX_USES_ARMADILLO
+  CCVectorArmadillo u_initial_guess(u.history_values_row_pt(0), n_odes);
+#else
+  CCVector u_initial_guess(u.history_values_row_pt(0), n_odes);
+#endif // #ifdef SCICELLXX_USES_ARMADILLO
   
   // It is not required to shift the values to the right to provide
   // storage for the new values since they were shift when computing
@@ -90,7 +90,7 @@ namespace scicellxx
   
   // Solve using Newton's method, the solution is automatically copied
   // back at the u data structure
-  Newtons_method.solve(u_initial_guess_pt);
+  Newtons_method.solve(&u_initial_guess);
     
  }
 

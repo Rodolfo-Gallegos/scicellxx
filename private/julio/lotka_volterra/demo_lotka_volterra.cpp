@@ -10,21 +10,6 @@
 // The required classes to solve Initial Value Problems (IVP)
 // The factory to create the time stepper (integration method)
 #include "../../../src/time_steppers/cc_factory_time_stepper.h"
-// Integration methods
-#include "../../../src/time_steppers/cc_euler_method.h"
-#include "../../../src/time_steppers/cc_runge_kutta_4_method.h"
-#include "../../../src/time_steppers/cc_adams_moulton_2_predictor_corrector_method.h"
-#include "../../../src/time_steppers/cc_backward_euler_method.h"
-#include "../../../src/time_steppers/cc_adams_moulton_2_method.h"
-#include "../../../src/time_steppers/cc_bdf_2_method.h"
-
-#include "../../../src/matrices/cc_matrix.h"
-
-#ifdef SCICELLXX_USES_ARMADILLO
-// Include Armadillo type matrices since the templates may include
-// Armadillo type matrices
-#include "../../../src/matrices/cc_matrix_armadillo.h"
-#endif // #ifdef SCICELLXX_USES_ARMADILLO
 
 // Base class for the concrete problem
 #include "../../../src/problem/ac_ivp_for_odes.h"
@@ -93,6 +78,9 @@ protected:
 int main(int argc, char *argv[])
 {
  
+ // Initialise chapcom
+ initialise_scicellxx();
+ 
  // Create the factory for the time steppers (integration methods)
  CCFactoryTimeStepper factory_time_stepper;
  
@@ -116,7 +104,7 @@ int main(int argc, char *argv[])
   // Prepare the output file name
   // ----------------------------------------------------------------
   std::ostringstream output_filename;
-  output_filename << "euler.dat";
+  output_filename << "RESLT/euler.dat";
   output_filename.precision(8);
   
   // Create an instance of the problem
@@ -165,8 +153,6 @@ int main(int argc, char *argv[])
     lotka_volterra_problem.document_solution();
     
    } // while(LOOP)
-  
-  std::cout << "[FINISHING UP] ... " << std::endl;
   
   // Free memory
   delete time_stepper_pt;
@@ -192,7 +178,7 @@ int main(int argc, char *argv[])
   // Prepare the output file name
   // ----------------------------------------------------------------
   std::ostringstream output_filename;
-  output_filename << "rk4.dat";
+  output_filename << "RESLT/rk4.dat";
   output_filename.precision(8);
   
   // Create an instance of the problem
@@ -242,8 +228,6 @@ int main(int argc, char *argv[])
     
    } // while(LOOP)
   
-  std::cout << "[FINISHING UP] ... " << std::endl;
-  
   // Free memory
   delete time_stepper_pt;
   time_stepper_pt = 0;
@@ -268,7 +252,7 @@ int main(int argc, char *argv[])
   // Prepare the output file name
   // ----------------------------------------------------------------
   std::ostringstream output_filename;
-  output_filename << "am2pc.dat";
+  output_filename << "RESLT/am2pc.dat";
   output_filename.precision(8);
   
   // Create an instance of the problem
@@ -318,8 +302,6 @@ int main(int argc, char *argv[])
     
    } // while(LOOP)
   
-  std::cout << "[FINISHING UP] ... " << std::endl;
-  
   // Free memory
   delete time_stepper_pt;
   time_stepper_pt = 0;
@@ -344,7 +326,7 @@ int main(int argc, char *argv[])
    // Prepare the output file name
    // ----------------------------------------------------------------
    std::ostringstream output_filename;
-   output_filename << "bdf1.dat";
+   output_filename << "RESLT/bdf1.dat";
    output_filename.precision(8);
   
    // Create an instance of the problem
@@ -394,8 +376,6 @@ int main(int argc, char *argv[])
     
     } // while(LOOP)
   
-   std::cout << "[FINISHING UP] ... " << std::endl;
-  
    // Free memory
    delete time_stepper_pt;
    time_stepper_pt = 0;
@@ -420,7 +400,7 @@ int main(int argc, char *argv[])
    // Prepare the output file name
    // ----------------------------------------------------------------
    std::ostringstream output_filename;
-   output_filename << "am2.dat";
+   output_filename << "RESLT/am2.dat";
    output_filename.precision(8);
   
    // Create an instance of the problem
@@ -469,8 +449,6 @@ int main(int argc, char *argv[])
      lotka_volterra_problem.document_solution();
     
     } // while(LOOP)
-  
-   std::cout << "[FINISHING UP] ... " << std::endl;
   
    // Free memory
    delete time_stepper_pt;
@@ -496,7 +474,7 @@ int main(int argc, char *argv[])
    // Prepare the output file name
    // ----------------------------------------------------------------
    std::ostringstream output_filename;
-   output_filename << "bdf2.dat";
+   output_filename << "RESLT/bdf2.dat";
    output_filename.precision(8);
    
    // Create an instance of the problem
@@ -546,13 +524,14 @@ int main(int argc, char *argv[])
     
     } // while(LOOP)
   
-   std::cout << "[FINISHING UP] ... " << std::endl;
-  
    // Free memory
    delete time_stepper_pt;
    time_stepper_pt = 0;
 
   }
+  
+  // Finalise scicellxx
+  finalise_scicellxx();
   
   return 0;
  

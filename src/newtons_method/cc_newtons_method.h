@@ -8,21 +8,11 @@
 #include "../general/common_includes.h"
 #include "../general/utilities.h"
 
-#include "../matrices/ac_vector.h"
-#include "../matrices/ac_matrix.h"
+// Matrices
+#include "../matrices/matrices.h"
 
-#include "../matrices/cc_vector.h"
-#include "../matrices/cc_matrix.h"
-#ifdef SCICELLXX_USES_ARMADILLO
-#include "../matrices/cc_vector_armadillo.h"
-#include "../matrices/cc_matrix_armadillo.h"
-#endif // #ifdef SCICELLXX_USES_ARMADILLO
-
-// Factory for matrices
-#include "../matrices/cc_factory_matrices.h"
-
-// Factory for linear solver
-#include "../linear_solvers/cc_factory_linear_solver.h"
+// Linear solvers
+#include "../linear_solvers/linear_solvers.h"
 
 // Includes the abstract class for strategies to compute the Jacobian
 // and the residual

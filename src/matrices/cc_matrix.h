@@ -30,7 +30,7 @@ namespace scicellxx
   CCMatrix(Real *matrix_pt, const unsigned long m, const unsigned long n);
   
   // Constructor that creates a matrix from a vector
-  CCMatrix(CCVector &vector);
+  CCMatrix(const CCVector &vector);
   
   // Copy constructor (we require to define this if we want to use
   // operators overloading as sum and assignment)
@@ -54,7 +54,10 @@ namespace scicellxx
   // Substraction operator
   CCMatrix operator-(const CCMatrix &matrix);
   
-  // Multiplication operator
+  // Multiplication operator with vector
+  CCVector operator*(const CCVector &right_vector);
+  
+  // Multiplication operator with matrix
   CCMatrix operator*(const CCMatrix &right_matrix);
   
   // Allows to create a matrix with the given size but with no data
@@ -87,6 +90,9 @@ namespace scicellxx
   
   // Performs multiplication of matrices
   void multiply_by_matrix(const CCMatrix &right_matrix, CCMatrix &solution_matrix);
+  
+  // Performs multiplication of matrix times vector
+  void multiply_by_vector(const CCVector &right_vector, CCVector &solution_vector);
   
   // Computes the transpose and store it in the transpose matrix
   void transpose(CCMatrix &transposed_matrix);

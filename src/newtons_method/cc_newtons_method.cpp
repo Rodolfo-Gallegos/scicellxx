@@ -248,9 +248,6 @@ namespace scicellxx
                            SCICELLXX_EXCEPTION_LOCATION);
    }
   
-  // Create an instance of a factory for matrices and vectors
-  CCFactoryMatrices factory_matrices_and_vectors;
-  
   // ----------------------------------------------------------------
   // Initial residual convergence check
   // ----------------------------------------------------------------
@@ -310,8 +307,11 @@ namespace scicellxx
   
   // Create the vector to store the solution of the system of
   // equations during Newton's steps
-  ACVector *dx_pt = factory_matrices_and_vectors.create_vector();
-  dx_pt->allocate_memory(n_dof);
+#ifdef SCICELLXX_USES_ARMADILLO
+  CCVectorArmadillo dx(n_dof);
+#else
+  CCVector dx(n_dof);
+#endif // #ifdef SCICELLXX_USES_ARMADILLO
   
   // Time Newton's method
   clock_t initial_clock_time_for_newtons_method = Timing::cpu_clock_time();
@@ -372,7 +372,7 @@ namespace scicellxx
     clock_t initial_clock_time_for_linear_solver = Timing::cpu_clock_time();
     
     // Solve the system of equations
-    Linear_solver_pt->solve(Jacobian_pt, residual_pt, dx_pt);
+    Linear_solver_pt->solve(Jacobian_pt, residual_pt, &dx);
     
     // Time the linear solver
     clock_t final_clock_time_for_linear_solver = Timing::cpu_clock_time();
@@ -391,7 +391,7 @@ namespace scicellxx
     // Update initial guess
     for (unsigned i_dof = 0; i_dof < n_dof; i_dof++)
      {
-      X_pt->value(i_dof)+=dx_pt->value(i_dof);
+      X_pt->value(i_dof)+=dx(i_dof);
      }
     
     // Perform actions after Newton's step

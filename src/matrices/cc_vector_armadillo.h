@@ -60,6 +60,9 @@ namespace scicellxx
    
    // Substraction operator
    CCVectorArmadillo operator-(const CCVectorArmadillo &vector);
+
+   // Element by element multiplication
+   CCVectorArmadillo operator*(const CCVectorArmadillo &vector);
    
    // Allows to create a vector with the given size but with no data 
    void allocate_memory(const unsigned long n);

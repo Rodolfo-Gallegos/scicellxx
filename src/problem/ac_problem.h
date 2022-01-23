@@ -90,13 +90,7 @@ namespace scicellxx
    {
     BrokenCopy::broken_assign("ACProblem");
    }
-  
-  /// Initialise problem (sets framework ready to work)
-  void initialise_problem();
-  
-  /// Finalise problem (performs operations to free resources)
-  void finalise_problem();
-  
+    
   /// Problem steady solve
   virtual void steady_solve() = 0;
   
