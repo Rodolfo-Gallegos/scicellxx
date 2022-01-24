@@ -1,18 +1,12 @@
 #ifndef ACPREDICTORCORRECTORTIMESTEPPER_H
 #define ACPREDICTORCORRECTORTIMESTEPPER_H
 
-#include "../general/common_includes.h"
-#include "../general/utilities.h"
+#include "../general/general.h"
 
 #include "../data_structures/ac_odes.h"
 #include "../data_structures/cc_data.h"
 
-#ifdef SCICELLXX_USES_ARMADILLO
-// Include Armadillo type vector for residual
-#include "../matrices/cc_vector_armadillo.h"
-#else
-#include "../matrices/cc_vector.h"
-#endif // #ifdef SCICELLXX_USES_ARMADILLO
+#include "../matrices/matrices.h"
 
 #include "./ac_time_stepper.h"
 

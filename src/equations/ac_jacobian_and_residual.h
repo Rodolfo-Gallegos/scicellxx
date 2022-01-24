@@ -1,22 +1,10 @@
+
 #ifndef ACJACOBIANANDRESIDUAL_H
 #define ACJACOBIANANDRESIDUAL_H
 
-#include "../general/common_includes.h"
-#include "../general/utilities.h"
-
+#include "../general/general.h"
 #include "../data_structures/cc_data.h"
-#include "../matrices/ac_vector.h"
-#include "../matrices/ac_matrix.h"
-
-#include "../matrices/cc_vector.h"
-#include "../matrices/cc_matrix.h"
-
-#ifdef SCICELLXX_USES_ARMADILLO
-#include "../matrices/cc_vector_armadillo.h"
-#include "../matrices/cc_matrix_armadillo.h"
-#endif // #ifdef SCICELLXX_USES_ARMADILLO
-
-#include "../matrices/cc_factory_matrices.h"
+#include "../matrices/matrices.h"
 
 namespace scicellxx
 {

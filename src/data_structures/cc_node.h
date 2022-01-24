@@ -4,8 +4,8 @@
 #ifndef CCNODE_H
 #define CCNODE_H
 
-#include "../general/common_includes.h"
-#include "../general/utilities.h"
+#include "../general/general.h"
+
 #include "./cc_data.h"
 
 namespace scicellxx

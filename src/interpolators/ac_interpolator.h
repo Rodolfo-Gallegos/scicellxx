@@ -1,8 +1,7 @@
 #ifndef ACINTERPOLATOR_H
 #define ACINTERPOLATOR_H
 
-#include "../general/common_includes.h"
-#include "../general/utilities.h"
+#include "../general/general.h"
 
 namespace scicellxx
 {

@@ -6,8 +6,7 @@
 #ifndef ACVECTOR_H
 #define ACVECTOR_H
 
-#include "../general/common_includes.h"
-#include "../general/utilities.h"
+#include "../general/general.h"
 
 #ifdef SCICELLXX_USES_ARMADILLO
 // Add Armadillo's includes (only for the arma_vector methods)

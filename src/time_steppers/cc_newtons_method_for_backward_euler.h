@@ -6,8 +6,7 @@
 #ifndef CCNEWTONSMETHODFORBACKWARDEULER_H
 #define CCNEWTONSMETHODFORBACKWARDEULER_H
 
-#include "../general/common_includes.h"
-#include "../general/utilities.h"
+#include "../general/general.h"
 
 #include "cc_jacobian_and_residual_for_backward_euler.h"
 #include "ac_newtons_method_for_implicit_time_stepper.h"

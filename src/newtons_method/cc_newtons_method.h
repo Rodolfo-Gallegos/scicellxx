@@ -5,8 +5,7 @@
 #ifndef CCNEWTONSMETHOD_H
 #define CCNEWTONSMETHOD_H
 
-#include "../general/common_includes.h"
-#include "../general/utilities.h"
+#include "../general/general.h"
 
 // Matrices
 #include "../matrices/matrices.h"

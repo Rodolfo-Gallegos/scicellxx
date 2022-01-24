@@ -1,8 +1,7 @@
 #ifndef ACTIMESTEPPER_H
 #define ACTIMESTEPPER_H
 
-#include "../general/common_includes.h"
-#include "../general/utilities.h"
+#include "../general/general.h"
 
 #include "../data_structures/ac_odes.h"
 #include "../data_structures/cc_data.h"

@@ -1,8 +1,7 @@
 #ifndef ACRADIALBASEFUNCTION_H
 #define ACRADIALBASEFUNCTION_H
 
-#include "../general/common_includes.h"
-#include "../general/utilities.h"
+#include "../general/general.h"
 
 namespace scicellxx
 {

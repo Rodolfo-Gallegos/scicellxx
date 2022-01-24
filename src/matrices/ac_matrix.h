@@ -6,8 +6,7 @@
 #ifndef ACMATRIX_H
 #define ACMATRIX_H
 
-#include "../general/common_includes.h"
-#include "../general/utilities.h"
+#include "../general/general.h"
 
 #ifdef SCICELLXX_USES_ARMADILLO
 // Add Armadillo's includes (only for the arma_matrix_pt() method)

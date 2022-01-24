@@ -5,8 +5,7 @@
 #ifndef CCNEWTONSMETHODFORBDF2_H
 #define CCNEWTONSMETHODFORBDF2_H
 
-#include "../general/common_includes.h"
-#include "../general/utilities.h"
+#include "../general/general.h"
 
 #include "cc_jacobian_and_residual_for_bdf_2.h"
 #include "ac_newtons_method_for_implicit_time_stepper.h"

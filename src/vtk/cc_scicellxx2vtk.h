@@ -1,8 +1,7 @@
 #ifndef CCSCICELLXX2VTK_H
 #define CCSCICELLXX2VTK_H
 
-#include "../general/common_includes.h"
-#include "../general/utilities.h"
+#include "../general/general.h"
 
 #include "../data_structures/cc_data.h"
 #include "../data_structures/cc_node.h"

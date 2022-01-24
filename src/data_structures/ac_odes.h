@@ -1,8 +1,7 @@
 #ifndef ACODES_H
 #define ACODES_H
 
-#include "../general/common_includes.h"
-#include "../general/utilities.h"
+#include "../general/general.h"
 
 #include "cc_data.h"
 

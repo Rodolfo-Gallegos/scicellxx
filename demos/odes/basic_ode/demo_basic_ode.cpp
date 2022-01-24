@@ -3,33 +3,17 @@
 #include <fstream>
 
 // Include general/common includes, utilities and initialisation
-#include "../../../src/general/common_includes.h"
-#include "../../../src/general/utilities.h"
-#include "../../../src/general/initialise.h"
+#include "../../../src/general/general.h"
 
-// The required classes to solve Initial Value Problems (IVP)
-// The factory to create the time stepper (integration method)
-#include "../../../src/time_steppers/cc_factory_time_stepper.h"
-// Integration methods
-#include "../../../src/time_steppers/cc_euler_method.h"
-#include "../../../src/time_steppers/cc_runge_kutta_4_method.h"
-#include "../../../src/time_steppers/cc_backward_euler_predictor_corrector_method.h"
-#include "../../../src/time_steppers/cc_adams_moulton_2_predictor_corrector_method.h"
-#include "../../../src/time_steppers/cc_backward_euler_method.h"
-#include "../../../src/time_steppers/cc_adams_moulton_2_method.h"
-#include "../../../src/time_steppers/cc_bdf_2_method.h"
+// The required classes to solve Initial Value Problems (IVP), also
+// including the factory for time steppers
+#include "../../../src/time_steppers/time_steppers.h"
 
-#ifdef SCICELLXX_USES_ARMADILLO
-// Include Armadillo type matrices
-#include "../../../src/matrices/cc_matrix_armadillo.h"
-#else
-#include "../../../src/matrices/cc_matrix.h"
-#endif // #ifdef SCICELLXX_USES_ARMADILLO
+// Include matrices
+#include "../../../src/matrices/matrices.h"
 
-// The class used to store the values of u and dudt
-#include "../../../src/data_structures/cc_data.h"
-// The class implementing the interfaces for the ODEs
-#include "../../../src/data_structures/ac_odes.h"
+// Include data structures
+#include "../../../src/data_structures/data_structures.h"
 
 // The base class for the specification of the Jacobian of the ODEs
 #include "../../../src/time_steppers/ac_jacobian_and_residual_for_implicit_time_stepper.h"

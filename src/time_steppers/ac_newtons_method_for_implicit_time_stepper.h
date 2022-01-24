@@ -6,8 +6,7 @@
 #ifndef ACNEWTONSMETHODFORIMPLICITTIMESTEPPER_H
 #define ACNEWTONSMETHODFORIMPLICITTIMESTEPPER_H
 
-#include "../general/common_includes.h"
-#include "../general/utilities.h"
+#include "../general/general.h"
 
 #include "../data_structures/ac_odes.h"
 #include "../data_structures/cc_data.h"

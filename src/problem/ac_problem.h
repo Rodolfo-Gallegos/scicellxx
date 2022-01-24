@@ -1,9 +1,7 @@
 #ifndef ACPROBLEM_H
 #define ACPROBLEM_H
 
-#include "../general/common_includes.h"
-#include "../general/utilities.h"
-#include "../general/initialise.h"
+#include "../general/general.h"
 
 #include "../time_steppers/ac_time_stepper.h"
 

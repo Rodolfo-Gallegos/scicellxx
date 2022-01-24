@@ -9,7 +9,11 @@ namespace scicellxx
  ACJacobianAndResidual::ACJacobianAndResidual()
  {
   // Create an instance of the factory for matrices and vectors
-  CCFactoryMatrices factory_matrices_and_vectors;
+#ifdef SCICELLXX_USES_ARMADILLO
+  CCFactoryMatrices<CCMatrixArmadillo, CCVectorArmadillo> factory_matrices_and_vectors;
+#else
+  CCFactoryMatrices<CCMatrix, CCVector> factory_matrices_and_vectors;
+#endif // #ifdef SCICELLXX_USES_ARMADILLO
   
   /// Instantiate Jacobian and Residual based on the type of libraries
   /// we are using.

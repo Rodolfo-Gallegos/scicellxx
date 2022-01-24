@@ -1,9 +1,6 @@
 #ifndef SCICELLXX_MATRICES_H
 #define SCICELLXX_MATRICES_H
 
-#include "../general/common_includes.h"
-#include "../general/utilities.h"
-
 #include "ac_vector.h"
 #include "ac_matrix.h"
 

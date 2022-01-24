@@ -4,8 +4,7 @@
 #ifndef CCDATA_H
 #define CCDATA_H
 
-#include "../general/common_includes.h"
-#include "../general/utilities.h"
+#include "../general/general.h"
 
 namespace scicellxx
 {
