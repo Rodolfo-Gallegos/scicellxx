@@ -2,13 +2,10 @@
 #define ACPREDICTORCORRECTORTIMESTEPPER_H
 
 #include "../general/general.h"
-
-#include "../data_structures/ac_odes.h"
-#include "../data_structures/cc_data.h"
-
+#include "../data_structures/data_structures.h"
 #include "../matrices/matrices.h"
 
-#include "./ac_time_stepper.h"
+#include "./ac_time_stepper_for_odes.h"
 
 namespace scicellxx
 {
@@ -25,7 +22,7 @@ namespace scicellxx
 
  /// This class implements the interfaces for integration methods to
  /// solve ODE's that implement a predictor-corrector strategy
- class ACPredictorCorrectorTimeStepper : public virtual ACTimeStepper
+ class ACPredictorCorrectorTimeStepper : public virtual ACTimeStepperForODEs
  {
  
  public:
@@ -37,12 +34,13 @@ namespace scicellxx
   virtual ~ACPredictorCorrectorTimeStepper();
   
   /// Performs a time step applying a time integration method to the
-  /// given odes from the current time "t" to the time "t+h".
+  /// stored odes from the current time "t" to the time "t+h".
   /// Previous the call of the method, the values of u at time "t"
   /// should be stored at index k (default k = 0). After the call, the
   /// values at time "t+h" will be stored at index k, therefore the
   /// values at time "t" will be at index k+1
-  virtual void time_step(ACODEs &odes, const Real h,
+  virtual void time_step(ACODEs &odes,
+                         const Real h,
                          const Real t,
                          CCData &u,
                          unsigned k = 0) = 0;
@@ -142,6 +140,7 @@ namespace scicellxx
   /// copiable). Check
   /// http://www.learncpp.com/cpp-tutorial/912-shallow-vs-deep-copying/
   ACPredictorCorrectorTimeStepper(const ACPredictorCorrectorTimeStepper &copy)
+   : ACTimeStepperForODEs()
    {
     BrokenCopy::broken_copy("ACPredictorCorrectorTimeStepper");
    }

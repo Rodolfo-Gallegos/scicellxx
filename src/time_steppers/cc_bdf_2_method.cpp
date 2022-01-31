@@ -7,7 +7,7 @@ namespace scicellxx
  /// Constructor
  // ===================================================================
  CCBDF2Method::CCBDF2Method()
-  : ACTimeStepper(),
+  : ACTimeStepperForODEs(),
     Compute_u_at_time_t_plus_h(true)
  {
   // Sets the number of history values

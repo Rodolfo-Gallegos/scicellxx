@@ -1,53 +1,24 @@
-#include <iostream>
-#include <cmath>
-#include <fstream>
-
-// Include general/common includes, utilities and initialisation
-#include "../../../src/general/common_includes.h"
-#include "../../../src/general/utilities.h"
-#include "../../../src/general/initialise.h"
-
-// The required classes to solve Initial Value Problems (IVP)
-// The factory to create the time stepper (integration method)
-#include "../../../src/time_steppers/cc_factory_time_stepper.h"
-// Integration methods
-#include "../../../src/time_steppers/cc_euler_method.h"
-#include "../../../src/time_steppers/cc_runge_kutta_4_method.h"
-#include "../../../src/time_steppers/cc_backward_euler_predictor_corrector_method.h"
-#include "../../../src/time_steppers/cc_adams_moulton_2_predictor_corrector_method.h"
-#include "../../../src/time_steppers/cc_backward_euler_method.h"
-#include "../../../src/time_steppers/cc_adams_moulton_2_method.h"
-#include "../../../src/time_steppers/cc_bdf_2_method.h"
-
-#include "../../../src/matrices/cc_matrix.h"
-
-#ifdef SCICELLXX_USES_ARMADILLO
-// Include Armadillo type matrices since the templates may include
-// Armadillo type matrices
-#include "../../../src/matrices/cc_matrix_armadillo.h"
-#endif // #ifdef SCICELLXX_USES_ARMADILLO
-
-// Base class for the concrete problem
-#include "../../../src/problem/ac_ivp_for_odes.h"
+// Include SciCell++ libraries
+#include "../../../src/scicellxx.h"
 
 // Odes for Chen problem
 #include "cc_chen_odes.h"
 
 using namespace scicellxx;
 
-/// This class implements inherits from the ACIVPForODEs class, we
+/// This class implements inherits from the ACIBVPForODEs class, we
 /// implement specific functions to solve the Lotka-Volterra equations
-class CCChenProblem : public virtual ACIVPForODEs
+class CCChenProblem : public virtual ACIBVPForODEs
 {
   
 public:
  
  /// Constructor
  CCChenProblem(ACODEs *odes_pt,
-               ACTimeStepper *time_stepper_pt,
+               ACTimeStepperForODEs *time_stepper_pt,
                std::ostringstream &output_filename1,
                std::ostringstream &output_filename2)
-  : ACIVPForODEs(odes_pt, time_stepper_pt)
+  : ACIBVPForODEs(odes_pt, time_stepper_pt)
  {
   Output_file1.open((output_filename1.str()).c_str());
   Output_file2.open((output_filename2.str()).c_str());
@@ -140,7 +111,7 @@ int main(int argc, char *argv[])
  parser.parse_args(argc, argv);
  
  // Create the factory for the time steppers (integration methods)
- CCFactoryTimeStepper factory_time_stepper;
+ CCFactoryTimeStepperForODEs factory_time_stepper;
 
  // Number of prediction correction steps, if enabled it performs the
  // indicated number of prediction correction steps without checking
@@ -171,7 +142,7 @@ int main(int argc, char *argv[])
   // ----------------------------------------------------------------
   // Time stepper
   // ----------------------------------------------------------------
-  ACTimeStepper *time_stepper_pt =
+  ACTimeStepperForODEs *time_stepper_pt =
    factory_time_stepper.create_time_stepper("RK4");
   
   // ----------------------------------------------------------------
@@ -245,7 +216,7 @@ int main(int argc, char *argv[])
   // ----------------------------------------------------------------
   // Time stepper
   // ----------------------------------------------------------------
-  ACTimeStepper *time_stepper_pt =
+  ACTimeStepperForODEs *time_stepper_pt =
    factory_time_stepper.create_time_stepper("BEPC");
   
   // Dynamic cast to set a fixed number of corrections
@@ -337,7 +308,7 @@ int main(int argc, char *argv[])
   // ----------------------------------------------------------------
   // Time stepper
   // ----------------------------------------------------------------
-  ACTimeStepper *time_stepper_pt =
+  ACTimeStepperForODEs *time_stepper_pt =
    factory_time_stepper.create_time_stepper("AM2PC");
 
   // Dynamic cast to set a fixed number of corrections

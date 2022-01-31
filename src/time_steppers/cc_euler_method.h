@@ -1,14 +1,14 @@
 #ifndef CCEULERMETHOD_H
 #define CCEULERMETHOD_H
 
-#include "ac_time_stepper.h"
+#include "ac_time_stepper_for_odes.h"
 
 namespace scicellxx
 {
 
  /// @class CCEulerMethod cc_euler_method.h
  /// This class implements Euler's method to integrate ODE's
- class CCEulerMethod : public virtual ACTimeStepper
+ class CCEulerMethod : public virtual ACTimeStepperForODEs
  {
  
  public:
@@ -31,7 +31,7 @@ namespace scicellxx
   /// copiable). Check
   /// http://www.learncpp.com/cpp-tutorial/912-shallow-vs-deep-copying/
   CCEulerMethod(const CCEulerMethod &copy)
-   : ACTimeStepper()
+   : ACTimeStepperForODEs()
    {
     BrokenCopy::broken_copy("CCEulerMethod");
    }

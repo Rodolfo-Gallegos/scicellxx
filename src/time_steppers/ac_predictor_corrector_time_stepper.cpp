@@ -7,7 +7,7 @@ namespace scicellxx
  // Empty constructor
  // ===================================================================
  ACPredictorCorrectorTimeStepper::ACPredictorCorrectorTimeStepper()
-  : ACTimeStepper(),
+  : ACTimeStepperForODEs(),
     Maximum_iterations(DEFAULT_PREDICTOR_CORRECTOR_TIME_STEPPER_MAXIMUM_ITERATIONS),
     Maximum_tolerance(DEFAULT_PREDICTOR_CORRECTOR_TIME_STEPPER_MAXIMUM_TOLERANCE),
     Minimum_tolerance(DEFAULT_PREDICTOR_CORRECTOR_TIME_STEPPER_MINIMUM_TOLERANCE),

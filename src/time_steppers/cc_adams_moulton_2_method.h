@@ -1,7 +1,7 @@
 #ifndef CCADAMSMOULTON2METHOD_H
 #define CCADAMSMOULTON2METHOD_H
 
-#include "ac_time_stepper.h"
+#include "ac_time_stepper_for_odes.h"
 
 // Newton's method
 #include "cc_newtons_method_for_adams_moulton_2.h"
@@ -23,7 +23,7 @@ namespace scicellxx
  /// @class CCAdamsMoulton2Method cc_adams_moulton_2_method.h This
  /// class implements Adams-Moulton or Trapezoidal Rule method to
  /// integrate ODE's
- class CCAdamsMoulton2Method : public virtual ACTimeStepper
+ class CCAdamsMoulton2Method : public virtual ACTimeStepperForODEs
  {
   
  public:
@@ -50,7 +50,7 @@ namespace scicellxx
   /// copiable). Check
   /// http://www.learncpp.com/cpp-tutorial/912-shallow-vs-deep-copying/
  CCAdamsMoulton2Method(const CCAdamsMoulton2Method &copy)
-  : ACTimeStepper()
+  : ACTimeStepperForODEs()
    {
     BrokenCopy::broken_copy("CCAdamsMoulton2Method");
    }

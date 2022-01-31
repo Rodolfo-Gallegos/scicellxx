@@ -19,7 +19,6 @@
 #include "cc_backward_euler_predictor_corrector_method.h"
 #include "cc_bdf_2_method.h"
 #include "cc_euler_method.h"
-#include "cc_factory_time_stepper.h"
 #include "cc_jacobian_and_residual_for_adams_moulton_2.h"
 #include "cc_jacobian_and_residual_for_backward_euler.h"
 #include "cc_jacobian_and_residual_for_bdf_2.h"
@@ -31,7 +30,7 @@
 #include "cc_runge_kutta_4_method.h"
 
 // Include the factory class
-#include "cc_factory_time_stepper.h"
+#include "cc_factory_time_stepper_for_odes.h"
  
 #endif // #ifndef SCICELLXX_TIMESTEPPERS_H
 

@@ -1,7 +1,7 @@
 #ifndef CCBDF2METHOD_H
 #define CCBDF2METHOD_H
 
-#include "ac_time_stepper.h"
+#include "ac_time_stepper_for_odes.h"
 
 // Newton's method
 #include "cc_newtons_method_for_bdf_2.h"
@@ -22,7 +22,7 @@ namespace scicellxx
  
  /// @class CCBDF2Method cc_bdf2_method.h This class implements
  /// Backward Differentiation Formula method to integrate ODE's
- class CCBDF2Method : public virtual ACTimeStepper
+ class CCBDF2Method : public virtual ACTimeStepperForODEs
  {
   
  public:
@@ -56,7 +56,7 @@ namespace scicellxx
   /// copiable). Check
   /// http://www.learncpp.com/cpp-tutorial/912-shallow-vs-deep-copying/
  CCBDF2Method(const CCBDF2Method &copy)
-  : ACTimeStepper()
+  : ACTimeStepperForODEs()
    {
     BrokenCopy::broken_copy("CCBDF2Method");
    }

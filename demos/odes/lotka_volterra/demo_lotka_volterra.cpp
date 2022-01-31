@@ -1,35 +1,23 @@
-#include <iostream>
-#include <cmath>
-#include <fstream>
+// Include SciCell++ libraries
+#include "../../../src/scicellxx.h"
 
-// Include general/common includes, utilities and initialisation
-#include "../../../src/general/common_includes.h"
-#include "../../../src/general/utilities.h"
-#include "../../../src/general/initialise.h"
-
-// The required classes to solve Initial Value Problems (IVP)
-// The factory to create the time stepper (integration method)
-#include "../../../src/time_steppers/cc_factory_time_stepper.h"
-
-// Base class for the concrete problem
-#include "../../../src/problem/ac_ivp_for_odes.h"
 // Odes for Lotka-Volkaterra problem
 #include "cc_lotka_volterra_odes.h"
 
 using namespace scicellxx;
 
-/// This class implements inherits from the ACIVPForODEs class, we
+/// This class implements inherits from the ACIBVPForODEs class, we
 /// implement specific functions to solve the Lotka-Volterra equations
-class CCLotkaVolterraProblem : public virtual ACIVPForODEs
+class CCLotkaVolterraProblem : public virtual ACIBVPForODEs
 {
   
 public:
  
  /// Constructor
  CCLotkaVolterraProblem(ACODEs *odes_pt,
-                        ACTimeStepper *time_stepper_pt,
+                        ACTimeStepperForODEs *time_stepper_pt,
                         std::ostringstream &output_filename)
-  : ACIVPForODEs(odes_pt, time_stepper_pt)
+  : ACIBVPForODEs(odes_pt, time_stepper_pt)
  {
   Output_file.open((output_filename.str()).c_str());
  }
@@ -77,7 +65,7 @@ int main(int argc, char *argv[])
  initialise_scicellxx();
  
  // Create the factory for the time steppers (integration methods)
- CCFactoryTimeStepper factory_time_stepper;
+ CCFactoryTimeStepperForODEs factory_time_stepper;
  
  // Euler method test
  {
@@ -92,7 +80,7 @@ int main(int argc, char *argv[])
   // Time stepper
   // ----------------------------------------------------------------
   // Create an instance of the integration method
-  ACTimeStepper *time_stepper_pt =
+  ACTimeStepperForODEs *time_stepper_pt =
    factory_time_stepper.create_time_stepper("Euler");
   
   // ----------------------------------------------------------------
@@ -166,7 +154,7 @@ int main(int argc, char *argv[])
   // ----------------------------------------------------------------
   // Time stepper
   // ----------------------------------------------------------------
-  ACTimeStepper *time_stepper_pt =
+  ACTimeStepperForODEs *time_stepper_pt =
    factory_time_stepper.create_time_stepper("RK4");
   
   // ----------------------------------------------------------------
@@ -240,7 +228,7 @@ int main(int argc, char *argv[])
   // ----------------------------------------------------------------
   // Time stepper
   // ----------------------------------------------------------------
-  ACTimeStepper *time_stepper_pt =
+  ACTimeStepperForODEs *time_stepper_pt =
    factory_time_stepper.create_time_stepper("AM2PC");
   
   // ----------------------------------------------------------------
@@ -314,7 +302,7 @@ int main(int argc, char *argv[])
   // ----------------------------------------------------------------
   // Time stepper
   // ----------------------------------------------------------------
-  ACTimeStepper *time_stepper_pt =
+  ACTimeStepperForODEs *time_stepper_pt =
    factory_time_stepper.create_time_stepper("BDF1");
   
   // ----------------------------------------------------------------
@@ -388,7 +376,7 @@ int main(int argc, char *argv[])
   // ----------------------------------------------------------------
   // Time stepper
   // ----------------------------------------------------------------
-  ACTimeStepper *time_stepper_pt =
+  ACTimeStepperForODEs *time_stepper_pt =
    factory_time_stepper.create_time_stepper("AM2");
   
   // ----------------------------------------------------------------
@@ -462,7 +450,7 @@ int main(int argc, char *argv[])
   // ----------------------------------------------------------------
   // Time stepper
   // ----------------------------------------------------------------
-  ACTimeStepper *time_stepper_pt =
+  ACTimeStepperForODEs *time_stepper_pt =
    factory_time_stepper.create_time_stepper("BDF2");
   
   // ----------------------------------------------------------------

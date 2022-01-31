@@ -1,4 +1,4 @@
-#include "cc_factory_time_stepper.h"
+#include "cc_factory_time_stepper_for_odes.h"
 
 namespace scicellxx
 {
@@ -6,7 +6,7 @@ namespace scicellxx
  // ===================================================================
  /// Empty constructor
  // ===================================================================
- CCFactoryTimeStepper::CCFactoryTimeStepper()
+ CCFactoryTimeStepperForODEs::CCFactoryTimeStepperForODEs()
  { 
 
  }
@@ -14,7 +14,7 @@ namespace scicellxx
  // ===================================================================
  /// Empty destructor
  // ===================================================================
- CCFactoryTimeStepper::~CCFactoryTimeStepper()
+ CCFactoryTimeStepperForODEs::~CCFactoryTimeStepperForODEs()
  { 
 
  }
@@ -22,7 +22,7 @@ namespace scicellxx
  // ===================================================================
  /// Returns the specified time stepper (integration method)
  // ===================================================================
- ACTimeStepper* CCFactoryTimeStepper::create_time_stepper(std::string time_stepper_name)
+ ACTimeStepperForODEs* CCFactoryTimeStepperForODEs::create_time_stepper(std::string time_stepper_name)
  {
   // Get the string and change it to lower case 
   std::transform(time_stepper_name.begin(), time_stepper_name.end(),

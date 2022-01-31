@@ -1,24 +1,23 @@
-#include "ac_problem.h"
+#include "ac_time_stepper_for_odes.h"
 
 namespace scicellxx
 {
 
  // ===================================================================
- /// Constructor, in charge of initialising any stuff required for the
- /// framework
+ // Empty constructor
  // ===================================================================
- ACProblem::ACProblem()
-  : Output_file_index(0)
- { 
+ ACTimeStepperForODEs::ACTimeStepperForODEs()
+  : ACTimeStepper()
+ {
   
  }
  
  // ===================================================================
- /// Destructor
+ // Empty destructor
  // ===================================================================
- ACProblem::~ACProblem()
- {
-  
+ ACTimeStepperForODEs::~ACTimeStepperForODEs()
+ { 
+
  }
  
 }

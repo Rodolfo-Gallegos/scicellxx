@@ -7,10 +7,10 @@ namespace scicellxx
  /// Constructor
  // ===================================================================
  CCBackwardEulerMethod::CCBackwardEulerMethod()
-  : ACTimeStepper()
+  : ACTimeStepperForODEs()
  {  
   // Sets the number of history values
-  N_history_values = 2;
+  this->N_history_values = 2;
   
   //Newtons_method.set_newton_absolute_solver_tolerance(1.0e-3);
   //Newtons_method.set_maximum_newton_iterations(100);
@@ -33,7 +33,8 @@ namespace scicellxx
  /// time "t" to the time "t+h". The values of u at time t+h will be
  /// stored at index k (default k = 0).
  // ===================================================================
- void CCBackwardEulerMethod::time_step(ACODEs &odes, const Real h,
+ void CCBackwardEulerMethod::time_step(ACODEs &odes,
+                                       const Real h,
                                        const Real t,
                                        CCData &u,
                                        const unsigned k)

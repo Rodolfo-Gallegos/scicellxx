@@ -1,14 +1,5 @@
-#include <iostream>
-#include <cmath>
-#include <fstream>
-
-// Include general/common includes, utilities and initialisation
-#include "../../../src/general/general.h"
-#include "../../../src/data_structures/data_structures.h"
-#include "../../../src/matrices/matrices.h"
-
-#include "../../../src/equations/ac_jacobian_and_residual.h"
-#include "../../../src/newtons_method/cc_newtons_method.h"
+// Include SciCell++ libraries
+#include "../../../src/scicellxx.h"
 
 using namespace scicellxx;
 

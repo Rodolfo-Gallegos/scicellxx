@@ -1,4 +1,4 @@
-#include "ac_ivp_for_odes.h"
+#include "ac_ibvp_for_odes.h"
 
 namespace scicellxx
 {
@@ -6,35 +6,34 @@ namespace scicellxx
  // ===================================================================
  /// Constructor, sets the ODEs and the time stepper
  // ===================================================================
- ACIVPForODEs::ACIVPForODEs(ACODEs *odes_pt,
-                            ACTimeStepper *time_stepper_pt)
-  : ACProblem(),
+ ACIBVPForODEs::ACIBVPForODEs(ACODEs *odes_pt, ACTimeStepperForODEs *time_stepper_pt)
+  : ACIBVP(),
     ODEs_pt(odes_pt)
  {
+  // Add time stepper
+  add_time_stepper_for_odes(time_stepper_pt);
   // Get the number of odes
   const unsigned n_odes = odes_pt->n_odes();
   const unsigned n_history_values = time_stepper_pt->n_history_values();
   U_pt = new CCData(n_odes, n_history_values);
-  // Add the time stepper to the vector of time steppers
-  add_time_stepper(time_stepper_pt);
  }
  
  // ===================================================================
  /// Destructor
  // ===================================================================
- ACIVPForODEs::~ACIVPForODEs()
+ ACIBVPForODEs::~ACIBVPForODEs()
  {
   // Free memory
   delete U_pt;
   // Set pointer to null
   U_pt = 0;
  }
-
+ 
  // ===================================================================
  /// We perform an unsteady solve by default, if you require a
  /// different solving strategy then override this method
  // ===================================================================
- void ACIVPForODEs::solve()
+ void ACIBVPForODEs::solve()
  {
   // Solve the ODEs
   unsteady_solve();
@@ -43,7 +42,7 @@ namespace scicellxx
  // ===================================================================
  /// Problem unsteady solve
  // ===================================================================
- void ACIVPForODEs::unsteady_solve()
+ void ACIBVPForODEs::unsteady_solve()
  {
   // Call actions before time stepping
   actions_before_time_stepping();
@@ -75,7 +74,7 @@ namespace scicellxx
     const Real h = time_step(i);
     
     // Time step (apply the Time stepper to time integrate the ODEs)
-    time_stepper_pt(i)->time_step((*ODEs_pt), h, t, (*U_pt));  
+    ode_time_stepper_pt(i)->time_step((*ODEs_pt), h, t, (*U_pt));
    }
   
   // Call actions after time stepping
@@ -83,4 +82,44 @@ namespace scicellxx
   
  }
  
+ // ===================================================================
+ /// Add a time stepper
+ //===================================================================
+ void ACIBVPForODEs::add_time_stepper_for_odes(ACTimeStepperForODEs *time_stepper_pt,
+                                               const Real initial_time,
+                                               const Real time_step)
+ {
+  // Add the time stepper to the time stepper for odes vector
+  Time_stepper_for_odes_pt.push_back(time_stepper_pt);
+  // Call the parent method to add the time stepper
+  add_time_stepper(time_stepper_pt, initial_time, time_step);
+ }
+ 
+ // ===================================================================
+ /// Read-only access to the time i-th stepper pointer
+ // ===================================================================
+ ACTimeStepperForODEs *ACIBVPForODEs::ode_time_stepper_pt(const unsigned i) const
+ {
+#ifdef SCICELLXX_PANIC_MODE
+  // Get the number of time steppers
+  const unsigned n_time_steppers = Time_stepper_pt.size();
+  if (i >= n_time_steppers)
+   {
+    // Error message
+    std::ostringstream error_message;
+    error_message << "You are trying to access to a time stepper that is not\n"
+                  << "available at the time stepper container\n"
+                  << "Maximum index of time steppers in the container: ["<<n_time_steppers<<"]\n"
+                  << "The index of the time stepper you want to access: ["<<i<<"]\n"
+                  << std::endl;
+    throw SciCellxxLibError(error_message.str(),
+                            SCICELLXX_CURRENT_FUNCTION,
+                            SCICELLXX_EXCEPTION_LOCATION);
+   }
+#endif // #ifdef SCICELLXX_PANIC_MODE
+  return Time_stepper_for_odes_pt[i];
+ }
+ 
 }
+
+ 

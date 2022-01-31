@@ -1,7 +1,10 @@
 #ifndef CCBACKWARDEULERMETHOD_H
 #define CCBACKWARDEULERMETHOD_H
 
-#include "ac_time_stepper.h"
+// Include matrices and vectors
+#include "../matrices/matrices.h"
+
+#include "ac_time_stepper_for_odes.h"
 
 /// Newton's method
 #include "cc_newtons_method_for_backward_euler.h"
@@ -14,17 +17,14 @@
 /// Jacobian of the ODEs
 #include "ac_jacobian_and_residual_for_implicit_time_stepper.h"
 
-// Include matrices and vectors
-#include "../matrices/matrices.h"
-
 namespace scicellxx
 {
  
  /// @class CCBackwardEulerMethod cc_backward_euler_method.h This
  /// class implements Backward Euler's method to integrate ODE's
- class CCBackwardEulerMethod : public virtual ACTimeStepper
+ class CCBackwardEulerMethod : public virtual ACTimeStepperForODEs
  {
-  
+
  public:
   
   /// Constructor
@@ -49,7 +49,7 @@ namespace scicellxx
   /// copiable). Check
   /// http://www.learncpp.com/cpp-tutorial/912-shallow-vs-deep-copying/
  CCBackwardEulerMethod(const CCBackwardEulerMethod &copy)
-  : ACTimeStepper()
+  : ACTimeStepperForODEs()
    {
     BrokenCopy::broken_copy("CCBackwardEulerMethod");
    }
@@ -67,7 +67,7 @@ namespace scicellxx
   
   // The time stepper used to compute the initial guess
   //CCEulerMethod Time_stepper_initial_guess;
-  
+
   // NOTE: We decided to use a RK4 method as the initial guess method
   // to reduce accuracy errors given by Euler's methods
   

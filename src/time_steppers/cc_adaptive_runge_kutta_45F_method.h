@@ -32,7 +32,9 @@ namespace scicellxx
   /// copiable). Check
   /// http://www.learncpp.com/cpp-tutorial/912-shallow-vs-deep-copying/
  CCAdaptiveRK45FMethod(const CCAdaptiveRK45FMethod &copy)
-  : ACTimeStepper()
+  : ACAdaptiveTimeStepper()
+  //: ACTimeStepperForODEs() -- try this HERE
+  //   : ACTimeStepper()
    {
     BrokenCopy::broken_copy("CCAdaptiveRK45FMethod");
    }

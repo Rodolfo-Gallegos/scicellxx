@@ -6,7 +6,7 @@ namespace scicellxx
  // Constructor
  // ===================================================================
  ACAdaptiveTimeStepper::ACAdaptiveTimeStepper()
-  : ACTimeStepper(),
+  : ACTimeStepperForODEs(),
     Free_memory_for_new_time_step_strategy(false),
     New_time_step_strategy_has_been_set(false),
     Maximum_iterations(DEFAULT_ADAPTIVE_TIME_STEPPER_MAXIMUM_ITERATIONS),

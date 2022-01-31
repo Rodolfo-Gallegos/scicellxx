@@ -1,50 +1,21 @@
-#include <iostream>
-#include <cmath>
-#include <fstream>
+// Include SciCell++ libraries
+#include "../../../src/scicellxx.h"
 
-// Include general/common includes, utilities and initialisation
-#include "../../../src/general/common_includes.h"
-#include "../../../src/general/utilities.h"
-#include "../../../src/general/initialise.h"
-
-// The required classes to solve Initial Value Problems (IVP)
-// The factory to create the time stepper (integration method)
-#include "../../../src/time_steppers/cc_factory_time_stepper.h"
-// Time-stepper methods
-#include "../../../src/time_steppers/cc_euler_method.h"
-#include "../../../src/time_steppers/cc_runge_kutta_4_method.h"
-#include "../../../src/time_steppers/cc_backward_euler_method.h"
-
-// Matrices representations
-#include "../../../src/matrices/cc_matrix.h"
-
-#ifdef SCICELLXX_USES_ARMADILLO
-// Include Armadillo type matrices since the templates may include
-// Armadillo type matrices
-#include "../../../src/matrices/cc_matrix_armadillo.h"
-#endif // #ifdef SCICELLXX_USES_ARMADILLO
-
-#ifdef SCICELLXX_USES_VTK
-#include "../../../src/vtk/cc_scicellxx2vtk.h"
-#endif // #ifdef SCICELLXX_USES_VTK
-
-// Base class for the concrete problem
-#include "../../../src/problem/ac_ivp_for_odes.h"
 // Odes for 4 body problem
 #include "cc_odes_basic_4_body.h"
 
 using namespace scicellxx;
 
-/// This class implements inherits from the ACIVPForODEs class, we
+/// This class implements inherits from the ACIBVPForODEs class, we
 /// implement specific functions to solve the 4 body problem
-class CC4BodyProblem : public virtual ACIVPForODEs
+class CC4BodyProblem : public virtual ACIBVPForODEs
 {
   
 public:
  
  /// Constructor
- CC4BodyProblem(ACODEs *odes_pt, ACTimeStepper *time_stepper_pt, std::ostringstream &output_filename)
-  : ACIVPForODEs(odes_pt, time_stepper_pt),
+ CC4BodyProblem(ACODEs *odes_pt, ACTimeStepperForODEs *time_stepper_pt, std::ostringstream &output_filename)
+  : ACIBVPForODEs(odes_pt, time_stepper_pt),
     Output_filename(output_filename.str())
  {
   std::ostringstream output_complete_filename;
@@ -195,12 +166,12 @@ int main(int argc, char *argv[])
  // Time stepper
  // ----------------------------------------------------------------
  // Create the factory for the time steppers (integration methods)
- CCFactoryTimeStepper factory_time_stepper;
+ CCFactoryTimeStepperForODEs factory_time_stepper;
  
  // Create an instance of the integration method
  //ACTimeStepper *time_stepper_pt =
  //  factory_time_stepper.create_time_stepper("Euler");
- ACTimeStepper *time_stepper_pt =
+ ACTimeStepperForODEs *time_stepper_pt =
   factory_time_stepper.create_time_stepper("RK4"); 
  //ACTimeStepper *time_stepper_pt =
  //factory_time_stepper.create_time_stepper("BDF1");

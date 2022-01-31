@@ -2,24 +2,8 @@
 #include <cmath>
 #include <fstream>
 
-// Include general/common includes, utilities and initialisation
-#include "../../../src/general/general.h"
-
-// The required classes to solve Initial Value Problems (IVP), also
-// including the factory for time steppers
-#include "../../../src/time_steppers/time_steppers.h"
-
-// Include matrices
-#include "../../../src/matrices/matrices.h"
-
-// Include data structures
-#include "../../../src/data_structures/data_structures.h"
-
-// The base class for the specification of the Jacobian of the ODEs
-#include "../../../src/time_steppers/ac_jacobian_and_residual_for_implicit_time_stepper.h"
-
-// Base class for the concrete problem
-#include "../../../src/problem/ac_ivp_for_odes.h"
+// Include SciCell++ libraries
+#include "../../../src/scicellxx.h"
 
 using namespace scicellxx;
 // =================================================================
@@ -192,22 +176,22 @@ private:
 // =================================================================
 // =================================================================
 // =================================================================
-// This class inherits from the ACIVPForODEs class and solves the
+// This class inherits from the ACIBVPForODEs class and solves the
 // system of ODEs from above
 // =================================================================
 // =================================================================
 // =================================================================
- class CCBasicODEsProblem : public virtual ACIVPForODEs
+ class CCBasicODEsProblem : public virtual ACIBVPForODEs
  {
  
  public:
  
   /// Constructor
   CCBasicODEsProblem(ACODEs *odes_pt,
-                     ACTimeStepper *time_stepper_pt,
+                     ACTimeStepperForODEs *time_stepper_pt,
                      std::ostringstream &output_filename,
                      std::ostringstream &output_filename_error)
-   : ACIVPForODEs(odes_pt, time_stepper_pt)
+   : ACIBVPForODEs(odes_pt, time_stepper_pt)
   {
    Output_file.open((output_filename.str()).c_str());
    Output_error_file.open((output_filename_error.str()).c_str());
@@ -266,7 +250,7 @@ private:
  int main(int argc, char *argv[])
  {
   // Create the factory for the time steppers (integration methods)
-  CCFactoryTimeStepper factory_time_stepper;
+  CCFactoryTimeStepperForODEs factory_time_stepper;
   
   // Euler method test
   {
@@ -280,7 +264,7 @@ private:
    // Time stepper
    // ----------------------------------------------------------------
    // Create an instance of the integration method
-   ACTimeStepper *time_stepper_pt =
+   ACTimeStepperForODEs *time_stepper_pt =
     factory_time_stepper.create_time_stepper("Euler");
    
    // ----------------------------------------------------------------
@@ -311,6 +295,7 @@ private:
    // ----------------------------------------------------------------
    // Configure problem
    // ----------------------------------------------------------------
+   
    // Initial time
    basic_ode_problem.time() = initial_time;
    

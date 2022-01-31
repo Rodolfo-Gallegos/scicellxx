@@ -7,10 +7,10 @@ namespace scicellxx
  /// Constructor
  // ===================================================================
  CCAdamsMoulton2Method::CCAdamsMoulton2Method()
-  : ACTimeStepper()
+  : ACTimeStepperForODEs()
  {  
   // Sets the number of history values
-  N_history_values = 2;
+  this->N_history_values = 2;
   
   //Newtons_method.set_newton_solver_tolerance(1.0e-3);
   
@@ -29,10 +29,11 @@ namespace scicellxx
  
  // ===================================================================
  /// Applies Adams-Moulton 2 method to the given odes from the current
- /// time "t" to the time "t+h". The values of u at time t+h will be
- /// stored at index k (default k = 0).
- // ===================================================================
- void CCAdamsMoulton2Method::time_step(ACODEs &odes, const Real h,
+ /// time "t" to the time "t+h". The values of u at time t+h will be /
+ //stored at index k (default k = 0).
+ //===================================================================
+ void CCAdamsMoulton2Method::time_step(ACODEs &odes,
+                                       const Real h,
                                        const Real t,
                                        CCData &u,
                                        const unsigned k)
@@ -56,6 +57,7 @@ namespace scicellxx
                            SCICELLXX_EXCEPTION_LOCATION);
    }
 #endif // #ifdef SCICELLXX_PANIC_MODE
+    
   // -----------------------------------------------------------------
   // Compute initial guess
   // -----------------------------------------------------------------  

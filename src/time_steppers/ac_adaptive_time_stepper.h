@@ -1,7 +1,7 @@
 #ifndef ACADAPTIVETIMESTEPPER_H
 #define ACADAPTIVETIMESTEPPER_H
 
-#include "ac_time_stepper.h"
+#include "ac_time_stepper_for_odes.h"
 #include "ac_adaptive_new_step_size_strategy.h"
 // Default strategy for adaptive time stepper
 #include "cc_adaptive_new_step_size_half_double.h"
@@ -28,7 +28,7 @@ namespace scicellxx
  /// class implements the interface for the adaptive time stepper
  /// methods to integrate ODE's
  // ==============================================================
- class ACAdaptiveTimeStepper : public virtual ACTimeStepper
+ class ACAdaptiveTimeStepper : public virtual ACTimeStepperForODEs
  {
   
  public:
@@ -137,7 +137,7 @@ namespace scicellxx
   /// copiable). Check
   /// http://www.learncpp.com/cpp-tutorial/912-shallow-vs-deep-copying/
  ACAdaptiveTimeStepper(const ACAdaptiveTimeStepper &copy)
-  : ACTimeStepper()
+  : ACTimeStepperForODEs()
    {
     BrokenCopy::broken_copy("ACAdaptiveTimeStepper");
    }

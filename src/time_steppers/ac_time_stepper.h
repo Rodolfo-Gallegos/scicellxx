@@ -3,15 +3,14 @@
 
 #include "../general/general.h"
 
-#include "../data_structures/ac_odes.h"
-#include "../data_structures/cc_data.h"
+#include "../data_structures/data_structures.h"
 
 namespace scicellxx
 { 
  /// @class ACTimeStepper ac_time_stepper.h
 
- /// This class implements the interfaces for integration methods to
- /// solve ODE's
+ /// This class implements the interfaces for time
+ /// steppers/integration methods
  class ACTimeStepper
  {
  
@@ -19,17 +18,17 @@ namespace scicellxx
  
   /// Empty constructor
   ACTimeStepper();
- 
+  
   /// Empty destructor
   virtual ~ACTimeStepper();
   
-  /// Performs a time step applying a time integration method to the
-  /// given odes from the current time "t" to the time "t+h".
-  /// Previous the call of the method, the values of u at time "t"
-  /// should be stored at index k (default k = 0). After the call, the
-  /// values at time "t+h" will be stored at index k, therefore the
-  /// values at time "t" will be at index k+1
-  virtual void time_step(ACODEs &odes, const Real h,
+  /// Performs a time step applying a time integration method from the
+  /// current time "t" to the time "t+h". Previous to the call of the
+  /// method, the values of u at time "t" should be stored at index k
+  /// (default k = 0). After the call, the values at time "t+h" will
+  /// be stored at index k, therefore the values at time "t" will be
+  /// at index k+1
+  virtual void time_step(const Real h,
                          const Real t,
                          CCData &u,
                          unsigned k = 0) = 0;
@@ -48,9 +47,8 @@ namespace scicellxx
   /// Get the associated number of history values (each method is in
   /// charge of setting this value based on the number of history
   /// values it requires)
-  unsigned n_history_values()
-  {return N_history_values;}
- 
+  inline unsigned n_history_values() const {return N_history_values;}
+  
  protected:
  
   /// Copy constructor (we do not want this class to be
@@ -68,7 +66,7 @@ namespace scicellxx
    {
     BrokenCopy::broken_assign("ACTimeStepper");
    }
- 
+  
   /// The number of history values
   unsigned N_history_values;
   

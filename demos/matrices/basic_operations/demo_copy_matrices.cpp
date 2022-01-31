@@ -1,13 +1,5 @@
-#include <iostream>
-#include <cmath>
-
-// Include general/common includes, utilities and initialisation
-#include "../../../src/general/common_includes.h"
-#include "../../../src/general/utilities.h"
-#include "../../../src/general/initialise.h"
-
-// The class to create a matrix
-#include "../../../src/matrices/cc_matrix.h"
+// Include SciCell++ libraries
+#include "../../../src/scicellxx.h"
 
 using namespace scicellxx;
 

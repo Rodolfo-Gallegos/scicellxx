@@ -1,14 +1,14 @@
 #ifndef CCRK4METHOD_H
 #define CCRK4METHOD_H
 
-#include "ac_time_stepper.h"
+#include "ac_time_stepper_for_odes.h"
 
 namespace scicellxx
 {
 
  /// @class CCRK4Method cc_runge_kutta_4_method.h
  /// This class implements Runge-Kutta 4 method to integrate ODE's
- class CCRK4Method : public virtual ACTimeStepper
+ class CCRK4Method : public virtual ACTimeStepperForODEs
  {
  
  public:
@@ -31,7 +31,7 @@ namespace scicellxx
   /// copiable). Check
   /// http://www.learncpp.com/cpp-tutorial/912-shallow-vs-deep-copying/
  CCRK4Method(const CCRK4Method &copy)
-  : ACTimeStepper()
+  : ACTimeStepperForODEs()
    {
     BrokenCopy::broken_copy("CCRK4Method");
    }

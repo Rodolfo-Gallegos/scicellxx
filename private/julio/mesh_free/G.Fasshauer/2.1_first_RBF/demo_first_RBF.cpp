@@ -2,30 +2,8 @@
 // from the book "Meshfree Approximation Methods with MATLAB, Gregory
 // E. Fasshauer", World Scientific Publishing, 2007
 
-// Include general/common includes, utilities and initialisation
-#include "../../../../../src/general/common_includes.h"
-#include "../../../../../src/general/utilities.h"
-#include "../../../../../src/general/initialise.h"
-
-// Matrices
-#include "../../../../../src/matrices/cc_matrix.h"
-#include "../../../../../src/data_structures/cc_node.h"
-
-// The class to solve linear systems using numerical recipes
-#include "../../../../../src/linear_solvers/cc_lu_solver_numerical_recipes.h"
-
-#ifdef SCICELLXX_USES_ARMADILLO
-// Include Armadillo type matrices since the templates may include
-// Armadillo type matrices
-#include "../../../../../src/matrices/cc_matrix_armadillo.h"
-
-// The class to solve linear systems using Armadillo's type matrices
-#include "../../../../../src/linear_solvers/cc_solver_armadillo.h"
-#endif // #ifdef SCICELLXX_USES_ARMADILLO
-
-#ifdef SCICELLXX_USES_VTK
-#include "../../../../../src/vtk/cc_scicellxx2vtk.h"
-#endif // #ifdef SCICELLXX_USES_VTK
+// Include SciCell++ libraries
+#include "../../../../../src/scicellxx.h"
 
 using namespace scicellxx;
 

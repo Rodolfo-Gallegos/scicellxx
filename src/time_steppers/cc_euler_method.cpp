@@ -7,11 +7,11 @@ namespace scicellxx
  // Constructor
  // ===================================================================
  CCEulerMethod::CCEulerMethod()
-  : ACTimeStepper()
+  : ACTimeStepperForODEs()
  {
   
   // Sets the number of history values
-  N_history_values = 2;
+  this->N_history_values = 2;
   
  }
  
@@ -28,7 +28,8 @@ namespace scicellxx
  // to the time "t+h". The values of u at time t+h will be stored at
  // index k (default k = 0).
  // ===================================================================
- void CCEulerMethod::time_step(ACODEs &odes, const Real h,
+ void CCEulerMethod::time_step(ACODEs &odes,
+                               const Real h,
                                const Real t,
                                CCData &u,
                                const unsigned k)

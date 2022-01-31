@@ -1,6 +1,5 @@
-#include "../../src/general/common_includes.h"
-#include "../../src/general/utilities.h"
-#include "../../src/general/initialise.h"
+// Include SciCell++ libraries
+#include "../../src/scicellxx.h"
 
 // Use the namespace of the framework
 using namespace scicellxx;

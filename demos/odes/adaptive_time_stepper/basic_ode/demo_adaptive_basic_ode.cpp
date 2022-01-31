@@ -1,37 +1,5 @@
-#include <iostream>
-#include <cmath>
-#include <fstream>
-
-// Include general/common includes, utilities and initialisation
-#include "../../../../src/general/common_includes.h"
-#include "../../../../src/general/utilities.h"
-#include "../../../../src/general/initialise.h"
-
-// An interpolator
-#include "../../../../src/interpolators/cc_newton_interpolator.h"
-
-// The required classes to solve Initial Value Problems (IVP)
-// The factory to create the time stepper (integration method)
-#include "../../../../src/time_steppers/cc_factory_time_stepper.h"
-// Integration methods
-#include "../../../../src/time_steppers/ac_adaptive_time_stepper.h"
-#include "../../../../src/time_steppers/cc_adaptive_runge_kutta_45F_method.h"
-#include "../../../../src/time_steppers/cc_adaptive_runge_kutta_45DP_method.h"
-
-#ifdef SCICELLXX_USES_ARMADILLO
-// Include Armadillo type matrices
-#include "../../../../src/matrices/cc_matrix_armadillo.h"
-#else
-#include "../../../../src/matrices/cc_matrix.h"
-#endif // #ifdef SCICELLXX_USES_ARMADILLO
-
-// The class used to store the values of u and dudt
-#include "../../../../src/data_structures/cc_data.h"
-// The class implementing the interfaces for the ODEs
-#include "../../../../src/data_structures/ac_odes.h"
-
-// Base class for the concrete problem
-#include "../../../../src/problem/ac_ivp_for_odes.h"
+// Include SciCell++ libraries
+#include "../../../../src/scicellxx.h"
 
 using namespace scicellxx;
 // =================================================================
@@ -93,23 +61,23 @@ protected:
 // =================================================================
 // =================================================================
 // =================================================================
-// This class inherits from the ACIVPForODEs class and solves the
+// This class inherits from the ACIBVPForODEs class and solves the
 // system of ODEs from above. It implements additional processing for
 // the adaptive time step method
 // =================================================================
 // =================================================================
 // =================================================================
-class CCAdaptiveBasicODEsProblem : public virtual ACIVPForODEs
+class CCAdaptiveBasicODEsProblem : public virtual ACIBVPForODEs
 {
  
 public:
  
  /// Constructor
  CCAdaptiveBasicODEsProblem(ACODEs *odes_pt,
-                            ACTimeStepper *time_stepper_pt,
+                            ACTimeStepperForODEs *time_stepper_pt,
                             std::ostringstream &output_filename,
                             std::ostringstream &output_filename_error)
-  : ACIVPForODEs(odes_pt, time_stepper_pt)
+  : ACIBVPForODEs(odes_pt, time_stepper_pt)
  {
   Output_file.open((output_filename.str()).c_str());
   Output_error_file.open((output_filename_error.str()).c_str());
@@ -332,7 +300,7 @@ protected:
 int main(int argc, char *argv[])
 {
  // Create the factory for the time steppers (integration methods)
- CCFactoryTimeStepper factory_time_stepper;
+ CCFactoryTimeStepperForODEs factory_time_stepper;
  
  {
   std::cout << "Adaptive Runge-Kutta 4(5) Fehlberg test" << std::endl;
@@ -344,7 +312,7 @@ int main(int argc, char *argv[])
   // ----------------------------------------------------------------
   // Time stepper
   // ----------------------------------------------------------------
-  ACTimeStepper *time_stepper_pt =
+  ACTimeStepperForODEs *time_stepper_pt =
    factory_time_stepper.create_time_stepper("RK45F");
   
   // ----------------------------------------------------------------
@@ -434,7 +402,7 @@ int main(int argc, char *argv[])
   // ----------------------------------------------------------------
   // Time stepper
   // ----------------------------------------------------------------
-  ACTimeStepper *time_stepper_pt =
+  ACTimeStepperForODEs *time_stepper_pt =
    factory_time_stepper.create_time_stepper("RK45DP");
   
   // ----------------------------------------------------------------
