@@ -203,7 +203,30 @@ private:
    Output_file.close();
    Output_error_file.close();
   }
- 
+  
+  /// Complete the problem setup
+  void complete_problem_setup()
+  {
+   // Prepare time integration data
+   const Real initial_time = 0.0;
+   const Real final_time = 2.0;
+   const Real time_step = 0.1;
+   // ----------------------------------------------------------------
+   // Complete problem configuration
+   // ----------------------------------------------------------------
+   
+   // Initial time
+   this->time() = initial_time;
+   
+   // Initial time step
+   this->time_step() = time_step;
+   
+   Final_time = final_time;
+   
+   // Set initial conditions
+   set_initial_conditions();   
+  }
+  
   // Set initial conditions
   void set_initial_conditions()
   {
@@ -230,14 +253,20 @@ private:
    const Real error = std::fabs(u(0)-u_analytical);
    Output_error_file << t << "\t" << error << std::endl;
   }
- 
+  
+  // Return the final time
+  inline Real final_time() {return Final_time;} 
+  
  protected:
  
   // The output file
   std::ofstream Output_file;
   // The error output file
   std::ofstream Output_error_file;
- 
+  
+  // Final integration time
+  Real Final_time;
+  
  }; // class CCBasicODEsProblem
 
  // ==================================================================
@@ -287,23 +316,9 @@ private:
                                         output_filename,
                                         output_error_filename);
    
-   // Prepare time integration data
-   const Real initial_time = 0.0;
-   const Real final_time = 2.0;
-   const Real time_step = 0.1;
-   
-   // ----------------------------------------------------------------
-   // Configure problem
-   // ----------------------------------------------------------------
-   
-   // Initial time
-   basic_ode_problem.time() = initial_time;
-   
-   // Initial time step
-   basic_ode_problem.time_step() = time_step;
-   
-   // Set initial conditions
-   basic_ode_problem.set_initial_conditions();
+   // Complete problem setup (time integration data and initial
+   // conditions)
+   basic_ode_problem.complete_problem_setup();
    
    // Document initial configuration
    basic_ode_problem.document_solution();
@@ -321,7 +336,7 @@ private:
      basic_ode_problem.time()+=basic_ode_problem.time_step();
     
      // Check whether we have reached the final time
-     if (basic_ode_problem.time() >= final_time)
+     if (basic_ode_problem.time() >= basic_ode_problem.final_time())
       {
        LOOP = false;
       }
@@ -348,7 +363,7 @@ private:
    // ----------------------------------------------------------------
    // Time stepper
    // ----------------------------------------------------------------
-   ACTimeStepper *time_stepper_pt =
+   ACTimeStepperForODEs *time_stepper_pt =
     factory_time_stepper.create_time_stepper("RK4");
   
    // ----------------------------------------------------------------
@@ -370,24 +385,11 @@ private:
                                         time_stepper_pt,
                                         output_filename,
                                         output_error_filename);
-  
-   // Prepare time integration data
-   const Real initial_time = 0.0;
-   const Real final_time = 2.0;
-   const Real time_step = 0.1;
-  
-   // ----------------------------------------------------------------
-   // Configure problem
-   // ----------------------------------------------------------------
-   // Initial time
-   basic_ode_problem.time() = initial_time;
-  
-   // Initial time step
-   basic_ode_problem.time_step() = time_step;
-  
-   // Set initial conditions
-   basic_ode_problem.set_initial_conditions();
 
+   // Complete problem setup (time integration data and initial
+   // conditions)
+   basic_ode_problem.complete_problem_setup();
+   
    // Document initial configuration
    basic_ode_problem.document_solution();
    
@@ -404,7 +406,7 @@ private:
      basic_ode_problem.time()+=basic_ode_problem.time_step();
     
      // Check whether we have reached the final time
-     if (basic_ode_problem.time() >= final_time)
+     if (basic_ode_problem.time() >= basic_ode_problem.final_time())
       {
        LOOP = false;
       }
@@ -431,7 +433,7 @@ private:
    // ----------------------------------------------------------------
    // Time stepper
    // ----------------------------------------------------------------
-   ACTimeStepper *time_stepper_pt =
+   ACTimeStepperForODEs *time_stepper_pt =
     factory_time_stepper.create_time_stepper("BEPC");
    
    // ----------------------------------------------------------------
@@ -453,24 +455,11 @@ private:
                                         time_stepper_pt,
                                         output_filename,
                                         output_error_filename);
-   
-   // Prepare time integration data
-   const Real initial_time = 0.0;
-   const Real final_time = 2.0;
-   const Real time_step = 0.1;
-   
-   // ----------------------------------------------------------------
-   // Configure problem
-   // ----------------------------------------------------------------
-   // Initial time
-   basic_ode_problem.time() = initial_time;
-  
-   // Initial time step
-   basic_ode_problem.time_step() = time_step;
-  
-   // Set initial conditions
-   basic_ode_problem.set_initial_conditions();
 
+   // Complete problem setup (time integration data and initial
+   // conditions)
+   basic_ode_problem.complete_problem_setup();
+   
    // Document initial configuration
    basic_ode_problem.document_solution();
    
@@ -487,7 +476,7 @@ private:
      basic_ode_problem.time()+=basic_ode_problem.time_step();
     
      // Check whether we have reached the final time
-     if (basic_ode_problem.time() >= final_time)
+     if (basic_ode_problem.time() >= basic_ode_problem.final_time())
       {
        LOOP = false;
       }
@@ -514,7 +503,7 @@ private:
    // ----------------------------------------------------------------
    // Time stepper
    // ----------------------------------------------------------------
-   ACTimeStepper *time_stepper_pt =
+   ACTimeStepperForODEs *time_stepper_pt =
     factory_time_stepper.create_time_stepper("AM2PC");
   
    // ----------------------------------------------------------------
@@ -536,24 +525,11 @@ private:
                                         time_stepper_pt,
                                         output_filename,
                                         output_error_filename);
-  
-   // Prepare time integration data
-   const Real initial_time = 0.0;
-   const Real final_time = 2.0;
-   const Real time_step = 0.1;
-  
-   // ----------------------------------------------------------------
-   // Configure problem
-   // ----------------------------------------------------------------
-   // Initial time
-   basic_ode_problem.time() = initial_time;
-  
-   // Initial time step
-   basic_ode_problem.time_step() = time_step;
-  
-   // Set initial conditions
-   basic_ode_problem.set_initial_conditions();
 
+   // Complete problem setup (time integration data and initial
+   // conditions)
+   basic_ode_problem.complete_problem_setup();
+   
    // Document initial configuration
    basic_ode_problem.document_solution();
    
@@ -570,7 +546,7 @@ private:
      basic_ode_problem.time()+=basic_ode_problem.time_step();
     
      // Check whether we have reached the final time
-     if (basic_ode_problem.time() >= final_time)
+     if (basic_ode_problem.time() >= basic_ode_problem.final_time())
       {
        LOOP = false;
       }
@@ -597,7 +573,7 @@ private:
    // ----------------------------------------------------------------
    // Time stepper
    // ----------------------------------------------------------------
-   ACTimeStepper *time_stepper_pt =
+   ACTimeStepperForODEs *time_stepper_pt =
     factory_time_stepper.create_time_stepper("BDF1");
    
    // Create an instance of the strategy to compute the Jacobian
@@ -629,23 +605,10 @@ private:
                                         time_stepper_pt,
                                         output_filename,
                                         output_error_filename);
-  
-   // Prepare time integration data
-   const Real initial_time = 0.0;
-   const Real final_time = 2.0;
-   const Real time_step = 0.1;
-  
-   // ----------------------------------------------------------------
-   // Configure problem
-   // ----------------------------------------------------------------
-   // Initial time
-   basic_ode_problem.time() = initial_time;
-  
-   // Initial time step
-   basic_ode_problem.time_step() = time_step;
-  
-   // Set initial conditions
-   basic_ode_problem.set_initial_conditions();
+
+   // Complete problem setup (time integration data and initial
+   // conditions)
+   basic_ode_problem.complete_problem_setup();
 
    // Document initial configuration
    basic_ode_problem.document_solution();
@@ -663,7 +626,7 @@ private:
      basic_ode_problem.time()+=basic_ode_problem.time_step();
     
      // Check whether we have reached the final time
-     if (basic_ode_problem.time() >= final_time)
+     if (basic_ode_problem.time() >= basic_ode_problem.final_time())
       {
        LOOP = false;
       }
@@ -690,7 +653,7 @@ private:
    // ----------------------------------------------------------------
    // Time stepper
    // ----------------------------------------------------------------
-   ACTimeStepper *time_stepper_pt =
+   ACTimeStepperForODEs *time_stepper_pt =
     factory_time_stepper.create_time_stepper("AM2");
    
    // Create an instance of the strategy to compute the Jacobian 
@@ -722,24 +685,11 @@ private:
                                         time_stepper_pt,
                                         output_filename,
                                         output_error_filename);
-  
-   // Prepare time integration data
-   const Real initial_time = 0.0;
-   const Real final_time = 2.0;
-   const Real time_step = 0.1;
-  
-   // ----------------------------------------------------------------
-   // Configure problem
-   // ----------------------------------------------------------------
-   // Initial time
-   basic_ode_problem.time() = initial_time;
-  
-   // Initial time step
-   basic_ode_problem.time_step() = time_step;
-  
-   // Set initial conditions
-   basic_ode_problem.set_initial_conditions();
-
+   
+   // Complete problem setup (time integration data and initial
+   // conditions)
+   basic_ode_problem.complete_problem_setup();
+   
    // Document initial configuration
    basic_ode_problem.document_solution();
    
@@ -756,7 +706,7 @@ private:
      basic_ode_problem.time()+=basic_ode_problem.time_step();
     
      // Check whether we have reached the final time
-     if (basic_ode_problem.time() >= final_time)
+     if (basic_ode_problem.time() >= basic_ode_problem.final_time())
       {
        LOOP = false;
       }
@@ -783,7 +733,7 @@ private:
    // ----------------------------------------------------------------
    // Time stepper
    // ----------------------------------------------------------------
-   ACTimeStepper *time_stepper_pt =
+   ACTimeStepperForODEs *time_stepper_pt =
     factory_time_stepper.create_time_stepper("BDF2");
    
    // Create an instance of the strategy to compute the Jacobian 
@@ -814,24 +764,11 @@ private:
                                         time_stepper_pt,
                                         output_filename,
                                         output_error_filename);
-  
-   // Prepare time integration data
-   const Real initial_time = 0.0;
-   const Real final_time = 2.0;
-   const Real time_step = 0.1;
-  
-   // ----------------------------------------------------------------
-   // Configure problem
-   // ----------------------------------------------------------------
-   // Initial time
-   basic_ode_problem.time() = initial_time;
-  
-   // Initial time step
-   basic_ode_problem.time_step() = time_step;
-  
-   // Set initial conditions
-   basic_ode_problem.set_initial_conditions();
 
+   // Complete problem setup (time integration data and initial
+   // conditions)
+   basic_ode_problem.complete_problem_setup();
+   
    // Document initial configuration
    basic_ode_problem.document_solution();
    
@@ -848,7 +785,7 @@ private:
      basic_ode_problem.time()+=basic_ode_problem.time_step();
     
      // Check whether we have reached the final time
-     if (basic_ode_problem.time() >= final_time)
+     if (basic_ode_problem.time() >= basic_ode_problem.final_time())
       {
        LOOP = false;
       }

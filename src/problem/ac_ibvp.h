@@ -27,10 +27,10 @@ namespace scicellxx
   /// Destructor
   virtual ~ACIBVP();
   
-  /// Complete the problem setup (initial conditions/boundary
+  /* /// Complete the problem setup (initial conditions/boundary */
   /// conditions/set solver/etc)
   virtual void complete_problem_setup() = 0;
-
+  
   /// Set initial conditions (should be called as part of
   /// complete_problem_setup)
   virtual void set_initial_conditions() = 0;
