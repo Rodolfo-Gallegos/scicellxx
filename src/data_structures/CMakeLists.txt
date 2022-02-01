@@ -1,6 +1,6 @@
 # Add source files in order of dependence, the ones with no dependency
 # first then the others
-SET(SRC_FILES cc_data.cpp cc_node.cpp cc_boundary_node.cpp ac_odes.cpp)
+SET(SRC_FILES cc_data.cpp cc_node.cpp cc_boundary_node.cpp)
 
 # Include current directory to the path
 #INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})

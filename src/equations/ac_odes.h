@@ -3,7 +3,7 @@
 
 #include "../general/general.h"
 
-#include "cc_data.h"
+#include "../data_structures/data_structures.h"
 
 namespace scicellxx
 {
@@ -40,7 +40,7 @@ namespace scicellxx
   /// k=0). The evaluation produces results in the vector dudt(i). The
   /// values of the i-th function at previous times are accessible via
   /// u(i,1), u(i,2) and so on.
-  virtual void evaluate_derivatives(const Real t, CCData &u, CCData &dudt, const unsigned k = 0) = 0;
+  virtual void evaluate_time_derivatives(const Real t, CCData &u, CCData &dudt, const unsigned k = 0) = 0;
   
  protected:
    

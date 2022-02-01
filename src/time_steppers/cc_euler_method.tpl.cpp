@@ -1,4 +1,4 @@
-#include "cc_euler_method.h"
+#include "cc_euler_method.tpl.h"
 
 namespace scicellxx
 {
@@ -6,7 +6,8 @@ namespace scicellxx
  // ===================================================================
  // Constructor
  // ===================================================================
- CCEulerMethod::CCEulerMethod()
+ template<class EQUATIONS_TYPE>
+ CCEulerMethod<EQUATIONS_TYPE>::CCEulerMethod()
   : ACTimeStepperForODEs()
  {
   
@@ -18,7 +19,8 @@ namespace scicellxx
  // ===================================================================
  // Empty destructor
  // ===================================================================
- CCEulerMethod::~CCEulerMethod()
+ template<class EQUATIONS_TYPE>
+ CCEulerMethod<EQUATIONS_TYPE>::~CCEulerMethod()
  {
  
  }
@@ -28,11 +30,12 @@ namespace scicellxx
  // to the time "t+h". The values of u at time t+h will be stored at
  // index k (default k = 0).
  // ===================================================================
- void CCEulerMethod::time_step(ACODEs &odes,
-                               const Real h,
-                               const Real t,
-                               CCData &u,
-                               const unsigned k)
+ template<class EQUATIONS_TYPE>
+ void CCEulerMethod<EQUATIONS_TYPE>::time_step(EQUATIONS_TYPE &odes,
+                                               const Real h,
+                                               const Real t,
+                                               CCData &u,
+                                               const unsigned k)
  {
 #ifdef SCICELLXX_PANIC_MODE
   // Check if the ode has the correct number of history values to

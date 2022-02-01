@@ -1,4 +1,4 @@
-#include "ac_time_stepper.h"
+#include "ac_time_stepper.tpl.h"
 
 namespace scicellxx
 {
@@ -6,7 +6,8 @@ namespace scicellxx
  // ===================================================================
  // Empty constructor
  // ===================================================================
- ACTimeStepper::ACTimeStepper()
+ template<class EQUATIONS_TYPE>
+ ACTimeStepper<EQUATIONS_TYPE>::ACTimeStepper()
  { 
   // Initialise the number of history values
   N_history_values = 0;
@@ -15,7 +16,8 @@ namespace scicellxx
  // ===================================================================
  // Empty destructor
  // ===================================================================
- ACTimeStepper::~ACTimeStepper()
+ template<class EQUATIONS_TYPE>
+ ACTimeStepper<EQUATIONS_TYPE>::~ACTimeStepper()
  { 
 
  }
