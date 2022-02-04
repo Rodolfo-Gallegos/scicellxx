@@ -1,4 +1,4 @@
-#include "cc_factory_time_stepper_for_odes.h"
+#include "cc_factory_time_stepper_for_odes.tpl.h"
 
 namespace scicellxx
 {
@@ -6,7 +6,8 @@ namespace scicellxx
  // ===================================================================
  /// Empty constructor
  // ===================================================================
- CCFactoryTimeStepperForODEs::CCFactoryTimeStepperForODEs()
+ template<class EQUATIONS_TYPE>
+ CCFactoryTimeStepperForODEs<EQUATIONS_TYPE>::CCFactoryTimeStepperForODEs()
  { 
 
  }
@@ -14,7 +15,8 @@ namespace scicellxx
  // ===================================================================
  /// Empty destructor
  // ===================================================================
- CCFactoryTimeStepperForODEs::~CCFactoryTimeStepperForODEs()
+ template<class EQUATIONS_TYPE>
+ CCFactoryTimeStepperForODEs<EQUATIONS_TYPE>::~CCFactoryTimeStepperForODEs()
  { 
 
  }
@@ -22,7 +24,8 @@ namespace scicellxx
  // ===================================================================
  /// Returns the specified time stepper (integration method)
  // ===================================================================
- ACTimeStepperForODEs* CCFactoryTimeStepperForODEs::create_time_stepper(std::string time_stepper_name)
+ template<class EQUATIONS_TYPE>
+ ACTimeStepperForODEs* CCFactoryTimeStepperForODEs<EQUATIONS_TYPE>::create_time_stepper(std::string time_stepper_name)
  {
   // Get the string and change it to lower case 
   std::transform(time_stepper_name.begin(), time_stepper_name.end(),
@@ -34,47 +37,47 @@ namespace scicellxx
   // Euler method
   if (time_stepper_name.compare("euler")==0)
    {
-    return new CCEulerMethod();
+    return new CCEulerMethod<EQUATIONS_TYPE>();
    }
   // Runge-Kutta 4 method
   else if (time_stepper_name.compare("rk4")==0)
    {
-    return new CCRK4Method();
+    return new CCRK4Method<EQUATIONS_TYPE>();
    }
   // Backward-Euler as Predictor-Corrector method
   else if (time_stepper_name.compare("bepc")==0)
    {
-    return new CCAdamsMoulton2PCMethod();
+    return new CCBackwardEulerPCMethod<EQUATIONS_TYPE>();
    }
   // Adams-Moulton 2 as Predictor-Corrector method
   else if (time_stepper_name.compare("am2pc")==0)
    {
-    return new CCAdamsMoulton2PCMethod();
+    return new CCAdamsMoulton2PCMethod<EQUATIONS_TYPE>();
    }
   // Backward Euler method
   else if (time_stepper_name.compare("bdf1")==0)
    {
-    return new CCBackwardEulerMethod();
+    return new CCBackwardEulerMethod<EQUATIONS_TYPE>();
    }
   // Adams-Moulton 2 or Trapezoidal Rule method
   else if (time_stepper_name.compare("am2")==0)
    {
-    return new CCAdamsMoulton2Method();
+    return new CCAdamsMoulton2Method<EQUATIONS_TYPE>();
    }
   // BDF 2 method
   else if (time_stepper_name.compare("bdf2")==0)
    {
-    return new CCBDF2Method();
+    return new CCBDF2Method<EQUATIONS_TYPE>();
    }
   // Runge-Kutta 4(5) Fehlberg method
   else if (time_stepper_name.compare("rk45f")==0)
    {
-    return new CCAdaptiveRK45FMethod();
+    return new CCAdaptiveRK45FMethod<EQUATIONS_TYPE>();
    }
   // Runge-Kutta 4(5) Dormand-Prince method
   else if (time_stepper_name.compare("rk45dp")==0)
    {
-    return new CCAdaptiveRK45DPMethod();
+    return new CCAdaptiveRK45DPMethod<EQUATIONS_TYPE>();
    }
   else
    {
@@ -85,6 +88,7 @@ namespace scicellxx
                   << "Availables ones\n"
                   << "- Euler (euler)\n"
                   << "- Runge-Kutta 4 (rk4)\n"
+                  << "- Backward Euler - Predictor-Corrector (bepc)\n"
                   << "- Adams-Moulton 2 - Predictor-Corrector (am2pc)\n"
                   << "- Backward Euler - Fully Implicit (bdf1)\n"
                   << "- Adams-Moulton 2 - Fully Implicit (am2)\n"

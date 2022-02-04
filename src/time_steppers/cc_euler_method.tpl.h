@@ -6,7 +6,7 @@
 namespace scicellxx
 {
 
- /// @class CCEulerMethod cc_euler_method.h
+ /// @class CCEulerMethod cc_euler_method.tpl.h
  /// This class implements Euler's method to integrate ODE's
  template<class EQUATIONS_TYPE>
  class CCEulerMethod : public virtual ACTimeStepper<EQUATIONS_TYPE>

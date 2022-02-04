@@ -6,7 +6,7 @@
 namespace scicellxx
 {
 
- /// @class CCRK4Method cc_runge_kutta_4_method.h
+ /// @class CCRK4Method cc_runge_kutta_4_method.tpl.h
  /// This class implements Runge-Kutta 4 method to integrate ODE's
  template<class EQUATIONS_TYPE>
  class CCRK4Method : public virtual ACTimeStepper<EQUATIONS_TYPE>
@@ -32,7 +32,7 @@ namespace scicellxx
   /// copiable). Check
   /// http://www.learncpp.com/cpp-tutorial/912-shallow-vs-deep-copying/
  CCRK4Method(const CCRK4Method &copy)
-  : ACTimeStepperForODEs<EQUATIONS_TYPE>()
+  : ACTimeStepper<EQUATIONS_TYPE>()
    {
     BrokenCopy::broken_copy("CCRK4Method");
    }

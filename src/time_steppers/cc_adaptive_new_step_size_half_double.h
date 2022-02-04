@@ -30,6 +30,7 @@ namespace scicellxx
   /// copiable). Check
   /// http://www.learncpp.com/cpp-tutorial/912-shallow-vs-deep-copying/
   CCAdaptiveNewStepSizeHalfDouble(const CCAdaptiveNewStepSizeHalfDouble &copy)
+   : ACAdaptiveNewStepSizeStrategy()
    {
     BrokenCopy::broken_copy("CCAdaptiveNewStepSizeHalfDouble");
    }

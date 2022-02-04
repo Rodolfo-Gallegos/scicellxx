@@ -8,7 +8,7 @@ namespace scicellxx
  // ===================================================================
  template<class EQUATIONS_TYPE>
  CCRK4Method<EQUATIONS_TYPE>::CCRK4Method()
-  : ACTimeStepperForODEs()
+  : ACTimeStepper<EQUATIONS_TYPE>()
  {
  
   // Sets the number of history values

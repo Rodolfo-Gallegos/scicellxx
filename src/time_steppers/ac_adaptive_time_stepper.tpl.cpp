@@ -1,12 +1,13 @@
-#include "ac_adaptive_time_stepper.h"
+#include "ac_adaptive_time_stepper.tpl.h"
 
 namespace scicellxx
 {
  // ===================================================================
  // Constructor
  // ===================================================================
- ACAdaptiveTimeStepper::ACAdaptiveTimeStepper()
-  : ACTimeStepperForODEs(),
+ template<class EQUATIONS_TYPE>
+ ACAdaptiveTimeStepper<EQUATIONS_TYPE>::ACAdaptiveTimeStepper()
+  : ACTimeStepper<EQUATIONS_TYPE>(),
     Free_memory_for_new_time_step_strategy(false),
     New_time_step_strategy_has_been_set(false),
     Maximum_iterations(DEFAULT_ADAPTIVE_TIME_STEPPER_MAXIMUM_ITERATIONS),
@@ -23,7 +24,8 @@ namespace scicellxx
  // ===================================================================
  // Empty destructor
  // ===================================================================
- ACAdaptiveTimeStepper::~ACAdaptiveTimeStepper()
+ template<class EQUATIONS_TYPE>
+ ACAdaptiveTimeStepper<EQUATIONS_TYPE>::~ACAdaptiveTimeStepper()
  {
   clean_up();
  }
@@ -32,7 +34,8 @@ namespace scicellxx
  // In charge of free memory (if any given to the strategy to compute
  // the new step size)
  // ===================================================================
- void ACAdaptiveTimeStepper::clean_up()
+ template<class EQUATIONS_TYPE>
+ void ACAdaptiveTimeStepper<EQUATIONS_TYPE>::clean_up()
  {
   if (Free_memory_for_new_time_step_strategy)
    {
@@ -54,7 +57,8 @@ namespace scicellxx
  // ===================================================================
  // Set the default configuration
  // ===================================================================
- void ACAdaptiveTimeStepper::set_default_configuration()
+ template<class EQUATIONS_TYPE>
+ void ACAdaptiveTimeStepper<EQUATIONS_TYPE>::set_default_configuration()
  {
   // Call reset (throw any previously automatically computed step
   // size)
@@ -81,7 +85,8 @@ namespace scicellxx
  // ===================================================================
  // Set the default to compute the new time step
  // ===================================================================
- void ACAdaptiveTimeStepper::set_default_new_step_size_strategy()
+ template<class EQUATIONS_TYPE>
+ void ACAdaptiveTimeStepper<EQUATIONS_TYPE>::set_default_new_step_size_strategy()
  {
   // Clean up
   clean_up();
@@ -102,7 +107,8 @@ namespace scicellxx
  // ===================================================================
  // Set the strategy to compute the new time step
  // ===================================================================
- void ACAdaptiveTimeStepper::set_new_step_size_strategy(ACAdaptiveNewStepSizeStrategy *new_time_step_strategy_pt)
+ template<class EQUATIONS_TYPE>
+ void ACAdaptiveTimeStepper<EQUATIONS_TYPE>::set_new_step_size_strategy(ACAdaptiveNewStepSizeStrategy *new_time_step_strategy_pt)
  {
   // Clean up
   clean_up();

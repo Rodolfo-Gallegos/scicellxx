@@ -3,9 +3,6 @@
 
 #include "../general/general.h"
 
-#include "../data_structures/ac_odes.h"
-#include "../data_structures/cc_data.h"
-
 namespace scicellxx
 {
 #ifdef TYPEDEF_REAL_IS_DOUBLE

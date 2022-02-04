@@ -1,4 +1,4 @@
-#include "cc_adams_moulton_2_predictor_corrector_method.h"
+#include "cc_adams_moulton_2_predictor_corrector_method.tpl.h"
 
 namespace scicellxx
 {
@@ -6,12 +6,13 @@ namespace scicellxx
  // ===================================================================
  // Constructor
  // ===================================================================
- CCAdamsMoulton2PCMethod::CCAdamsMoulton2PCMethod()
-  : ACPredictorCorrectorTimeStepper()
+ template<class EQUATIONS_TYPE>
+ CCAdamsMoulton2PCMethod<EQUATIONS_TYPE>::CCAdamsMoulton2PCMethod()
+  : ACPredictorCorrectorTimeStepper<EQUATIONS_TYPE>()
  {
   
   // Sets the number of history values
-  N_history_values = 2;
+  this->N_history_values = 2;
   
   // Enable output messages
   //enable_output_messages();
@@ -21,7 +22,8 @@ namespace scicellxx
  // ===================================================================
  // Empty destructor
  // ===================================================================
- CCAdamsMoulton2PCMethod::~CCAdamsMoulton2PCMethod()
+ template<class EQUATIONS_TYPE>
+ CCAdamsMoulton2PCMethod<EQUATIONS_TYPE>::~CCAdamsMoulton2PCMethod()
  {
  
  }
@@ -32,11 +34,14 @@ namespace scicellxx
  // The values of u at time t+h will be stored at index k (default k =
  // 0).
  // ===================================================================
- void CCAdamsMoulton2PCMethod::time_step(ACODEs &odes, const Real h,
-                                         const Real t,
-                                         CCData &u,
-                                         const unsigned k)
+ template<class EQUATIONS_TYPE>
+ void CCAdamsMoulton2PCMethod<EQUATIONS_TYPE>::time_step(EQUATIONS_TYPE &odes,
+                                                         const Real h,
+                                                         const Real t,
+                                                         CCData &u,
+                                                         const unsigned k)
  {
+#ifdef SCICELLXX_PANIC_MODE
   // Check if the ode has the correct number of history values to
   // apply Adams-Moulton 2 method
   const unsigned n_history_values = u.n_history_values();
@@ -54,6 +59,7 @@ namespace scicellxx
                            SCICELLXX_CURRENT_FUNCTION,
                            SCICELLXX_EXCEPTION_LOCATION);
    }
+#endif // #ifdef SCICELLXX_PANIC_MODE
   
   // The method is implemented following an P(EC)^k E with the final
   // evaluation step as optional

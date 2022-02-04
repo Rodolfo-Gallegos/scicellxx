@@ -1,4 +1,4 @@
-#include "cc_adaptive_runge_kutta_45F_method.h"
+#include "cc_adaptive_runge_kutta_45F_method.tpl.h"
 
 namespace scicellxx
 {
@@ -6,8 +6,9 @@ namespace scicellxx
  // ===================================================================
  // Constructor
  // ===================================================================
- CCAdaptiveRK45FMethod::CCAdaptiveRK45FMethod()
-  : ACAdaptiveTimeStepper()
+ template<class EQUATIONS_TYPE>
+ CCAdaptiveRK45FMethod<EQUATIONS_TYPE>::CCAdaptiveRK45FMethod()
+  : ACAdaptiveTimeStepper<EQUATIONS_TYPE>()
  {
   
   // Sets the number of history values
@@ -18,7 +19,8 @@ namespace scicellxx
 // ===================================================================
 // Empty destructor
 // ===================================================================
- CCAdaptiveRK45FMethod::~CCAdaptiveRK45FMethod()
+ template<class EQUATIONS_TYPE>
+ CCAdaptiveRK45FMethod<EQUATIONS_TYPE>::~CCAdaptiveRK45FMethod()
  {
   
  }
@@ -28,11 +30,13 @@ namespace scicellxx
  // "t" to the time "t+h". The values of u at time t+h will be stored
  // at index k (default k = 0).
  // ===================================================================
- void CCAdaptiveRK45FMethod::time_step(ACODEs &odes, const Real h,
-                                       const Real t,
-                                       CCData &u,
-                                       const unsigned k)
+ template<class EQUATIONS_TYPE>
+ void CCAdaptiveRK45FMethod<EQUATIONS_TYPE>::time_step(EQUATIONS_TYPE &odes, const Real h,
+                                                       const Real t,
+                                                       CCData &u,
+                                                       const unsigned k)
  {
+#ifdef SCICELLXX_PANIC_MODE
   // Check if the ode has the correct number of history values to
   // apply Runge-Kutta 4(5) Fehlberg method
   const unsigned n_history_values = u.n_history_values();
@@ -50,6 +54,7 @@ namespace scicellxx
                            SCICELLXX_CURRENT_FUNCTION,
                            SCICELLXX_EXCEPTION_LOCATION);
    }
+#endif // #ifdef SCICELLXX_PANIC_MODE
   
   // Get the number of odes
   const unsigned n_odes = odes.n_odes();

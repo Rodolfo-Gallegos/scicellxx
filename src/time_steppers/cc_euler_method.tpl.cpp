@@ -8,7 +8,7 @@ namespace scicellxx
  // ===================================================================
  template<class EQUATIONS_TYPE>
  CCEulerMethod<EQUATIONS_TYPE>::CCEulerMethod()
-  : ACTimeStepperForODEs()
+  : ACTimeStepper<EQUATIONS_TYPE>()
  {
   
   // Sets the number of history values

@@ -1,4 +1,4 @@
-#include "ac_predictor_corrector_time_stepper.h"
+#include "ac_predictor_corrector_time_stepper.tpl.h"
 
 namespace scicellxx
 {
@@ -6,8 +6,9 @@ namespace scicellxx
  // ===================================================================
  // Empty constructor
  // ===================================================================
- ACPredictorCorrectorTimeStepper::ACPredictorCorrectorTimeStepper()
-  : ACTimeStepperForODEs(),
+ template<class EQUATIONS_TYPE>
+ ACPredictorCorrectorTimeStepper<EQUATIONS_TYPE>::ACPredictorCorrectorTimeStepper()
+  : ACTimeStepper<EQUATIONS_TYPE>(),
     Maximum_iterations(DEFAULT_PREDICTOR_CORRECTOR_TIME_STEPPER_MAXIMUM_ITERATIONS),
     Maximum_tolerance(DEFAULT_PREDICTOR_CORRECTOR_TIME_STEPPER_MAXIMUM_TOLERANCE),
     Minimum_tolerance(DEFAULT_PREDICTOR_CORRECTOR_TIME_STEPPER_MINIMUM_TOLERANCE),
@@ -22,7 +23,8 @@ namespace scicellxx
  // ===================================================================
  // Empty destructor
  // ===================================================================
- ACPredictorCorrectorTimeStepper::~ACPredictorCorrectorTimeStepper()
+ template<class EQUATIONS_TYPE>
+ ACPredictorCorrectorTimeStepper<EQUATIONS_TYPE>::~ACPredictorCorrectorTimeStepper()
  { 
 
  }
@@ -30,7 +32,8 @@ namespace scicellxx
  // ===================================================================
  // Set the default configuration
  // ===================================================================
- void ACPredictorCorrectorTimeStepper::set_default_configuration()
+ template<class EQUATIONS_TYPE>
+ void ACPredictorCorrectorTimeStepper<EQUATIONS_TYPE>::set_default_configuration()
  {
   set_default_maximum_iterations();
   set_default_maximum_tolerance(); 
