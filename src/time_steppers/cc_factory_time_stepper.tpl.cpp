@@ -1,4 +1,4 @@
-#include "cc_factory_time_stepper_for_odes.tpl.h"
+#include "cc_factory_time_stepper.tpl.h"
 
 namespace scicellxx
 {
@@ -7,7 +7,7 @@ namespace scicellxx
  /// Empty constructor
  // ===================================================================
  template<class EQUATIONS_TYPE>
- CCFactoryTimeStepperForODEs<EQUATIONS_TYPE>::CCFactoryTimeStepperForODEs()
+ CCFactoryTimeStepper<EQUATIONS_TYPE>::CCFactoryTimeStepper()
  { 
 
  }
@@ -16,7 +16,7 @@ namespace scicellxx
  /// Empty destructor
  // ===================================================================
  template<class EQUATIONS_TYPE>
- CCFactoryTimeStepperForODEs<EQUATIONS_TYPE>::~CCFactoryTimeStepperForODEs()
+ CCFactoryTimeStepper<EQUATIONS_TYPE>::~CCFactoryTimeStepper()
  { 
 
  }
@@ -25,7 +25,7 @@ namespace scicellxx
  /// Returns the specified time stepper (integration method)
  // ===================================================================
  template<class EQUATIONS_TYPE>
- ACTimeStepperForODEs* CCFactoryTimeStepperForODEs<EQUATIONS_TYPE>::create_time_stepper(std::string time_stepper_name)
+ ACTimeStepper<EQUATIONS_TYPE>* CCFactoryTimeStepper<EQUATIONS_TYPE>::create_time_stepper(std::string time_stepper_name)
  {
   // Get the string and change it to lower case 
   std::transform(time_stepper_name.begin(), time_stepper_name.end(),

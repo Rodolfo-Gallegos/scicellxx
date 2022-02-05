@@ -12,7 +12,7 @@ namespace scicellxx
  {
   
   // Sets the number of history values
-  N_history_values = 2;
+  this->N_history_values = 2;
   
  }
  
@@ -40,14 +40,14 @@ namespace scicellxx
   // Check if the ode has the correct number of history values to
   // apply Runge-Kutta 4(5) Fehlberg method
   const unsigned n_history_values = u.n_history_values();
-  if (n_history_values < N_history_values)
+  if (n_history_values < this->N_history_values)
    {
     // Error message
     std::ostringstream error_message;
     error_message << "The number of history values is less than\n"
                   << "the required by Adaptive RK45F method" << std::endl
                   << "Required number of history values: "
-                  << N_history_values << std::endl
+                  << this->N_history_values << std::endl
                   << "Number of history values: "
                   << n_history_values << std::endl;
     throw SciCellxxLibError(error_message.str(),
@@ -209,7 +209,7 @@ namespace scicellxx
      }
     
     // Compute the new step size based on the established strategy
-    hh = New_time_step_strategy_pt->new_step_size(local_error, hh);
+    hh = this->New_time_step_strategy_pt->new_step_size(local_error, hh);
     
     //Real new_h = safety_coefficient * h * (local_error/Maximum_tolerance, goodPower);
     
@@ -218,7 +218,7 @@ namespace scicellxx
      {
       hh = this->Maximum_step_size;
       break_loop = true;
-      if (Output_messages)
+      if (this->Output_messages)
        {
         scicellxx_output << "Runge-Kutta 4(5) Fehlberg MAXIMUM STEP SIZE reached ["<<this->Maximum_step_size<<"]\n"
                         << "If you consider you require a larger step size you can\n"
@@ -231,7 +231,7 @@ namespace scicellxx
      {
       hh = this->Minimum_step_size;
       break_loop = true;
-      if (Output_messages)
+      if (this->Output_messages)
        {
         scicellxx_output << "Runge-Kutta 4(5) Fehlberg MINIMUM STEP SIZE reached ["<<this->Minimum_step_size<<"]\n"
                         << "If you consider you require an smaller step size you can\n"
@@ -248,9 +248,9 @@ namespace scicellxx
     // Increase the number of iterations
     n_iterations++;
     
-    if (n_iterations >= Maximum_iterations)
+    if (n_iterations >= this->Maximum_iterations)
      {
-      if (Output_messages)
+      if (this->Output_messages)
        {
         scicellxx_output << "Runge-Kutta 4(5) Fehlberg MAXIMUM NUMBER OF ITERATIONS reached ["<<this->Maximum_iterations<<"]\n"
                         << "If you consider you require more iterations you can\n"

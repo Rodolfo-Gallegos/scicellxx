@@ -3,7 +3,7 @@
 #define ACJACOBIANANDRESIDUAL_H
 
 #include "../general/general.h"
-#include "../data_structures/cc_data.h"
+#include "../data_structures/data_structures.h"
 #include "../matrices/matrices.h"
 
 namespace scicellxx

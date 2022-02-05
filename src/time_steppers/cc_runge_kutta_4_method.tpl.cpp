@@ -41,14 +41,14 @@ namespace scicellxx
   // Check if the ode has the correct number of history values to
   // apply Runge-Kutta 4 method
   const unsigned n_history_values = u.n_history_values();
-  if (n_history_values < N_history_values)
+  if (n_history_values < this->N_history_values)
    {
     // Error message
     std::ostringstream error_message;
     error_message << "The number of history values is less than\n"
                   << "the required by RK4 method" << std::endl
                   << "Required number of history values: "
-                  << N_history_values << std::endl
+                  << this->N_history_values << std::endl
                   << "Number of history values: "
                   << n_history_values << std::endl;
     throw SciCellxxLibError(error_message.str(),

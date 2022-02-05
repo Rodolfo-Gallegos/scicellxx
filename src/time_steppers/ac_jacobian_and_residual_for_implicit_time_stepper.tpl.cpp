@@ -1,11 +1,12 @@
-#include "ac_jacobian_and_residual_for_implicit_time_stepper.h"
+#include "ac_jacobian_and_residual_for_implicit_time_stepper.tpl.h"
 
 namespace scicellxx
 {
  // ===================================================================
  /// Empty constructor
  // ===================================================================
- ACJacobianAndResidualForImplicitTimeStepper::ACJacobianAndResidualForImplicitTimeStepper()
+ template<class EQUATIONS_TYPE>
+ ACJacobianAndResidualForImplicitTimeStepper<EQUATIONS_TYPE>::ACJacobianAndResidualForImplicitTimeStepper()
   : ACJacobianAndResidual(),
     ODEs_pt(NULL),
     U_pt(NULL),
@@ -18,7 +19,8 @@ namespace scicellxx
  // ===================================================================
  /// Destructor
  // ===================================================================
- ACJacobianAndResidualForImplicitTimeStepper::~ACJacobianAndResidualForImplicitTimeStepper()
+ template<class EQUATIONS_TYPE>
+ ACJacobianAndResidualForImplicitTimeStepper<EQUATIONS_TYPE>::~ACJacobianAndResidualForImplicitTimeStepper()
  {
   // Free the pointer
   Jacobian_FY_strategy_pt = NULL;
@@ -29,8 +31,9 @@ namespace scicellxx
  /// step 'h', the current time 't', the values of 'u' and the index
  /// where the values of 'u' at time 't+h' will be stored
  // ===================================================================
- void ACJacobianAndResidualForImplicitTimeStepper::
- set_data_for_jacobian_and_residual(ACODEs *odes_pt, const Real h, const Real t,
+ template<class EQUATIONS_TYPE>
+ void ACJacobianAndResidualForImplicitTimeStepper<EQUATIONS_TYPE>::
+ set_data_for_jacobian_and_residual(EQUATIONS_TYPE *odes_pt, const Real h, const Real t,
                                     CCData *u_pt, const unsigned k)
  {
   // Set the odes
@@ -58,7 +61,8 @@ namespace scicellxx
  // ===================================================================
  /// Set the strategy to compute the ODE's Jacobian
  // ===================================================================
- void ACJacobianAndResidualForImplicitTimeStepper::
+ template<class EQUATIONS_TYPE>
+ void ACJacobianAndResidualForImplicitTimeStepper<EQUATIONS_TYPE>::
  set_strategy_for_odes_jacobian(ACJacobianAndResidualForImplicitTimeStepper *jacobian_strategy_for_odes_pt)
  {
   if (jacobian_strategy_for_odes_pt != NULL)
@@ -82,7 +86,8 @@ namespace scicellxx
  // =================================================================== 
  /// Get access to the strategy to compute the Jacobian of the ODEs
  // ===================================================================
- ACJacobianAndResidualForImplicitTimeStepper *ACJacobianAndResidualForImplicitTimeStepper::
+ template<class EQUATIONS_TYPE>
+ ACJacobianAndResidualForImplicitTimeStepper<EQUATIONS_TYPE> *ACJacobianAndResidualForImplicitTimeStepper<EQUATIONS_TYPE>::
  jacobian_FY_strategy_pt()
  {
   if (Jacobian_FY_strategy_pt != NULL)

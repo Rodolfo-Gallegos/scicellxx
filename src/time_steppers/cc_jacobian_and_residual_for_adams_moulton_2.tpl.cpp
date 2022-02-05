@@ -1,12 +1,15 @@
-#include "cc_jacobian_and_residual_for_backward_euler.h"
+#include "cc_jacobian_and_residual_for_adams_moulton_2.tpl.h"
 
 namespace scicellxx
 {
  // ===================================================================
  /// Constructor
  // ===================================================================
- CCJacobianAndResidualForBackwardEuler::CCJacobianAndResidualForBackwardEuler()
-  : ACJacobianAndResidualForImplicitTimeStepper()
+ template<class EQUATIONS_TYPE>
+ CCJacobianAndResidualForAdamsMoulton2<EQUATIONS_TYPE>::CCJacobianAndResidualForAdamsMoulton2()
+  : ACJacobianAndResidualForImplicitTimeStepper<EQUATIONS_TYPE>(),
+    DUDT_old(NULL),
+    Evaluate_odes_with_u_old_values(false)
  {
   // Assign the default strategy (the Finite Differences strategy) for
   // computation of the Jacobian of the ODEs
@@ -16,19 +19,21 @@ namespace scicellxx
  // ===================================================================
  /// Empty destructor
  // ===================================================================
- CCJacobianAndResidualForBackwardEuler::~CCJacobianAndResidualForBackwardEuler()
+ template<class EQUATIONS_TYPE>
+ CCJacobianAndResidualForAdamsMoulton2<EQUATIONS_TYPE>::~CCJacobianAndResidualForAdamsMoulton2()
  {
   
  }
  
  // ===================================================================
- /// In charge of computing the Jacobian
- /// (virtual function implementation)
- // ===================================================================
- void CCJacobianAndResidualForBackwardEuler::compute_jacobian()
+ /// In charge of computing the Jacobian (virtual function
+ /// implementation)
+ //===================================================================
+ template<class EQUATIONS_TYPE>
+ void CCJacobianAndResidualForAdamsMoulton2<EQUATIONS_TYPE>::compute_jacobian()
  {
   // Get the odes
-  ACODEs *odes_pt = this->odes_pt();
+  EQUATIONS_TYPE *odes_pt = this->odes_pt();
   // Get the time step
   const Real h = this->time_step();
   // Get the current time
@@ -57,15 +62,16 @@ namespace scicellxx
   // -------------------------------------------
   // Compute the Jacobian of F(Y) at time t+h
   // -------------------------------------------
+  
   // Get a pointer to the strategy to compute the Jacobian of the ODEs
-  ACJacobianAndResidualForImplicitTimeStepper *jacobian_strategy_odes_pt =
+  ACJacobianAndResidualForImplicitTimeStepper<EQUATIONS_TYPE> *jacobian_strategy_odes_pt =
    this->jacobian_FY_strategy_pt();
   
   // Set the data for the computation of the jacobian and the residual
   jacobian_strategy_odes_pt->set_data_for_jacobian_and_residual(odes_pt, h, t, u_pt, k);
   
   // Compute Jacobian
-  jacobian_strategy_odes_pt->compute_jacobian();
+  jacobian_strategy_odes_pt->compute_jacobian(); 
   
   // Store the Jacobian for FY, used in the computation of the
   // backward Euler Jacobian $J = I - (h * Jacobian_{FY})$
@@ -77,6 +83,9 @@ namespace scicellxx
   // Allocate memory for the Jacobian (delete previous data)
   this->Jacobian_pt->allocate_memory(n_dof, n_dof);
   
+  // Half time step
+  const Real h_half = h * 0.5;
+  
   // Compute the approximated Jacobian (I - h * Jacobian_FY(i, j))
   for (unsigned i = 0; i < n_dof; i++)
    {
@@ -84,11 +93,11 @@ namespace scicellxx
      {
       if (i == j)
        {
-        (*this->Jacobian_pt)(i, j) = 1.0 - (h * Jacobian_FY_pt->value(i, j));
+        (*this->Jacobian_pt)(i, j) = 1.0 - (h_half * Jacobian_FY_pt->value(i, j));
        }
       else
        {
-        (*this->Jacobian_pt)(i, j) = 0.0 - (h * Jacobian_FY_pt->value(i, j));
+        (*this->Jacobian_pt)(i, j) = 0.0 - (h_half * Jacobian_FY_pt->value(i, j));
        }
      }
    }
@@ -98,10 +107,11 @@ namespace scicellxx
  // ===================================================================
  /// In charge of computing the residual
  // ===================================================================
- void CCJacobianAndResidualForBackwardEuler::compute_residual()
+ template<class EQUATIONS_TYPE>
+ void CCJacobianAndResidualForAdamsMoulton2<EQUATIONS_TYPE>::compute_residual()
  {
   // Get the odes
-  ACODEs *odes_pt = this->odes_pt();
+  EQUATIONS_TYPE *odes_pt = this->odes_pt();
   // Get the time step
   const Real h = this->time_step();
   // Get the current time
@@ -125,27 +135,73 @@ namespace scicellxx
     throw SciCellxxLibError(error_message.str(),
                            SCICELLXX_CURRENT_FUNCTION,
                            SCICELLXX_EXCEPTION_LOCATION);
-   }
+   } 
   
   // Get the number of ODEs
   const unsigned n_dof = odes_pt->n_odes();
   
-  // Temporary vector to store the evaluation of the odes
-  CCData dudt_new(n_dof);
+  // Is this the first time we called this method?
+  if (Evaluate_odes_with_u_old_values)
+   {
+    // Free memory if there is something in there
+    if (DUDT_old!= NULL)
+     {
+      delete DUDT_old;
+      DUDT_old = NULL;
+     }
+    
+    // Temporary vector to store the evaluation of the odes with u
+    // values at time 't' (constant values)
+    DUDT_old = new CCData(n_dof);
+    
+    // Evaluate the ODEs with the values of u at time "t". Constant
+    // during Newton's iteration
+    odes_pt->evaluate_derivatives(t, (*u_pt), (*DUDT_old), k+1);
+    
+    // Avoid evaluation of the same function during following Newton's
+    // iterations
+    Evaluate_odes_with_u_old_values = false;
+    
+   }
   
-  // Evaluate the ODE at time 't+h', stored at index k
-  odes_pt->evaluate_derivatives(t+h, (*u_pt), dudt_new, k);
+  // Check whether we have previously evaluated the derivative with
+  // the values of u at time 't'
+  if (DUDT_old==NULL)
+   {
+    // Error message
+    std::ostringstream error_message;
+    error_message << "You have not evaluated the odes with the values of u at time 't'\n"
+                  << "These values are required to compute the residual\n"
+                  << "Call the method\n"
+                  << "enable_evaluation_of_odes_with_old_u_values()\n"
+                  << "ONLY before the FIRST computation of the residual\n"
+                  << std::endl;
+    throw SciCellxxLibError(error_message.str(),
+                           SCICELLXX_CURRENT_FUNCTION,
+                           SCICELLXX_EXCEPTION_LOCATION);
+   }
+  
+  // Temporary vector to store the evaluation of the odes with the
+  // values of u at time 't+h' (current Newton's iteration)
+  CCData dudt(n_dof);
+  
+  // Evaluate the ODE at time "t+h"
+  odes_pt->evaluate_derivatives(t+h, (*u_pt), dudt, k);
   
   // Allocate memory for the Residual (delete previous data)
   this->Residual_pt->allocate_memory(n_dof);
   
-  // F(Y) = -(u_{t+h} - u_{t} - h f(t+h, u_{t+h}))
+  // Half time step
+  const Real h_half = h * 0.5;
+
+  // F(Y) = -(u_{t+h} - u_{t} - \frac{1}{2} (f(t+h, u_{t+h}) + f(t, u_{t})) )
   for (unsigned i = 0; i < n_dof; i++)
    {
-    this->Residual_pt->value(i) = -(u_pt->value(i,k) - u_pt->value(i,k+1) - (h * dudt_new(i)));
+    this->Residual_pt->value(i) =
+     -(u_pt->value(i,k) - u_pt->value(i,k+1) - (h_half * (dudt(i) + DUDT_old->value(i))));
    }
   
  }
-  
+ 
 }
 

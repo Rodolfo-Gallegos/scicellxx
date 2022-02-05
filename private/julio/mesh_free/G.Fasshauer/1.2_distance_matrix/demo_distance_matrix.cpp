@@ -10,7 +10,7 @@ using namespace scicellxx;
 template<class MAT_TYPE, class VEC_TYPE>
 class Problem
 {
-oublic:
+public:
  Problem();
  ~Problem();
  

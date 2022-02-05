@@ -1,7 +1,7 @@
 /// IN THIS FILE: Implementation of the concrete class
 /// CCNewtonMethodForAdamsMoulton2
 
-#include "cc_newtons_method_for_adams_moulton_2.h"
+#include "cc_newtons_method_for_adams_moulton_2.tpl.h"
 
 namespace scicellxx
 {
@@ -9,8 +9,9 @@ namespace scicellxx
  // ===================================================================
  /// Constructor
  // ===================================================================
- CCNewtonsMethodForAdamsMoulton2::CCNewtonsMethodForAdamsMoulton2()
-  : ACNewtonsMethodForImplicitTimeStepper()
+ template<class EQUATIONS_TYPE>
+ CCNewtonsMethodForAdamsMoulton2<EQUATIONS_TYPE>::CCNewtonsMethodForAdamsMoulton2()
+  : ACNewtonsMethodForImplicitTimeStepper<EQUATIONS_TYPE>()
  {
   // Set the Jacobian and residual strategy for Newton's method (used
   // for parent class)
@@ -20,7 +21,8 @@ namespace scicellxx
  // ===================================================================
  /// Empty destructor
  // ===================================================================
- CCNewtonsMethodForAdamsMoulton2::~CCNewtonsMethodForAdamsMoulton2()
+ template<class EQUATIONS_TYPE>
+ CCNewtonsMethodForAdamsMoulton2<EQUATIONS_TYPE>::~CCNewtonsMethodForAdamsMoulton2()
  {
   
  }
@@ -28,10 +30,11 @@ namespace scicellxx
  // ===================================================================
  /// Performs actions before initial convergence check
  // ===================================================================
- void CCNewtonsMethodForAdamsMoulton2::actions_before_initial_convergence_check()
+ template<class EQUATIONS_TYPE>
+ void CCNewtonsMethodForAdamsMoulton2<EQUATIONS_TYPE>::actions_before_initial_convergence_check()
  {
   // Get the odes
-  ACODEs *odes_pt = this->odes_pt();
+  EQUATIONS_TYPE *odes_pt = this->odes_pt();
   // Get the time step
   const Real h = this->time_step();
   // Get the current time

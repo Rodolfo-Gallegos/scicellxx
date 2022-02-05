@@ -1,12 +1,13 @@
-#include "cc_jacobian_by_fd_and_residual_from_odes.h"
+#include "cc_jacobian_by_fd_and_residual_from_odes.tpl.h"
 
 namespace scicellxx
 {
  // ===================================================================
  /// Empty constructor
  // ===================================================================
- CCJacobianByFDAndResidualFromODEs::CCJacobianByFDAndResidualFromODEs()
-  : ACJacobianAndResidualForImplicitTimeStepper()
+ template<class EQUATIONS_TYPE>
+ CCJacobianByFDAndResidualFromODEs<EQUATIONS_TYPE>::CCJacobianByFDAndResidualFromODEs()
+  : ACJacobianAndResidualForImplicitTimeStepper<EQUATIONS_TYPE>()
  {
   
  }
@@ -14,7 +15,8 @@ namespace scicellxx
  // ===================================================================
  /// Empty destructor
  // ===================================================================
- CCJacobianByFDAndResidualFromODEs::~CCJacobianByFDAndResidualFromODEs()
+ template<class EQUATIONS_TYPE>
+ CCJacobianByFDAndResidualFromODEs<EQUATIONS_TYPE>::~CCJacobianByFDAndResidualFromODEs()
  {
  
  }
@@ -23,10 +25,11 @@ namespace scicellxx
  /// In charge of computing the Jacobian using Finite Differences
  /// (virtual function implementation)
  // ===================================================================
- void CCJacobianByFDAndResidualFromODEs::compute_jacobian()
+ template<class EQUATIONS_TYPE>
+ void CCJacobianByFDAndResidualFromODEs<EQUATIONS_TYPE>::compute_jacobian()
  {
   // Get a pointer to the ODEs
-  ACODEs *odes_pt = this->odes_pt();
+  EQUATIONS_TYPE *odes_pt = this->odes_pt();
   
   // Get a pointer to the u values
   CCData *u_pt = this->u_pt();
@@ -104,7 +107,8 @@ namespace scicellxx
  // ===================================================================
  /// In charge of computing the residual
  // ===================================================================
- void CCJacobianByFDAndResidualFromODEs::compute_residual()
+ template<class EQUATIONS_TYPE>
+ void CCJacobianByFDAndResidualFromODEs<EQUATIONS_TYPE>::compute_residual()
  {
   
  } 

@@ -45,14 +45,14 @@ namespace scicellxx
   // Check if the ode has the correct number of history values to
   // apply Adams-Moulton 2 method
   const unsigned n_history_values = u.n_history_values();
-  if (n_history_values < N_history_values)
+  if (n_history_values < this->N_history_values)
    {
     // Error message
     std::ostringstream error_message;
     error_message << "The number of history values is less than\n"
                   << "the required by Adams-Moulton 2 method\n"
                   << "Required number of history values: "
-                  << N_history_values << "\n"
+                  << this->N_history_values << "\n"
                   << "Number of history values: "
                   << n_history_values << std::endl;
     throw SciCellxxLibError(error_message.str(),
@@ -104,6 +104,14 @@ namespace scicellxx
   // -- Temporary vector to store the evaluation of the odes with the
   // -- predicted values.
   CCData dudt_p(n_odes);
+
+  // Cache values
+  const Real max_tol = this->maximum_tolerance();
+  const Real min_tol = this->minimum_tolerance();
+  const unsigned max_iter = this->maximum_iterations();
+  bool out_msg = this->output_messages();
+  bool fixed_iter = this->fixed_number_of_iterations();
+  bool do_final_eval = this->perform_final_evaluation();
   
   do {
    // Evaluate the ODE at time "t+h" using the predicted values of
@@ -128,25 +136,25 @@ namespace scicellxx
    // Get the maximum norm
    local_error = local_error_vector.norm_inf();
    // Is local error smaller than allowed tolerance
-   if (local_error < minimum_tolerance())
+   if (local_error < min_tol)
     {
-     if (output_messages())
+     if (out_msg)
       {
        scicellxx_output << "Local error is smaller than minimum tolerance value ["
-                       << local_error << "] < [" << minimum_tolerance() << "]" << std::endl;
+                       << local_error << "] < [" << min_tol << "]" << std::endl;
       }
     }
    
    // Increase the number of iterations
    n_iterations++;
    
-   if (n_iterations >= maximum_iterations())
+   if (n_iterations >= max_iter)
     {
-     if (output_messages())
+     if (out_msg)
       {
-       scicellxx_output << "Maximum number of iterations reached ["<< maximum_iterations()
+       scicellxx_output << "Maximum number of iterations reached ["<< max_iter
                        <<"], local error [" << local_error << "], maximum_tolerance ["
-                       << maximum_tolerance() << "]\n"
+                       << max_tol << "]\n"
                        << "You can change the maximum number of iterations by calling the method\n"
                        << "set_maximum_iterations()\n"
                        << "You can change the maximum tolerance by calling the method\n"
@@ -156,19 +164,19 @@ namespace scicellxx
     }
    
    // Check whether a fixed number of iterations is enabled
-   if (fixed_number_of_iterations())
+   if (fixed_iter)
     {
      // Force local error to be greater than maximum tolerance
-     local_error = maximum_tolerance() + 1.0;
+     local_error = max_tol + 1.0;
     }
    
    // Check whether reaching maximum number of iteratios or error in
    // tolerance ranges
-  }while(local_error > maximum_tolerance() && n_iterations < maximum_iterations());
+  }while(local_error > max_tol && n_iterations < max_iter);
   
   // Perform a last evaluation such that the strategy becomes in a
   // E(PC)^k E
-  if (perform_final_evaluation())
+  if (do_final_eval)
    {
     // Evaluate the ODE at time "t" using the current values of "u"
     // stored in index k

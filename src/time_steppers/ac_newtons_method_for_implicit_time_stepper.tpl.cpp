@@ -1,7 +1,7 @@
 /// IN THIS FILE: Implementation of the abstract class
 /// ACNewtonMethodForImplicitTimeStepper
 
-#include "ac_newtons_method_for_implicit_time_stepper.h"
+#include "ac_newtons_method_for_implicit_time_stepper.tpl.h"
 
 namespace scicellxx
 {
@@ -9,7 +9,8 @@ namespace scicellxx
  // ===================================================================
  /// Empty constructor
  // ===================================================================
- ACNewtonsMethodForImplicitTimeStepper::ACNewtonsMethodForImplicitTimeStepper()
+ template<class EQUATIONS_TYPE>
+ ACNewtonsMethodForImplicitTimeStepper<EQUATIONS_TYPE>::ACNewtonsMethodForImplicitTimeStepper()
   : CCNewtonsMethod(),
     ODEs_pt(NULL),
     U_pt(NULL),
@@ -21,7 +22,8 @@ namespace scicellxx
  // ===================================================================
  /// Empty destructor
  // ===================================================================
- ACNewtonsMethodForImplicitTimeStepper::~ACNewtonsMethodForImplicitTimeStepper()
+ template<class EQUATIONS_TYPE>
+ ACNewtonsMethodForImplicitTimeStepper<EQUATIONS_TYPE>::~ACNewtonsMethodForImplicitTimeStepper()
  {
   
  }
@@ -29,7 +31,8 @@ namespace scicellxx
  // ===================================================================
  /// Performs actions before Newton's method step
  // ===================================================================
- void ACNewtonsMethodForImplicitTimeStepper::actions_before_newton_step()
+ template<class EQUATIONS_TYPE>
+ void ACNewtonsMethodForImplicitTimeStepper<EQUATIONS_TYPE>::actions_before_newton_step()
  {
   
  }
@@ -37,7 +40,8 @@ namespace scicellxx
  // ===================================================================
  /// Performs actions after Newton's method step
  // ===================================================================
- void ACNewtonsMethodForImplicitTimeStepper::actions_after_newton_step()
+ template<class EQUATIONS_TYPE>
+ void ACNewtonsMethodForImplicitTimeStepper<EQUATIONS_TYPE>::actions_after_newton_step()
  {
   // Update U, store the new values at index 'History_index'
   const unsigned k = History_index;
@@ -54,8 +58,9 @@ namespace scicellxx
  /// step 'h', the current time 't', the values of 'u' and the index
  /// where the values of 'u' at time 't+h' will be stored
  // ===================================================================
- void ACNewtonsMethodForImplicitTimeStepper::
- set_data_for_jacobian_and_residual(ACODEs *odes_pt, const Real h, const Real t,
+ template<class EQUATIONS_TYPE>
+ void ACNewtonsMethodForImplicitTimeStepper<EQUATIONS_TYPE>::
+ set_data_for_jacobian_and_residual(EQUATIONS_TYPE *odes_pt, const Real h, const Real t,
                                     CCData *u_pt, const unsigned k)
  {
   // Set the odes
@@ -83,9 +88,10 @@ namespace scicellxx
  // ===================================================================
  /// Set the strategy to compute the ODE's Jacobian
  // ===================================================================
- void ACNewtonsMethodForImplicitTimeStepper::set_strategy_for_odes_jacobian(ACJacobianAndResidualForImplicitTimeStepper *jacobian_strategy_for_odes_pt)
+ template<class EQUATIONS_TYPE>
+ void ACNewtonsMethodForImplicitTimeStepper<EQUATIONS_TYPE>::set_strategy_for_odes_jacobian(ACJacobianAndResidualForImplicitTimeStepper<EQUATIONS_TYPE> *jacobian_strategy_for_odes_pt)
  {
-  ACJacobianAndResidualForImplicitTimeStepper *cache_jacobian_strategy_pt = dynamic_cast<ACJacobianAndResidualForImplicitTimeStepper *>(this->jacobian_and_residual_strategy_pt());
+  ACJacobianAndResidualForImplicitTimeStepper<EQUATIONS_TYPE> *cache_jacobian_strategy_pt = dynamic_cast<ACJacobianAndResidualForImplicitTimeStepper<EQUATIONS_TYPE> *>(this->jacobian_and_residual_strategy_pt());
   if (cache_jacobian_strategy_pt != NULL)
    {
     cache_jacobian_strategy_pt->set_strategy_for_odes_jacobian(jacobian_strategy_for_odes_pt);

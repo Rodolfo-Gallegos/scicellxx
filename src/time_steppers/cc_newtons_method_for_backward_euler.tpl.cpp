@@ -1,7 +1,7 @@
 /// IN THIS FILE: Implementation of the concrete class
 /// CCNewtonMethodForBackwardEuler
 
-#include "cc_newtons_method_for_backward_euler.h"
+#include "cc_newtons_method_for_backward_euler.tpl.h"
 
 namespace scicellxx
 {
@@ -9,8 +9,9 @@ namespace scicellxx
  // ===================================================================
  /// Constructor
  // ===================================================================
- CCNewtonsMethodForBackwardEuler::CCNewtonsMethodForBackwardEuler()
-  : ACNewtonsMethodForImplicitTimeStepper()
+ template<class EQUATIONS_TYPE>
+ CCNewtonsMethodForBackwardEuler<EQUATIONS_TYPE>::CCNewtonsMethodForBackwardEuler()
+  : ACNewtonsMethodForImplicitTimeStepper<EQUATIONS_TYPE>()
  {
   // Set the Jacobian and residual strategy for Newton's method (used
   // for parent class)
@@ -20,7 +21,8 @@ namespace scicellxx
  // ===================================================================
  /// Empty destructor
  // ===================================================================
- CCNewtonsMethodForBackwardEuler::~CCNewtonsMethodForBackwardEuler()
+ template<class EQUATIONS_TYPE>
+ CCNewtonsMethodForBackwardEuler<EQUATIONS_TYPE>::~CCNewtonsMethodForBackwardEuler()
  {
   
  }
@@ -28,10 +30,11 @@ namespace scicellxx
  // ===================================================================
  /// Performs actions before initial convergence check
  // ===================================================================
- void CCNewtonsMethodForBackwardEuler::actions_before_initial_convergence_check()
+ template<class EQUATIONS_TYPE>
+ void CCNewtonsMethodForBackwardEuler<EQUATIONS_TYPE>::actions_before_initial_convergence_check()
  {
   // Get the odes
-  ACODEs *odes_pt = this->odes_pt();
+  EQUATIONS_TYPE *odes_pt = this->odes_pt();
   // Get the time step
   const Real h = this->time_step();
   // Get the current time

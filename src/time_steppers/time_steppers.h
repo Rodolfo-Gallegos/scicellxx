@@ -30,7 +30,7 @@
 #include "cc_runge_kutta_4_method.h"
 
 // Include the factory class
-#include "cc_factory_time_stepper_for_odes.h"
+#include "cc_factory_time_stepper.h"
  
 #endif // #ifndef SCICELLXX_TIMESTEPPERS_H
 
