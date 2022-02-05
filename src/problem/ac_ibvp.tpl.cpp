@@ -1,4 +1,4 @@
-#include "ac_ibvp.h"
+#include "ac_ibvp.tpl.h"
 
 namespace scicellxx
 {
@@ -6,7 +6,8 @@ namespace scicellxx
  // ===================================================================
  /// Constructor, sets the ODEs and the time stepper
  // ===================================================================
- ACIBVP::ACIBVP()
+ template<class EQUATIONS_TYPE>
+ ACIBVP<EQUATIONS_TYPE>::ACIBVP()
   : ACProblem(),
     Time(0.0),
     Time_step(0.0)
@@ -22,7 +23,8 @@ namespace scicellxx
  // ===================================================================
  /// Destructor
  // ===================================================================
- ACIBVP::~ACIBVP()
+ template<class EQUATIONS_TYPE>
+ ACIBVP<EQUATIONS_TYPE>::~ACIBVP()
  {
   
  }
@@ -30,9 +32,10 @@ namespace scicellxx
  // ===================================================================
  /// Add a time stepper
  //===================================================================
- void ACIBVP::add_time_stepper(ACTimeStepper *time_stepper_pt,
-                               const Real initial_time,
-                               const Real time_step)
+ template<class EQUATIONS_TYPE>
+ void ACIBVP<EQUATIONS_TYPE>::add_time_stepper(ACTimeStepper<EQUATIONS_TYPE> *time_stepper_pt,
+                                               const Real initial_time,
+                                               const Real time_step)
  {
   // Add the time stepper to the time stepper vector
   Time_stepper_pt.push_back(time_stepper_pt);
@@ -45,7 +48,8 @@ namespace scicellxx
  // ===================================================================
  /// Read-only access to the time i-th stepper pointer
  // ===================================================================
- ACTimeStepper *ACIBVP::time_stepper_pt(const unsigned i) const
+ template<class EQUATIONS_TYPE>
+ ACTimeStepper<EQUATIONS_TYPE> *ACIBVP<EQUATIONS_TYPE>::time_stepper_pt(const unsigned i) const
  {
 #ifdef SCICELLXX_PANIC_MODE
   // Get the number of time steppers
@@ -70,7 +74,8 @@ namespace scicellxx
  // ===================================================================
  /// Write access to the current time
  // ===================================================================
- Real &ACIBVP::time(const unsigned i)
+ template<class EQUATIONS_TYPE>
+ Real &ACIBVP<EQUATIONS_TYPE>::time(const unsigned i)
  {
 #ifdef SCICELLXX_PANIC_MODE
   // Get the size of the time container
@@ -95,7 +100,8 @@ namespace scicellxx
  // ===================================================================
  /// Read-only access to the current time
  // ===================================================================
- Real ACIBVP::time(const unsigned i) const
+ template<class EQUATIONS_TYPE>
+ Real ACIBVP<EQUATIONS_TYPE>::time(const unsigned i) const
  {
 #ifdef SCICELLXX_PANIC_MODE
   // Get the size of the time container
@@ -120,7 +126,8 @@ namespace scicellxx
  // ===================================================================
  /// Write access to the current time step
  // ===================================================================
- Real &ACIBVP::time_step(const unsigned i)
+ template<class EQUATIONS_TYPE>
+ Real &ACIBVP<EQUATIONS_TYPE>::time_step(const unsigned i)
  {
 #ifdef SCICELLXX_PANIC_MODE
   // Get the size of the time step container
@@ -145,7 +152,8 @@ namespace scicellxx
  // ===================================================================
  /// Read-only access to the current time step
  // ===================================================================
- Real ACIBVP::time_step(const unsigned i) const
+ template<class EQUATIONS_TYPE>
+ Real ACIBVP<EQUATIONS_TYPE>::time_step(const unsigned i) const
  {
 #ifdef SCICELLXX_PANIC_MODE
   // Get the size of the time step container
@@ -171,7 +179,8 @@ namespace scicellxx
  /// We perform an unsteady solve by default, if you require a
  /// different solving strategy then override this method
  // ===================================================================
- void ACIBVP::solve()
+ template<class EQUATIONS_TYPE>
+ void ACIBVP<EQUATIONS_TYPE>::solve()
  {
   // Solve the Initial Boundary Value Problem
   unsteady_solve();
@@ -180,7 +189,8 @@ namespace scicellxx
  // ===================================================================
  /// Problem unsteady solve
  // ===================================================================
- void ACIBVP::unsteady_solve()
+ template<class EQUATIONS_TYPE>
+ void ACIBVP<EQUATIONS_TYPE>::unsteady_solve()
  {
   // Call actions before time stepping
   actions_before_time_stepping();
@@ -220,8 +230,8 @@ namespace scicellxx
     const Real t = time(i);
     const Real h = time_step(i);
     
-    // Time step (apply the Time stepper to time integrate the ODEs)
-    time_stepper_pt(i)->time_step(h, t, (*U_pt));
+    // Time step (apply the Time stepper to time integrate the Equations)
+    time_stepper_pt(i)->time_step((*Equations_pt), h, t, (*U_pt));
    }
     
   // Call actions after time stepping
