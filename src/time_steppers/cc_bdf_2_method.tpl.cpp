@@ -90,14 +90,14 @@ namespace scicellxx
   // Transform the initial guess into a vector
   // ---------------------------------------------------
   // Get the number of odes
-  const unsigned n_odes = odes.n_odes();
+  const unsigned n_equations = odes.n_equations();
   
   // Create a vector with the initial guess from the first row (0)
   // since the values have been shift
 #ifdef SCICELLXX_USES_ARMADILLO
-  CCVectorArmadillo u_initial_guess(u.history_values_row_pt(0), n_odes);
+  CCVectorArmadillo u_initial_guess(u.history_values_row_pt(0), n_equations);
 #else
-  CCVector u_initial_guess(u.history_values_row_pt(0), n_odes);
+  CCVector u_initial_guess(u.history_values_row_pt(0), n_equations);
 #endif // #ifdef SCICELLXX_USES_ARMADILLO
   
   // It is not required to shift the values to the right to provide

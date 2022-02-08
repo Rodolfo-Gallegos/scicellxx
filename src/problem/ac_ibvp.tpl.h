@@ -25,6 +25,9 @@ namespace scicellxx
   /// Constructor
   ACIBVP();
   
+  /// Constructor
+  ACIBVP(EQUATIONS_TYPE *equations_pt, ACTimeStepper<EQUATIONS_TYPE> *time_stepper_pt);
+  
   /// Destructor
   virtual ~ACIBVP();
   
@@ -126,6 +129,9 @@ namespace scicellxx
   /// The storage for the approximated solution of the time integration
   /// of the equations
   CCData *U_pt;
+  
+  /// Flag to allow release of memory by the class
+  bool Allow_free_memory_for_U;
   
   /// The equations
   EQUATIONS_TYPE *Equations_pt;

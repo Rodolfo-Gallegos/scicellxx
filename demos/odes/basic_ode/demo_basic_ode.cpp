@@ -35,7 +35,7 @@ public:
  
  /// Evaluates the system of odes at time 't', using the history
  /// values of u at index k
- void evaluate_derivatives(const Real t, CCData &u, CCData &dudt, const unsigned k = 0)
+ void evaluate_time_derivatives(const Real t, CCData &u, CCData &dudt, const unsigned k = 0)
  {
   // \frac{du}{dt} = -u^{2}
   dudt(0) = -(u(0,k)*u(0,k));
@@ -75,14 +75,15 @@ protected:
 // =================================================================
 // =================================================================
 // =================================================================
-class CCJacobianStrategyForMyODEs : public virtual ACJacobianAndResidualForImplicitTimeStepper
+template<class EQUATIONS_TYPE>
+class CCJacobianStrategyForMyODEs : public virtual ACJacobianAndResidualForImplicitTimeStepper<EQUATIONS_TYPE>
 {
  
 public:
  
  // Empty constructor
  CCJacobianStrategyForMyODEs()
-  : ACJacobianAndResidualForImplicitTimeStepper()
+  : ACJacobianAndResidualForImplicitTimeStepper<EQUATIONS_TYPE>()
  {
   
  }
@@ -119,7 +120,7 @@ public:
    }
   
   // Get the number of ODEs
-  const unsigned n_dof = odes_pt->n_odes();
+  const unsigned n_dof = odes_pt->n_equations();
   
   // Double check that the number of odes is correct
   if (n_dof != 1)
@@ -158,6 +159,7 @@ private:
  // case). Check
  // http://www.learncpp.com/cpp-tutorial/912-shallow-vs-deep-copying/
  CCJacobianStrategyForMyODEs(const CCJacobianStrategyForMyODEs &copy)
+  : ACJacobianAndResidualForImplicitTimeStepper<EQUATIONS_TYPE>()
  {
   BrokenCopy::broken_copy("CCJacobianStrategyForMyODEs");
  }
@@ -176,22 +178,23 @@ private:
 // =================================================================
 // =================================================================
 // =================================================================
-// This class inherits from the ACIBVPForODEs class and solves the
-// system of ODEs from above
+// This class inherits from the ACIBVP class and solves the system of
+// ODEs from above
 // =================================================================
 // =================================================================
 // =================================================================
- class CCBasicODEsProblem : public virtual ACIBVPForODEs
- {
+template<class EQUATIONS_TYPE>
+class CCBasicODEsProblem : public virtual ACIBVP<EQUATIONS_TYPE>
+{
  
  public:
  
   /// Constructor
-  CCBasicODEsProblem(ACODEs *odes_pt,
-                     ACTimeStepperForODEs *time_stepper_pt,
+  CCBasicODEsProblem(EQUATIONS_TYPE *odes_pt,
+                     ACTimeStepper<EQUATIONS_TYPE> *time_stepper_pt,
                      std::ostringstream &output_filename,
                      std::ostringstream &output_filename_error)
-   : ACIBVPForODEs(odes_pt, time_stepper_pt)
+   : ACIBVP<EQUATIONS_TYPE>(odes_pt, time_stepper_pt)
   {
    Output_file.open((output_filename.str()).c_str());
    Output_error_file.open((output_filename_error.str()).c_str());
@@ -224,14 +227,14 @@ private:
    Final_time = final_time;
    
    // Set initial conditions
-   set_initial_conditions();   
+   set_initial_conditions();
   }
   
   // Set initial conditions
   void set_initial_conditions()
   {
    // Initial conditions
-   u(0) = 1.0; 
+   this->u(0) = 1.0;
   }
   
   // Document the solution
@@ -240,7 +243,7 @@ private:
    // Get the inital time
    const Real t = this->time();
    // Initial problem configuration
-   Output_file << t << "\t" << u(0) << std::endl;
+   Output_file << t << "\t" << this->u(0) << std::endl;
    output_error();
   }
   
@@ -250,7 +253,7 @@ private:
    // Compute the error 
    const Real t = this->time();
    const Real u_analytical = 1.0/(1.0+t);
-   const Real error = std::fabs(u(0)-u_analytical);
+   const Real error = std::fabs(this->u(0)-u_analytical);
    Output_error_file << t << "\t" << error << std::endl;
   }
   
@@ -267,7 +270,7 @@ private:
   // Final integration time
   Real Final_time;
   
- }; // class CCBasicODEsProblem
+ }; // class CCBasicODEsProblem<CCBasicODEs>
 
  // ==================================================================
  // ==================================================================
@@ -279,7 +282,8 @@ private:
  int main(int argc, char *argv[])
  {
   // Create the factory for the time steppers (integration methods)
-  CCFactoryTimeStepperForODEs factory_time_stepper;
+  // specifically for the ODEs on this demo
+  CCFactoryTimeStepper<CCBasicODEs> factory_time_stepper;
   
   // Euler method test
   {
@@ -292,8 +296,9 @@ private:
    // ----------------------------------------------------------------
    // Time stepper
    // ----------------------------------------------------------------
-   // Create an instance of the integration method
-   ACTimeStepperForODEs *time_stepper_pt =
+   // Create an instance of the integration method for the specific
+   // ODEs of this demo
+   ACTimeStepper<CCBasicODEs> *time_stepper_pt =
     factory_time_stepper.create_time_stepper("Euler");
    
    // ----------------------------------------------------------------
@@ -310,11 +315,11 @@ private:
    output_error_filename << "RESLT/euler_error.dat";
    output_error_filename.precision(8);
    
-   // Create an instance of the problem
-   CCBasicODEsProblem basic_ode_problem(&odes,
-                                        time_stepper_pt,
-                                        output_filename,
-                                        output_error_filename);
+   // Create an instance of the problem for the specific ODEs on this demo
+   CCBasicODEsProblem<CCBasicODEs> basic_ode_problem(&odes,
+                                                     time_stepper_pt,
+                                                     output_filename,
+                                                     output_error_filename);
    
    // Complete problem setup (time integration data and initial
    // conditions)
@@ -363,7 +368,7 @@ private:
    // ----------------------------------------------------------------
    // Time stepper
    // ----------------------------------------------------------------
-   ACTimeStepperForODEs *time_stepper_pt =
+   ACTimeStepper<CCBasicODEs> *time_stepper_pt =
     factory_time_stepper.create_time_stepper("RK4");
   
    // ----------------------------------------------------------------
@@ -381,10 +386,10 @@ private:
    output_error_filename.precision(8);
   
    // Create an instance of the problem
-   CCBasicODEsProblem basic_ode_problem(&odes,
-                                        time_stepper_pt,
-                                        output_filename,
-                                        output_error_filename);
+   CCBasicODEsProblem<CCBasicODEs> basic_ode_problem(&odes,
+                                                     time_stepper_pt,
+                                                     output_filename,
+                                                     output_error_filename);
 
    // Complete problem setup (time integration data and initial
    // conditions)
@@ -433,7 +438,7 @@ private:
    // ----------------------------------------------------------------
    // Time stepper
    // ----------------------------------------------------------------
-   ACTimeStepperForODEs *time_stepper_pt =
+   ACTimeStepper<CCBasicODEs> *time_stepper_pt =
     factory_time_stepper.create_time_stepper("BEPC");
    
    // ----------------------------------------------------------------
@@ -451,7 +456,7 @@ private:
    output_error_filename.precision(8);
    
    // Create an instance of the problem
-   CCBasicODEsProblem basic_ode_problem(&odes,
+   CCBasicODEsProblem<CCBasicODEs> basic_ode_problem(&odes,
                                         time_stepper_pt,
                                         output_filename,
                                         output_error_filename);
@@ -503,7 +508,7 @@ private:
    // ----------------------------------------------------------------
    // Time stepper
    // ----------------------------------------------------------------
-   ACTimeStepperForODEs *time_stepper_pt =
+   ACTimeStepper<CCBasicODEs> *time_stepper_pt =
     factory_time_stepper.create_time_stepper("AM2PC");
   
    // ----------------------------------------------------------------
@@ -521,7 +526,7 @@ private:
    output_error_filename.precision(8);
   
    // Create an instance of the problem
-   CCBasicODEsProblem basic_ode_problem(&odes,
+   CCBasicODEsProblem<CCBasicODEs> basic_ode_problem(&odes,
                                         time_stepper_pt,
                                         output_filename,
                                         output_error_filename);
@@ -573,15 +578,16 @@ private:
    // ----------------------------------------------------------------
    // Time stepper
    // ----------------------------------------------------------------
-   ACTimeStepperForODEs *time_stepper_pt =
+   ACTimeStepper<CCBasicODEs> *time_stepper_pt =
     factory_time_stepper.create_time_stepper("BDF1");
    
-   // Create an instance of the strategy to compute the Jacobian
-   CCJacobianStrategyForMyODEs my_jacobian_strategy;
+   // Create an instance of the strategy to compute the Jacobian for
+   // the specific ODEs on this demo
+   CCJacobianStrategyForMyODEs<CCBasicODEs> my_jacobian_strategy;
    
    // Get a pointer to the specific time stepper
-   CCBackwardEulerMethod *backward_euler_time_stepper_pt =
-    dynamic_cast<CCBackwardEulerMethod*>(time_stepper_pt);
+   CCBackwardEulerMethod<CCBasicODEs> *backward_euler_time_stepper_pt =
+    dynamic_cast<CCBackwardEulerMethod<CCBasicODEs> *>(time_stepper_pt);
    
    // Set the Jacobian strategy for the time stepper
    backward_euler_time_stepper_pt->set_strategy_for_odes_jacobian(&my_jacobian_strategy);
@@ -601,7 +607,7 @@ private:
    output_error_filename.precision(8);
   
    // Create an instance of the problem
-   CCBasicODEsProblem basic_ode_problem(&odes,
+   CCBasicODEsProblem<CCBasicODEs> basic_ode_problem(&odes,
                                         time_stepper_pt,
                                         output_filename,
                                         output_error_filename);
@@ -653,15 +659,15 @@ private:
    // ----------------------------------------------------------------
    // Time stepper
    // ----------------------------------------------------------------
-   ACTimeStepperForODEs *time_stepper_pt =
+   ACTimeStepper<CCBasicODEs> *time_stepper_pt =
     factory_time_stepper.create_time_stepper("AM2");
    
    // Create an instance of the strategy to compute the Jacobian 
-   CCJacobianStrategyForMyODEs my_jacobian_strategy;
+   CCJacobianStrategyForMyODEs<CCBasicODEs> my_jacobian_strategy;
    
    // Get a pointer to the specific time stepper   
-   CCAdamsMoulton2Method *amd2_time_stepper_pt =
-    dynamic_cast<CCAdamsMoulton2Method*>(time_stepper_pt);
+   CCAdamsMoulton2Method<CCBasicODEs> *amd2_time_stepper_pt =
+    dynamic_cast<CCAdamsMoulton2Method<CCBasicODEs> *>(time_stepper_pt);
    
    // Set the Jacobian strategy for the time stepper
    amd2_time_stepper_pt->set_strategy_for_odes_jacobian(&my_jacobian_strategy);
@@ -681,7 +687,7 @@ private:
    output_error_filename.precision(8);
   
    // Create an instance of the problem
-   CCBasicODEsProblem basic_ode_problem(&odes,
+   CCBasicODEsProblem<CCBasicODEs> basic_ode_problem(&odes,
                                         time_stepper_pt,
                                         output_filename,
                                         output_error_filename);
@@ -733,14 +739,14 @@ private:
    // ----------------------------------------------------------------
    // Time stepper
    // ----------------------------------------------------------------
-   ACTimeStepperForODEs *time_stepper_pt =
+   ACTimeStepper<CCBasicODEs> *time_stepper_pt =
     factory_time_stepper.create_time_stepper("BDF2");
    
    // Create an instance of the strategy to compute the Jacobian 
-   CCJacobianStrategyForMyODEs my_jacobian_strategy;
+   CCJacobianStrategyForMyODEs<CCBasicODEs> my_jacobian_strategy;
    
    // Get a pointer to the specific time stepper
-   CCBDF2Method *bdf2_time_stepper_pt = dynamic_cast<CCBDF2Method*>(time_stepper_pt);
+   CCBDF2Method<CCBasicODEs> *bdf2_time_stepper_pt = dynamic_cast<CCBDF2Method<CCBasicODEs> *>(time_stepper_pt);
    
    // Set the Jacobian strategy for the time stepper
    bdf2_time_stepper_pt->set_strategy_for_odes_jacobian(&my_jacobian_strategy);
@@ -760,7 +766,7 @@ private:
    output_error_filename.precision(8);
   
    // Create an instance of the problem
-   CCBasicODEsProblem basic_ode_problem(&odes,
+   CCBasicODEsProblem<CCBasicODEs> basic_ode_problem(&odes,
                                         time_stepper_pt,
                                         output_filename,
                                         output_error_filename);

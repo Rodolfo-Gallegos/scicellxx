@@ -57,23 +57,23 @@ namespace scicellxx
 #endif // #ifdef SCICELLXX_PANIC_MODE
   
   // Get the number of odes
-  const unsigned n_odes = odes.n_odes();
+  const unsigned n_equations = odes.n_equations();
   
   // Temporary vector to store the evaluation of the odes.
-  CCData dudt(n_odes);
+  CCData dudt(n_equations);
   
   // Evaluate the ODE at time "t" using the current values of "u"
-  odes.evaluate_derivatives(t, u, dudt, k);
+  odes.evaluate_time_derivatives(t, u, dudt, k);
   
   // Temporary vector to store the K_i evaluations proper of
   // Runge-Kutta methods
-  CCData K1(n_odes);
-  CCData K2(n_odes);
-  CCData K3(n_odes);
-  CCData K4(n_odes);
-  CCData K5(n_odes);
-  CCData K6(n_odes);
-  CCData K7(n_odes);
+  CCData K1(n_equations);
+  CCData K2(n_equations);
+  CCData K3(n_equations);
+  CCData K4(n_equations);
+  CCData K5(n_equations);
+  CCData K6(n_equations);
+  CCData K7(n_equations);
   
   // Create a copy of the u vector
   CCData u_copy(u);
@@ -143,66 +143,66 @@ namespace scicellxx
     // --------------------------------------------------------------------
     // Evaluate the ODE at time "t" using the current values of "u"
     // K1
-    odes.evaluate_derivatives(t, u, K1, k);
+    odes.evaluate_time_derivatives(t, u, K1, k);
     // --------------------------------------------------------------------
     // Evaluate the ODE at time "t+(hh/5)" and with "u+(hh/5)K1"
-    for (unsigned i = 0; i < n_odes; i++)
+    for (unsigned i = 0; i < n_equations; i++)
      {
       u_copy(i,k) = u(i,k)+(hh*(0.2*K1(i)));
      }
     // K2
-    odes.evaluate_derivatives(t+(0.2*hh), u_copy, K2, k);
+    odes.evaluate_time_derivatives(t+(0.2*hh), u_copy, K2, k);
     
     // --------------------------------------------------------------------
     // Evaluate the ODE at time "t+(3hh/10)" and with "u+(3hh/40)K1 + 9hh/40"
-    for (unsigned i = 0; i < n_odes; i++)
+    for (unsigned i = 0; i < n_equations; i++)
      {
       u_copy(i,k) = u(i,k)+hh*((3.0/40.0)*K1(i)+(9.0/40.0)*K2(i));
      }
     // K3
-    odes.evaluate_derivatives(t+((3.0/10.0)*hh), u_copy, K3, k);
+    odes.evaluate_time_derivatives(t+((3.0/10.0)*hh), u_copy, K3, k);
     
     // --------------------------------------------------------------------
     // Evaluate the ODE at time "t+(4hh/5)" and with "u+(44/45)K1 - (56/15)K2 + (32/9)K3"
-    for (unsigned i = 0; i < n_odes; i++)
+    for (unsigned i = 0; i < n_equations; i++)
      {
       u_copy(i,k) = u(i,k)+hh*((44.0/45.0)*K1(i)-(56.0/15.0)*K2(i)+(32.0/9.0)*K3(i));
      }
     // K4
-    odes.evaluate_derivatives(t+((4.0/5.0)*hh), u_copy, K4);
+    odes.evaluate_time_derivatives(t+((4.0/5.0)*hh), u_copy, K4);
     
     // --------------------------------------------------------------------
     // Evaluate the ODE at time "t+(8hh/9)" and with "u+(19372hh/6561)K1 - (25360hh/2187)K2 + (64448hh/6561)K3 - (212hh/729)K4"
-    for (unsigned i = 0; i < n_odes; i++)
+    for (unsigned i = 0; i < n_equations; i++)
      {
       u_copy(i,k) = u(i,k)+hh*((19372.0/6561.0)*K1(i)-(25360.0/2187.0)*K2(i)+(64448.0/6561.0)*K3(i)-(212.0/729.0)*K4(i));
      }
     // K5
-    odes.evaluate_derivatives(t+((4.0/5.0)*hh), u_copy, K5);
+    odes.evaluate_time_derivatives(t+((4.0/5.0)*hh), u_copy, K5);
     
     // --------------------------------------------------------------------
     // Evaluate the ODE at time "t+hh" and with "u+(9017hh/3168)K1 - (355hh/33)K2 + (46732hh/5247)K3 + (49hh/176)K4 - (5103hh/18656)K5"
-    for (unsigned i = 0; i < n_odes; i++)
+    for (unsigned i = 0; i < n_equations; i++)
      {
       u_copy(i,k) = u(i,k)+hh*((9017.0/3168.0)*K1(i)-(355.0/33.0)*K2(i)+(46732.0/5247.0)*K3(i)+(49.0/176.0)*K4(i)-(5103.0/18656.0)*K5(i));
      }
     // K6
-    odes.evaluate_derivatives(t+hh, u_copy, K6);
+    odes.evaluate_time_derivatives(t+hh, u_copy, K6);
     
     // --------------------------------------------------------------------
     // Evaluate the ODE at time "t+hh" and with "u+(35hh/384)K1 + (500hh/1113)K3 + (125hh/192)K4 - (2187hh/6784)K5 + (11hh/84)K6"
-    for (unsigned i = 0; i < n_odes; i++)
+    for (unsigned i = 0; i < n_equations; i++)
      {
       u_copy(i,k) = u(i,k)+hh*((35.0/384.0)*K1(i)+(500.0/1113.0)*K3(i)+(125.0/192.0)*K4(i)-(2187.0/6784.0)*K5(i)+(11.0/84.0)*K6(i));
      }
     // K7
-    odes.evaluate_derivatives(t+hh, u_copy, K7);
+    odes.evaluate_time_derivatives(t+hh, u_copy, K7);
     
     // A storage for the error
-    CCData error(n_odes);
+    CCData error(n_equations);
     // Reset the error
     local_error = 0.0;
-    for (unsigned i = 0; i < n_odes; i++)
+    for (unsigned i = 0; i < n_equations; i++)
      {
       error(i) = hh*((71.0/57600.0)*K1(i) - (71.0/16695.0)*K3(i) + (71.0/1920.0)*K4(i) - (17253.0/339200.0)*K5(i) + (22.0/525.0)*K6(i) - (1.0/40.0)*K7(i));
       local_error+=error(i); 
@@ -270,7 +270,7 @@ namespace scicellxx
   // Once the derivatives have been obtained compute the new "u" as
   // the weighted sum of the K's
   Real hh = this->taken_auto_step_size();
-  for (unsigned i = 0; i < n_odes; i++)
+  for (unsigned i = 0; i < n_equations; i++)
     {
      u(i,k) = u(i,k+1) + hh*((35.0/384.0)*K1(i)+(500.0/1113.0)*K3(i)+(125.0/192.0)*K4(i)-(2187.0/6784.0)*K5(i)+(11.0/84.0)*K6(i));
     }

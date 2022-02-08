@@ -75,7 +75,7 @@ namespace scicellxx
   ACMatrix *Jacobian_FY_pt = jacobian_strategy_odes_pt->jacobian_pt();
   
   // Get the number of ODEs
-  const unsigned n_dof = odes_pt->n_odes();
+  const unsigned n_dof = odes_pt->n_equations();
   
   // Allocate memory for the Jacobian (delete previous data)
   this->Jacobian_pt->allocate_memory(n_dof, n_dof);
@@ -132,13 +132,13 @@ namespace scicellxx
    }
   
   // Get the number of ODEs
-  const unsigned n_dof = odes_pt->n_odes();
+  const unsigned n_dof = odes_pt->n_equations();
   
   // Temporary vector to store the evaluation of the odes
   CCData dudt_new(n_dof);
   
   // Evaluate the ODE at time 't+h', stored at index k
-  odes_pt->evaluate_derivatives(t+h, (*u_pt), dudt_new, k);
+  odes_pt->evaluate_time_derivatives(t+h, (*u_pt), dudt_new, k);
   
   // Allocate memory for the Residual (delete previous data)
   this->Residual_pt->allocate_memory(n_dof);

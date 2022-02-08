@@ -58,20 +58,20 @@ namespace scicellxx
 #endif // #ifdef SCICELLXX_PANIC_MODE
   
   // Get the number of odes
-  const unsigned n_odes = odes.n_odes();
+  const unsigned n_equations = odes.n_equations();
   
   // Temporary vector to store the evaluation of the odes.
-  CCData dudt(n_odes);
+  CCData dudt(n_equations);
   
   // Evaluate the ODE at time "t" using the current values of "u"
-  odes.evaluate_derivatives(t, u, dudt, k);
+  odes.evaluate_time_derivatives(t, u, dudt, k);
   
   // Temporary vector to store the K_i evaluations proper of
   // Runge-Kutta methods
-  CCData K1(n_odes);
-  CCData K2(n_odes);
-  CCData K3(n_odes);
-  CCData K4(n_odes);
+  CCData K1(n_equations);
+  CCData K2(n_equations);
+  CCData K3(n_equations);
+  CCData K4(n_equations);
   
   // Create a copy of the u vector
   CCData u_copy(u);
@@ -96,38 +96,38 @@ namespace scicellxx
   
   // --------------------------------------------------------------------
   // Evaluate the ODE at time "t" using the current values of "u"
-  odes.evaluate_derivatives(t, u, K1, k);
+  odes.evaluate_time_derivatives(t, u, K1, k);
   // --------------------------------------------------------------------
   // Evaluate the ODE at time "t+(h/2)" and with "u+(h/2)K1"
   const Real h_half = h*0.5;
-  for (unsigned i = 0; i < n_odes; i++)
+  for (unsigned i = 0; i < n_equations; i++)
    {
     u_copy(i,k) = u(i,k)+h_half*K1(i);
    }
-  odes.evaluate_derivatives(t+h_half, u_copy, K2, k);
+  odes.evaluate_time_derivatives(t+h_half, u_copy, K2, k);
   
   // --------------------------------------------------------------------
   // Evaluate the ODE at time "t+(h/2)" and with "u+(h/2)K2"
-  for (unsigned i = 0; i < n_odes; i++)
+  for (unsigned i = 0; i < n_equations; i++)
    {
     u_copy(i,k) = u(i,k)+h_half*K2(i);
    }
-  odes.evaluate_derivatives(t+h_half, u_copy, K3, k);
+  odes.evaluate_time_derivatives(t+h_half, u_copy, K3, k);
   
   // -------------------------------------------------------------------- 
   // Evaluate the ODE at time "t+h" and with "u+hK3"
-  for (unsigned i = 0; i < n_odes; i++)
+  for (unsigned i = 0; i < n_equations; i++)
    {
     u_copy(i,k) = u(i,k)+h*K3(i);
    }
-  odes.evaluate_derivatives(t+h, u_copy, K4);
+  odes.evaluate_time_derivatives(t+h, u_copy, K4);
   
   // Shift values to the right to provide storage for the new values
   u.shift_history_values();
   
   // Once the derivatives have been obtained compute the new "u" as
   // the weighted sum of the K's
-  for (unsigned i = 0; i < n_odes; i++)
+  for (unsigned i = 0; i < n_equations; i++)
    {
     u(i,k) = u(i,k+1) + (h/6.0)*(K1(i) + 2.0*K2(i) + 2.0*K3(i) + K4(i));
    }

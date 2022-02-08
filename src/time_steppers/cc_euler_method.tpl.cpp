@@ -58,19 +58,19 @@ namespace scicellxx
 #endif // #ifdef SCICELLXX_PANIC_MODE
   
   // Get the number of odes
-  const unsigned n_odes = odes.n_odes();
+  const unsigned n_equations = odes.n_equations();
   
   // Temporary vector to store the evaluation of the odes.
-  CCData dudt(n_odes);
+  CCData dudt(n_equations);
   
   // Evaluate the ODE at time "t" using the values of "u" at index k
-  odes.evaluate_derivatives(t, u, dudt, k);
+  odes.evaluate_time_derivatives(t, u, dudt, k);
   
   // Shift values to the right to provide storage for the new values
   u.shift_history_values();
   
   // Perform one step of Euler's method
-  for (unsigned i = 0; i < n_odes; i++)
+  for (unsigned i = 0; i < n_equations; i++)
    {
     u(i,k) = u(i,k+1) + (h * dudt(i));
    }

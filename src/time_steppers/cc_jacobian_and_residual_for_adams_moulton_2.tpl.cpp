@@ -78,7 +78,7 @@ namespace scicellxx
   ACMatrix *Jacobian_FY_pt = jacobian_strategy_odes_pt->jacobian_pt();
   
   // Get the number of ODEs
-  const unsigned n_dof = odes_pt->n_odes();
+  const unsigned n_dof = odes_pt->n_equations();
   
   // Allocate memory for the Jacobian (delete previous data)
   this->Jacobian_pt->allocate_memory(n_dof, n_dof);
@@ -138,7 +138,7 @@ namespace scicellxx
    } 
   
   // Get the number of ODEs
-  const unsigned n_dof = odes_pt->n_odes();
+  const unsigned n_dof = odes_pt->n_equations();
   
   // Is this the first time we called this method?
   if (Evaluate_odes_with_u_old_values)
@@ -156,7 +156,7 @@ namespace scicellxx
     
     // Evaluate the ODEs with the values of u at time "t". Constant
     // during Newton's iteration
-    odes_pt->evaluate_derivatives(t, (*u_pt), (*DUDT_old), k+1);
+    odes_pt->evaluate_time_derivatives(t, (*u_pt), (*DUDT_old), k+1);
     
     // Avoid evaluation of the same function during following Newton's
     // iterations
@@ -186,7 +186,7 @@ namespace scicellxx
   CCData dudt(n_dof);
   
   // Evaluate the ODE at time "t+h"
-  odes_pt->evaluate_derivatives(t+h, (*u_pt), dudt, k);
+  odes_pt->evaluate_time_derivatives(t+h, (*u_pt), dudt, k);
   
   // Allocate memory for the Residual (delete previous data)
   this->Residual_pt->allocate_memory(n_dof);

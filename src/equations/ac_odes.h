@@ -17,23 +17,22 @@ namespace scicellxx
   
  public:
   
-  /// Constructor, sets the number of odes
-  ACODEs(const unsigned n_odes);
+  /// Constructor, sets the number of odes or equations
+  ACODEs(const unsigned n_equations);
   
   /// Empty destructor
   virtual ~ACODEs();
   
-  /// Gets the number of odes
-  unsigned n_odes() const
-  {return N_odes;}
+  /// Gets the number of equations
+  inline unsigned n_equations() const {return N_equations;}
   
   /// Gets the vector storing the number of calls to the odes
-  const std::vector<unsigned> &ncalls_odes()
-  {return N_calls_ode;}
+  const std::vector<unsigned> &ncalls_equations()
+  {return N_calls_equation;}
   
-  /// Gets the number of calls to an specific ode
-  unsigned ncalls_ode(const unsigned i) const
-  {return N_calls_ode[i];}
+  /// Gets the number of calls to an specific equation
+  unsigned ncalls_equation(const unsigned i) const
+  {return N_calls_equation[i];}
   
   /// Evaluates the system of odes at time 't'. The index k states the
   /// history values that are being evaluated (default current values,
@@ -60,11 +59,11 @@ namespace scicellxx
     BrokenCopy::broken_assign("ACODEs");
    }
   
-  /// The number of odes
-  unsigned N_odes;
+  /// The number of odes or equations
+  unsigned N_equations;
   
-  /// The number of calls for each ode
-  std::vector<unsigned> N_calls_ode;
+  /// The number of calls for each equation
+  std::vector<unsigned> N_calls_equation;
   
  };
  

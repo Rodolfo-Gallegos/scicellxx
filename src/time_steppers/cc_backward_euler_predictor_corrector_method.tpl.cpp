@@ -67,13 +67,13 @@ namespace scicellxx
   unsigned n_iterations = 0;
   
   // Get the number of odes
-  const unsigned n_odes = odes.n_odes();
+  const unsigned n_equations = odes.n_equations();
   
   // The residual vector
 #ifdef SCICELLXX_USES_ARMADILLO
-  CCVectorArmadillo local_error_vector(n_odes);
+  CCVectorArmadillo local_error_vector(n_equations);
 #else
-  CCVector local_error_vector(n_odes);
+  CCVector local_error_vector(n_equations);
 #endif // #ifdef SCICELLXX_USES_ARMADILLO
   
   // Initialise local error with 0
@@ -83,17 +83,17 @@ namespace scicellxx
   // -- Prediction phase --
   // -----------------------------------------------------------------
   // Temporary vector to store the evaluation of the odes.
-  CCData dudt(n_odes);
+  CCData dudt(n_equations);
   // Evaluate the ODE at time "t" using the current values of "u"
   // stored in index k
-  odes.evaluate_derivatives(t, u, dudt, k);
+  odes.evaluate_time_derivatives(t, u, dudt, k);
   
   // Store the PREDICTED value by the external time stepper. Copy the
   // initial values from u
   CCData u_p(u);
   
   // Prediction step (Forward Euler)
-  for (unsigned i = 0; i < n_odes; i++)
+  for (unsigned i = 0; i < n_equations; i++)
    {
     u_p(i,k) = u(i,k) + (h * (dudt(i)));
    }
@@ -103,7 +103,7 @@ namespace scicellxx
   // -----------------------------------------------------------------
   // -- Temporary vector to store the evaluation of the odes with the
   // -- predicted values.
-  CCData dudt_p(n_odes);
+  CCData dudt_p(n_equations);
 
   // Cache values
   const Real max_tol = this->maximum_tolerance();
@@ -117,18 +117,18 @@ namespace scicellxx
   do {
    // Evaluate the ODE at time "t+h" using the predicted values of
    // "u_p" stored at index k=0 because u_p has not history values
-   odes.evaluate_derivatives(t+h, u_p, dudt_p, 0);
+   odes.evaluate_time_derivatives(t+h, u_p, dudt_p, 0);
    
    // -----------------------------------------------------------------
    // -- Correction phase
    // -----------------------------------------------------------------
-   for (unsigned i = 0; i < n_odes; i++)
+   for (unsigned i = 0; i < n_equations; i++)
    {
     u_p(i,k) = u(i,k) + (h * dudt(i));
    }
    
    // Compute error
-   for (unsigned i = 0; i < n_odes; i++)
+   for (unsigned i = 0; i < n_equations; i++)
     {
      local_error_vector(i) = (u_p(i,k) - u(i,k)) / u_p(i,k);
     }
@@ -180,14 +180,14 @@ namespace scicellxx
    {
     // Evaluate the ODE at time "t" using the current values of "u"
     // stored in index k
-    odes.evaluate_derivatives(t, u_p, dudt, k);
+    odes.evaluate_time_derivatives(t, u_p, dudt, k);
    }
   
   // Shift values to the right to provide storage for the new values
   u.shift_history_values();
   
   // Copy the values to the original vector
-  for (unsigned i = 0; i < n_odes; i++)
+  for (unsigned i = 0; i < n_equations; i++)
    {
     u(i,k) = u_p(i,k);
    }
