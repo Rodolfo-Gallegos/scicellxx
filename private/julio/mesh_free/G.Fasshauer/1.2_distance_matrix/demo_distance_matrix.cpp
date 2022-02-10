@@ -2,25 +2,15 @@
 // from the book "Meshfree Approximation Methods with MATLAB, Gregory
 // E. Fasshauer", World Scientific Publishing, 2007
 
-// Include general/common includes, utilities and initialisation
-#include "../../../../../src/general/common_includes.h"
-#include "../../../../../src/general/utilities.h"
-#include "../../../../../src/general/initialise.h"
-
-// Factory for matrices
-#include "../../../../../src/matrices/cc_factory_matrices.h"
-
-// Factory for linear solver
-#include "../../../../../src/linear_solvers/cc_factory_linear_solver.h"
-
-//#include "../../../../../src/data_structures/cc_node.h"
+// Include SciCell++ libraries
+#include "../../../../../src/scicellxx.h"
 
 using namespace scicellxx;
 
 template<class MAT_TYPE, class VEC_TYPE>
 class Problem
 {
-oublic:
+public:
  Problem();
  ~Problem();
  

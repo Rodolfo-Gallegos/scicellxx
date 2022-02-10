@@ -1,11 +1,7 @@
 #ifndef ACADAPTIVENEWSTEPSIZESTRATEGY_H
 #define ACADAPTIVENEWSTEPSIZESTRATEGY_H
 
-#include "../general/common_includes.h"
-#include "../general/utilities.h"
-
-#include "../data_structures/ac_odes.h"
-#include "../data_structures/cc_data.h"
+#include "../general/general.h"
 
 namespace scicellxx
 {

@@ -7,11 +7,9 @@
 #ifndef ACLINEARSOLVER_H
 #define ACLINEARSOLVER_H
 
-#include "../general/common_includes.h"
-#include "../general/utilities.h"
+#include "../general/general.h"
 
-#include "../matrices/ac_matrix.h"
-#include "../matrices/ac_vector.h"
+#include "../matrices/matrices.h"
 
 namespace scicellxx
 {

@@ -1,8 +1,7 @@
 #ifndef CCINVERSEMULTIQUADRIC_H
 #define CCINVERSEMULTIQUADRIC_H
 
-#include "../../general/common_includes.h"
-#include "../../general/utilities.h"
+#include "../../general/general.h"
 
 #include "ac_radial_base_function.h"
 

@@ -1,41 +1,5 @@
-#include <iostream>
-#include <cmath>
-#include <fstream>
-
-// Include general/common includes, utilities and initialisation
-#include "../../../src/general/common_includes.h"
-#include "../../../src/general/utilities.h"
-#include "../../../src/general/initialise.h"
-
-// The required classes to solve Initial Value Problems (IVP)
-// The factory to create the time stepper (integration method)
-#include "../../../src/time_steppers/cc_factory_time_stepper.h"
-// Integration methods
-#include "../../../src/time_steppers/cc_euler_method.h"
-#include "../../../src/time_steppers/cc_runge_kutta_4_method.h"
-#include "../../../src/time_steppers/cc_backward_euler_predictor_corrector_method.h"
-#include "../../../src/time_steppers/cc_adams_moulton_2_predictor_corrector_method.h"
-#include "../../../src/time_steppers/cc_backward_euler_method.h"
-#include "../../../src/time_steppers/cc_adams_moulton_2_method.h"
-#include "../../../src/time_steppers/cc_bdf_2_method.h"
-
-#ifdef SCICELLXX_USES_ARMADILLO
-// Include Armadillo type matrices
-#include "../../../src/matrices/cc_matrix_armadillo.h"
-#else
-#include "../../../src/matrices/cc_matrix.h"
-#endif // #ifdef SCICELLXX_USES_ARMADILLO
-
-// The class used to store the values of u and dudt
-#include "../../../src/data_structures/cc_data.h"
-// The class implementing the interfaces for the ODEs
-#include "../../../src/data_structures/ac_odes.h"
-
-// The base class for the specification of the Jacobian of the ODEs
-#include "../../../src/time_steppers/ac_jacobian_and_residual_for_implicit_time_stepper.h"
-
-// Base class for the concrete problem
-#include "../../../src/problem/ac_ivp_for_odes.h"
+// Include SciCell++ libraries
+#include "../../../src/scicellxx.h"
 
 using namespace scicellxx;
 // =================================================================
@@ -67,7 +31,7 @@ public:
  
  /// Evaluates the system of odes at time 't', using the history
  /// values of u at index k
- void evaluate_derivatives(const Real t, CCData &u, CCData &dudt, const unsigned k = 0)
+ void evaluate_time_derivatives(const Real t, CCData &u, CCData &dudt, const unsigned k = 0)
  {
   // \frac{du}{dt} = -u^{2}
   dudt(0) = -(u(0,k)*u(0,k));
@@ -97,30 +61,27 @@ protected:
 // =================================================================
 // =================================================================
 // =================================================================
-// This class inherits from the ACIVPForODEs class and solves the
-// system of ODEs from above
+// This class inherits from the ACIBVP class and solves the system of
+// ODEs from above
 // =================================================================
 // =================================================================
 // =================================================================
-class CCStabilityAnalysisProblem : public virtual ACIVPForODEs
+template<class EQUATIONS_TYPE>
+class CCStabilityAnalysisProblem : public virtual ACIBVP<EQUATIONS_TYPE>
 {
  
 public:
  
  /// Constructor
- CCStabilityAnalysisProblem(ACODEs *odes_pt,
-                            ACTimeStepper *time_stepper_pt,
+ CCStabilityAnalysisProblem(EQUATIONS_TYPE *odes_pt,
+                            ACTimeStepper<EQUATIONS_TYPE> *time_stepper_pt,
                             std::ostringstream &output_filename_prefix,
                             std::ostringstream &output_filename_error_prefix,
-                            std::ostringstream &output_filename_stability,
-                            const Real initial_time,
-                            const Real final_time)
-  : ACIVPForODEs(odes_pt, time_stepper_pt),
+                            std::ostringstream &output_filename_stability)
+  : ACIBVP<EQUATIONS_TYPE>(odes_pt, time_stepper_pt),
     Output_filename_prefix(output_filename_prefix.str()),
     Output_error_filename_prefix(output_filename_error_prefix.str()),
-    Output_stability_filename(output_filename_stability.str()),
-    Initial_time(initial_time),
-    Final_time(final_time)
+    Output_stability_filename(output_filename_stability.str())
  {
   std::ostringstream output_stability_filename;
   output_stability_filename << Output_stability_filename.str() << ".dat";
@@ -134,6 +95,24 @@ public:
   Output_file.close();
   Output_error_file.close();
   Output_stability_file.close();
+ }
+
+ // Complete problem configuration
+ void complete_problem_setup()
+ {
+   // Prepare time integration data
+   Initial_time = 0.0;
+   Final_time = 20.0;
+   
+   // Open files
+   prepare_files_for_output();
+   
+   // Reset problem current time
+   this->time() = 0.0;
+   
+   // Reset initial conditions
+   set_initial_conditions();
+   
  }
  
  // Prepare the filenames for new output
@@ -156,16 +135,7 @@ public:
  
  // Solve the problem with a new time step
  void solve()
- {
-  // Open files
-  prepare_files_for_output();
-  
-  // Reset problem current time
-  this->time() = 0.0;
-  
-  // Reset initial conditions
-  set_initial_conditions();
-  
+ {  
   // Document initial solution
   this->document_solution();
      
@@ -176,7 +146,7 @@ public:
   while(LOOP)
    {
     // Solve (unsteady solve) - PARENT VERSION
-    ACIVPForODEs::solve();
+    ACIBVP<EQUATIONS_TYPE>::solve();
     
     // Update time of the problem
     this->time()+=this->time_step();
@@ -193,7 +163,7 @@ public:
   
   // Document error at $u = Final_time$
   const Real u_analytical = 1.0/(1.0+Final_time);
-  Output_stability_file << this->time_step() << "\t" << fabs(u(0)- u_analytical) << std::endl;
+  Output_stability_file << this->time_step() << "\t" << fabs(this->u(0)- u_analytical) << std::endl;
   
  }
  
@@ -201,14 +171,14 @@ public:
  void set_initial_conditions()
  {
   // Initial conditions
-  u(0) = 1.0; 
+  this->u(0) = 1.0; 
  }
  
  // Document the solution
  void document_solution()
  {
   // Initial problem configuration
-  Output_file << this->time() << "\t" << u(0) << std::endl;
+  Output_file << this->time() << "\t" << this->u(0) << std::endl;
   output_error();
  }
 
@@ -218,7 +188,7 @@ public:
   // Compute the error 
   const Real t = this->time();
   const Real u_analytical = 1.0/(1.0+t);
-  const Real error = std::fabs(u(0)-u_analytical);
+  const Real error = std::fabs(this->u(0)-u_analytical);
   Output_error_file << t << "\t" << error << std::endl;
  }
  
@@ -232,9 +202,9 @@ protected:
  std::ostringstream Output_stability_filename;
  
  // The initial time
- const Real Initial_time; 
+ Real Initial_time; 
  // The final time
- const Real Final_time;
+ Real Final_time;
   
  // The output file
  std::ofstream Output_file;
@@ -254,8 +224,11 @@ protected:
 // ==================================================================
 int main(int argc, char *argv[])
 {
+ // Initialise scicellxx
+ initialise_scicellxx();
+ 
  // Create the factory for the time steppers (integration methods)
- CCFactoryTimeStepper factory_time_stepper;
+ CCFactoryTimeStepper<CCBasicODEs> factory_time_stepper;
  
  // Euler stability analysis
  {
@@ -270,7 +243,7 @@ int main(int argc, char *argv[])
   // Time stepper
   // ----------------------------------------------------------------
   // Create an instance of the integration method
-  ACTimeStepper *time_stepper_pt =
+  ACTimeStepper<CCBasicODEs> *time_stepper_pt =
    factory_time_stepper.create_time_stepper("Euler");
   
   // ----------------------------------------------------------------
@@ -291,18 +264,12 @@ int main(int argc, char *argv[])
   std::ostringstream output_stability_filename_prefix;
   output_stability_filename_prefix << "RESLT/euler_stability";
   
-  // Time interval for solving
-  const Real initial_time = 0.0;
-  const Real final_time = 20.0;
-  
   // Create an instance of the problem
-  CCStabilityAnalysisProblem stability_analysis_problem(&odes,
-                                                        time_stepper_pt,
-                                                        output_filename_prefix,
-                                                        output_error_filename_prefix,
-                                                        output_stability_filename_prefix,
-                                                        initial_time,
-                                                        final_time);
+  CCStabilityAnalysisProblem<CCBasicODEs> stability_analysis_problem(&odes,
+                                                                     time_stepper_pt,
+                                                                     output_filename_prefix,
+                                                                     output_error_filename_prefix,
+                                                                     output_stability_filename_prefix);
   
   // ----------------------------------------------------------------
   // Configure the problem with different time steps to perform
@@ -310,21 +277,29 @@ int main(int argc, char *argv[])
   // ----------------------------------------------------------------
   Real time_step = 1.0;
   stability_analysis_problem.time_step() = time_step;
+  // Complete problem setup
+  stability_analysis_problem.complete_problem_setup();
   // Solve
   stability_analysis_problem.solve();
   
   time_step = 0.1;
   stability_analysis_problem.time_step() = time_step;
+  // Complete problem setup
+  stability_analysis_problem.complete_problem_setup();
   // Solve
   stability_analysis_problem.solve();
   
   time_step = 0.01;
   stability_analysis_problem.time_step() = time_step;
+  // Complete problem setup
+  stability_analysis_problem.complete_problem_setup();
   // Solve
   stability_analysis_problem.solve();
   
   time_step = 0.001;
   stability_analysis_problem.time_step() = time_step;
+  // Complete problem setup
+  stability_analysis_problem.complete_problem_setup();
   // Solve
   stability_analysis_problem.solve();
     
@@ -347,7 +322,7 @@ int main(int argc, char *argv[])
   // ----------------------------------------------------------------
   // Time stepper
   // ----------------------------------------------------------------
-  ACTimeStepper *time_stepper_pt =
+  ACTimeStepper<CCBasicODEs> *time_stepper_pt =
    factory_time_stepper.create_time_stepper("RK4");
   
   // ----------------------------------------------------------------
@@ -368,18 +343,12 @@ int main(int argc, char *argv[])
   std::ostringstream output_stability_filename_prefix;
   output_stability_filename_prefix << "RESLT/rk4_stability";
   
-  // Time interval for solving
-  const Real initial_time = 0.0;
-  const Real final_time = 20.0;
-  
   // Create an instance of the problem
-  CCStabilityAnalysisProblem stability_analysis_problem(&odes,
-                                                        time_stepper_pt,
-                                                        output_filename_prefix,
-                                                        output_error_filename_prefix,
-                                                        output_stability_filename_prefix,
-                                                        initial_time,
-                                                        final_time);
+  CCStabilityAnalysisProblem<CCBasicODEs> stability_analysis_problem(&odes,
+                                                                     time_stepper_pt,
+                                                                     output_filename_prefix,
+                                                                     output_error_filename_prefix,
+                                                                     output_stability_filename_prefix);
   
   // ----------------------------------------------------------------
   // Configure the problem with different time steps to perform
@@ -387,21 +356,29 @@ int main(int argc, char *argv[])
   // ----------------------------------------------------------------
   Real time_step = 1.0;
   stability_analysis_problem.time_step() = time_step;
+  // Complete problem setup
+  stability_analysis_problem.complete_problem_setup();
   // Solve
   stability_analysis_problem.solve();
   
   time_step = 0.1;
   stability_analysis_problem.time_step() = time_step;
+  // Complete problem setup
+  stability_analysis_problem.complete_problem_setup();
   // Solve
   stability_analysis_problem.solve();
   
   time_step = 0.01;
   stability_analysis_problem.time_step() = time_step;
+  // Complete problem setup
+  stability_analysis_problem.complete_problem_setup();
   // Solve
   stability_analysis_problem.solve();
   
   time_step = 0.001;
   stability_analysis_problem.time_step() = time_step;
+  // Complete problem setup
+  stability_analysis_problem.complete_problem_setup();
   // Solve
   stability_analysis_problem.solve();
       
@@ -424,7 +401,7 @@ int main(int argc, char *argv[])
   // ----------------------------------------------------------------
   // Time stepper
   // ----------------------------------------------------------------
-  ACTimeStepper *time_stepper_pt =
+  ACTimeStepper<CCBasicODEs> *time_stepper_pt =
    factory_time_stepper.create_time_stepper("BEPC");
   
   // ----------------------------------------------------------------
@@ -445,18 +422,12 @@ int main(int argc, char *argv[])
   std::ostringstream output_stability_filename_prefix;
   output_stability_filename_prefix << "RESLT/bepc_stability";
   
-  // Time interval for solving
-  const Real initial_time = 0.0;
-  const Real final_time = 20.0;
-  
   // Create an instance of the problem
-  CCStabilityAnalysisProblem stability_analysis_problem(&odes,
-                                                        time_stepper_pt,
-                                                        output_filename_prefix,
-                                                        output_error_filename_prefix,
-                                                        output_stability_filename_prefix,
-                                                        initial_time,
-                                                        final_time);
+  CCStabilityAnalysisProblem<CCBasicODEs> stability_analysis_problem(&odes,
+                                                                     time_stepper_pt,
+                                                                     output_filename_prefix,
+                                                                     output_error_filename_prefix,
+                                                                     output_stability_filename_prefix);
   
   // ----------------------------------------------------------------
   // Configure the problem with different time steps to perform
@@ -464,24 +435,32 @@ int main(int argc, char *argv[])
   // ----------------------------------------------------------------
   Real time_step = 1.0;
   stability_analysis_problem.time_step() = time_step;
+  // Complete problem setup
+  stability_analysis_problem.complete_problem_setup();
   // Solve
   stability_analysis_problem.solve();
 
   time_step = 0.1;
   stability_analysis_problem.time_step() = time_step;
+  // Complete problem setup
+  stability_analysis_problem.complete_problem_setup();
   // Solve
   stability_analysis_problem.solve();
   
   time_step = 0.01;
   stability_analysis_problem.time_step() = time_step;
+  // Complete problem setup
+  stability_analysis_problem.complete_problem_setup();
   // Solve
   stability_analysis_problem.solve();
   
   time_step = 0.001;
   stability_analysis_problem.time_step() = time_step;
+  // Complete problem setup
+  stability_analysis_problem.complete_problem_setup();
   // Solve
   stability_analysis_problem.solve();
-    
+  
   std::cout << "[FINISHING UP] ... " << std::endl;
   
   // Free memory
@@ -501,7 +480,7 @@ int main(int argc, char *argv[])
   // ----------------------------------------------------------------
   // Time stepper
   // ----------------------------------------------------------------
-  ACTimeStepper *time_stepper_pt =
+  ACTimeStepper<CCBasicODEs> *time_stepper_pt =
    factory_time_stepper.create_time_stepper("AM2PC");
 
   // ----------------------------------------------------------------
@@ -522,18 +501,12 @@ int main(int argc, char *argv[])
   std::ostringstream output_stability_filename_prefix;
   output_stability_filename_prefix << "RESLT/am2pc_stability";
   
-  // Time interval for solving
-  const Real initial_time = 0.0;
-  const Real final_time = 20.0;
-  
   // Create an instance of the problem
-  CCStabilityAnalysisProblem stability_analysis_problem(&odes,
-                                                        time_stepper_pt,
-                                                        output_filename_prefix,
-                                                        output_error_filename_prefix,
-                                                        output_stability_filename_prefix,
-                                                        initial_time,
-                                                        final_time);
+  CCStabilityAnalysisProblem<CCBasicODEs> stability_analysis_problem(&odes,
+                                                                     time_stepper_pt,
+                                                                     output_filename_prefix,
+                                                                     output_error_filename_prefix,
+                                                                     output_stability_filename_prefix);
   
   // ----------------------------------------------------------------
   // Configure the problem with different time steps to perform
@@ -541,21 +514,29 @@ int main(int argc, char *argv[])
   // ----------------------------------------------------------------
   Real time_step = 1.0;
   stability_analysis_problem.time_step() = time_step;
+  // Complete problem setup
+  stability_analysis_problem.complete_problem_setup();
   // Solve
   stability_analysis_problem.solve();
 
   time_step = 0.1;
   stability_analysis_problem.time_step() = time_step;
+  // Complete problem setup
+  stability_analysis_problem.complete_problem_setup();
   // Solve
   stability_analysis_problem.solve();
   
   time_step = 0.01;
   stability_analysis_problem.time_step() = time_step;
+  // Complete problem setup
+  stability_analysis_problem.complete_problem_setup();
   // Solve
   stability_analysis_problem.solve();
   
   time_step = 0.001;
   stability_analysis_problem.time_step() = time_step;
+  // Complete problem setup
+  stability_analysis_problem.complete_problem_setup();
   // Solve
   stability_analysis_problem.solve();
     
@@ -578,7 +559,7 @@ int main(int argc, char *argv[])
   // ----------------------------------------------------------------
   // Time stepper
   // ----------------------------------------------------------------
-  ACTimeStepper *time_stepper_pt =
+  ACTimeStepper<CCBasicODEs> *time_stepper_pt =
    factory_time_stepper.create_time_stepper("BDF1");
   
   // ----------------------------------------------------------------
@@ -599,18 +580,12 @@ int main(int argc, char *argv[])
   std::ostringstream output_stability_filename_prefix;
   output_stability_filename_prefix << "RESLT/bdf1_stability";
   
-  // Time interval for solving
-  const Real initial_time = 0.0;
-  const Real final_time = 20.0;
-  
   // Create an instance of the problem
-  CCStabilityAnalysisProblem stability_analysis_problem(&odes,
-                                                        time_stepper_pt,
-                                                        output_filename_prefix,
-                                                        output_error_filename_prefix,
-                                                        output_stability_filename_prefix,
-                                                        initial_time,
-                                                        final_time);
+  CCStabilityAnalysisProblem<CCBasicODEs> stability_analysis_problem(&odes,
+                                                                     time_stepper_pt,
+                                                                     output_filename_prefix,
+                                                                     output_error_filename_prefix,
+                                                                     output_stability_filename_prefix);
   
   // ----------------------------------------------------------------
   // Configure the problem with different time steps to perform
@@ -618,21 +593,29 @@ int main(int argc, char *argv[])
   // ----------------------------------------------------------------
   Real time_step = 1.0;
   stability_analysis_problem.time_step() = time_step;
+  // Complete problem setup
+  stability_analysis_problem.complete_problem_setup();
   // Solve
   stability_analysis_problem.solve();
   
   time_step = 0.1;
   stability_analysis_problem.time_step() = time_step;
+  // Complete problem setup
+  stability_analysis_problem.complete_problem_setup();
   // Solve
   stability_analysis_problem.solve();
   
   time_step = 0.01;
   stability_analysis_problem.time_step() = time_step;
+  // Complete problem setup
+  stability_analysis_problem.complete_problem_setup();
   // Solve
   stability_analysis_problem.solve();
   
   time_step = 0.001;
   stability_analysis_problem.time_step() = time_step;
+  // Complete problem setup
+  stability_analysis_problem.complete_problem_setup();
   // Solve
   stability_analysis_problem.solve();
     
@@ -655,7 +638,7 @@ int main(int argc, char *argv[])
   // ----------------------------------------------------------------
   // Time stepper
   // ----------------------------------------------------------------
-  ACTimeStepper *time_stepper_pt =
+  ACTimeStepper<CCBasicODEs> *time_stepper_pt =
    factory_time_stepper.create_time_stepper("AM2");
 
   // ----------------------------------------------------------------
@@ -676,18 +659,12 @@ int main(int argc, char *argv[])
   std::ostringstream output_stability_filename_prefix;
   output_stability_filename_prefix << "RESLT/am2_stability";
   
-  // Time interval for solving
-  const Real initial_time = 0.0;
-  const Real final_time = 20.0;
-  
   // Create an instance of the problem
-  CCStabilityAnalysisProblem stability_analysis_problem(&odes,
-                                                        time_stepper_pt,
-                                                        output_filename_prefix,
-                                                        output_error_filename_prefix,
-                                                        output_stability_filename_prefix,
-                                                        initial_time,
-                                                        final_time);
+  CCStabilityAnalysisProblem<CCBasicODEs> stability_analysis_problem(&odes,
+                                                                     time_stepper_pt,
+                                                                     output_filename_prefix,
+                                                                     output_error_filename_prefix,
+                                                                     output_stability_filename_prefix);
   
   // ----------------------------------------------------------------
   // Configure the problem with different time steps to perform
@@ -695,21 +672,29 @@ int main(int argc, char *argv[])
   // ----------------------------------------------------------------
   Real time_step = 1.0;
   stability_analysis_problem.time_step() = time_step;
+  // Complete problem setup
+  stability_analysis_problem.complete_problem_setup();
   // Solve
   stability_analysis_problem.solve();
   
   time_step = 0.1;
   stability_analysis_problem.time_step() = time_step;
+  // Complete problem setup
+  stability_analysis_problem.complete_problem_setup();
   // Solve
   stability_analysis_problem.solve();
   
   time_step = 0.01;
   stability_analysis_problem.time_step() = time_step;
+  // Complete problem setup
+  stability_analysis_problem.complete_problem_setup();
   // Solve
   stability_analysis_problem.solve();
   
   time_step = 0.001;
   stability_analysis_problem.time_step() = time_step;
+  // Complete problem setup
+  stability_analysis_problem.complete_problem_setup();
   // Solve
   stability_analysis_problem.solve();
   
@@ -732,7 +717,7 @@ int main(int argc, char *argv[])
   // ----------------------------------------------------------------
   // Time stepper
   // ----------------------------------------------------------------
-  ACTimeStepper *time_stepper_pt =
+  ACTimeStepper<CCBasicODEs> *time_stepper_pt =
    factory_time_stepper.create_time_stepper("BDF2");
   
   // ----------------------------------------------------------------
@@ -753,18 +738,12 @@ int main(int argc, char *argv[])
   std::ostringstream output_stability_filename_prefix;
   output_stability_filename_prefix << "RESLT/bdf2_stability";
   
-  // Time interval for solving
-  const Real initial_time = 0.0;
-  const Real final_time = 20.0;
-  
   // Create an instance of the problem
-  CCStabilityAnalysisProblem stability_analysis_problem(&odes,
-                                                        time_stepper_pt,
-                                                        output_filename_prefix,
-                                                        output_error_filename_prefix,
-                                                        output_stability_filename_prefix,
-                                                        initial_time,
-                                                        final_time);
+  CCStabilityAnalysisProblem<CCBasicODEs> stability_analysis_problem(&odes,
+                                                                     time_stepper_pt,
+                                                                     output_filename_prefix,
+                                                                     output_error_filename_prefix,
+                                                                     output_stability_filename_prefix);
   
   // ----------------------------------------------------------------
   // Configure the problem with different time steps to perform
@@ -774,6 +753,8 @@ int main(int argc, char *argv[])
   // Resets time stepper
   //time_stepper_pt->reset();
   stability_analysis_problem.time_step() = time_step;
+  // Complete problem setup
+  stability_analysis_problem.complete_problem_setup();
   // Solve
   stability_analysis_problem.solve();
   
@@ -781,6 +762,8 @@ int main(int argc, char *argv[])
   // Resets time stepper
   time_stepper_pt->reset();
   stability_analysis_problem.time_step() = time_step;
+  // Complete problem setup
+  stability_analysis_problem.complete_problem_setup();
   // Solve
   stability_analysis_problem.solve();
   
@@ -788,6 +771,8 @@ int main(int argc, char *argv[])
   // Resets time stepper
   time_stepper_pt->reset();
   stability_analysis_problem.time_step() = time_step;
+  // Complete problem setup
+  stability_analysis_problem.complete_problem_setup();
   // Solve
   stability_analysis_problem.solve();
   
@@ -795,6 +780,8 @@ int main(int argc, char *argv[])
     // Resets time stepper
   time_stepper_pt->reset();
   stability_analysis_problem.time_step() = time_step;
+  // Complete problem setup
+  stability_analysis_problem.complete_problem_setup();
   // Solve
   stability_analysis_problem.solve();
   
@@ -805,6 +792,9 @@ int main(int argc, char *argv[])
   time_stepper_pt = 0;
   
  }
+
+ // Finalise scicellxx
+ finalise_scicellxx();
  
  return 0;
  

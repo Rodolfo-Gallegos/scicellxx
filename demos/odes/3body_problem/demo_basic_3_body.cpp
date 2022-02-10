@@ -1,35 +1,6 @@
-#include <iostream>
-#include <cmath>
-#include <fstream>
+// Include SciCell++ libraries
+#include "../../../src/scicellxx.h"
 
-// Include general/common includes, utilities and initialisation
-#include "../../../src/general/common_includes.h"
-#include "../../../src/general/utilities.h"
-#include "../../../src/general/initialise.h"
-
-// The required classes to solve Initial Value Problems (IVP)
-// The factory to create the time stepper (integration method)
-#include "../../../src/time_steppers/cc_factory_time_stepper.h"
-// Time-stepper methods
-#include "../../../src/time_steppers/cc_euler_method.h"
-#include "../../../src/time_steppers/cc_runge_kutta_4_method.h"
-#include "../../../src/time_steppers/cc_backward_euler_method.h"
-
-// Matrices representations
-#include "../../../src/matrices/cc_matrix.h"
-
-#ifdef SCICELLXX_USES_ARMADILLO
-// Include Armadillo type matrices since the templates may include
-// Armadillo type matrices
-#include "../../../src/matrices/cc_matrix_armadillo.h"
-#endif // #ifdef SCICELLXX_USES_ARMADILLO
-
-#ifdef SCICELLXX_USES_VTK
-#include "../../../src/vtk/cc_scicellxx2vtk.h"
-#endif // #ifdef SCICELLXX_USES_VTK
-
-// Base class for the concrete problem
-#include "../../../src/problem/ac_ivp_for_odes.h"
 // Odes for N body problem
 #include "cc_odes_basic_3_body.h"
 
@@ -44,16 +15,17 @@ using namespace scicellxx;
 // The VTK output object
 //CCSciCellxx2VTK VTK_helper = CCSciCellxx2VTK::get_instance();
 
-/// This class inherits from the ACIVPForODEs class, we implement
+/// This class inherits from the ACIBVP<EQUATIONS_TYPE> class, we implement
 /// specific functions to solve the 3 body problem
-class CC3BodyProblem : public virtual ACIVPForODEs
+template<class EQUATIONS_TYPE>
+class CC3BodyProblem : public virtual ACIBVP<EQUATIONS_TYPE>
 {
   
 public:
  
  /// Constructor
- CC3BodyProblem(ACODEs *odes_pt, ACTimeStepper *time_stepper_pt, std::ostringstream &output_filename)
-  : ACIVPForODEs(odes_pt, time_stepper_pt),
+ CC3BodyProblem(EQUATIONS_TYPE *odes_pt, ACTimeStepper<EQUATIONS_TYPE> *time_stepper_pt, std::ostringstream &output_filename)
+  : ACIBVP<EQUATIONS_TYPE>(odes_pt, time_stepper_pt),
     Output_filename(output_filename.str())
  {
   std::ostringstream output_complete_filename;
@@ -66,6 +38,12 @@ public:
  {
   Output_file.close();
  }
+ 
+ /// Read-only access to the vector U values
+ inline const Real u(const unsigned i, const unsigned t = 0) const {return ACIBVP<EQUATIONS_TYPE>::u(i,t);}
+ 
+ /// Write access to the vector U values
+ inline Real &u(const unsigned i, const unsigned t = 0) {return ACIBVP<EQUATIONS_TYPE>::u(i,t);}
  
  // Set initial conditions
  void set_initial_conditions()
@@ -214,7 +192,27 @@ public:
  // A helper function to complete the problem setup
  void complete_problem_setup()
  {
-  CCODEsBasic3Body *odes_pt = dynamic_cast<CCODEsBasic3Body *>(ODEs_pt);
+  // Prepare time integration data
+  const Real initial_time = 0.0;
+  const Real final_time = 10.0;
+  const Real time_step = 0.01;
+  
+  // ----------------------------------------------------------------
+  // Configure problem
+  // ----------------------------------------------------------------
+  // Initial time
+  this->time() = initial_time;
+  
+  // Initial time step
+  this->time_step() = time_step;
+
+  // Set final time
+  Final_time = final_time;
+  
+  // Set initial conditions
+  set_initial_conditions();
+  
+  CCODEsBasic3Body *odes_pt = dynamic_cast<CCODEsBasic3Body *>(this->Equations_pt);
   if (odes_pt==NULL)
    {
     // Error message
@@ -292,12 +290,12 @@ public:
  {
   const unsigned n_data_per_particle = 6;
   const Real t = this->time();
-  CCSciCellxx2VTK::get_instance().output_particles(t, (*U_pt), output_filename, n_data_per_particle);
+  CCSciCellxx2VTK::get_instance().output_particles(t, (*(this->U_pt)), output_filename, n_data_per_particle);
   
   // Output
   std::cout.precision(8);
   std::cout << "t: " << t
-            << "\t" << U_pt->value(0) << "\t" << U_pt->value(2) << "\t" << U_pt->value(6) << "\t" << U_pt->value(8) << "\t" << U_pt->value(12) << "\t" << U_pt->value(14) << std::endl;
+            << "\t" << this->U_pt->value(0) << "\t" << this->U_pt->value(2) << "\t" << this->U_pt->value(6) << "\t" << this->U_pt->value(8) << "\t" << this->U_pt->value(12) << "\t" << this->U_pt->value(14) << std::endl;
   
   // Document raw data
   // t,
@@ -311,6 +309,12 @@ public:
   
  }
  
+ // Document solution
+ void document_solution() { }
+ 
+ // Return the final time
+ inline Real final_time() const {return Final_time;}
+ 
 protected:
  
  // The output file
@@ -318,7 +322,10 @@ protected:
  
  // The output file
  std::ofstream Output_file;
-  
+ 
+ // Final time
+ Real Final_time;
+ 
 }; // class CC3BodyProblem
 
 struct Args {
@@ -333,7 +340,10 @@ struct Args {
 // ==================================================================
 // ==================================================================
 int main(int argc, char *argv[])
-{ 
+{
+ // Initialise scicellxx
+ initialise_scicellxx();
+ 
  // Instantiate parser
  Args args;
  auto parser = argparse::ArgumentParser(argv[0], "Description of application");
@@ -358,11 +368,11 @@ int main(int argc, char *argv[])
  // Time stepper
  // ----------------------------------------------------------------
  // Create the factory for the time steppers (integration methods)
- CCFactoryTimeStepper factory_time_stepper;
+ CCFactoryTimeStepper<CCODEsBasic3Body> factory_time_stepper;
  // Create an instance of the integration method
  //ACTimeStepper *time_stepper_pt =
  //  factory_time_stepper.create_time_stepper("Euler");
- ACTimeStepper *time_stepper_pt =
+ ACTimeStepper<CCODEsBasic3Body> *time_stepper_pt =
   factory_time_stepper.create_time_stepper("RK4"); 
  //ACTimeStepper *time_stepper_pt =
  //factory_time_stepper.create_time_stepper("BDF1");
@@ -374,24 +384,7 @@ int main(int argc, char *argv[])
  raw_output_filename << "output_test";
  
  // Create an instance of the problem
- CC3BodyProblem three_body_problem(&odes, time_stepper_pt, raw_output_filename);
- 
- // Prepare time integration data
- const Real initial_time = 0.0;
- const Real final_time = 10.0;
- const Real time_step = 0.01;
- 
- // ----------------------------------------------------------------
- // Configure problem
- // ----------------------------------------------------------------
- // Initial time
- three_body_problem.time() = initial_time;
- 
- // Initial time step
- three_body_problem.time_step() = time_step;
- 
- // Set initial conditions
- three_body_problem.set_initial_conditions();
+ CC3BodyProblem<CCODEsBasic3Body> three_body_problem(&odes, time_stepper_pt, raw_output_filename);
  
  // Complete setup
  three_body_problem.complete_problem_setup();
@@ -420,7 +413,7 @@ int main(int argc, char *argv[])
    three_body_problem.time()+=three_body_problem.time_step();
    
    // Check whether we have reached the final time
-   if (three_body_problem.time() >= final_time)
+   if (three_body_problem.time() >= three_body_problem.final_time())
     {
      LOOP = false;
     }
@@ -442,6 +435,9 @@ int main(int argc, char *argv[])
  // Free memory
  delete time_stepper_pt;
  time_stepper_pt = 0;
+ 
+ // Finalise scicellxx
+ finalise_scicellxx();
  
  return 0;
  

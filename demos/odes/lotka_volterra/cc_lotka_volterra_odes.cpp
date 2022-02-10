@@ -28,10 +28,10 @@ namespace scicellxx
  // Evaluates the system of odes at time "t", using the history values
  // of u at index k
  // ===================================================================
- void CCLotkaVolterraODEs::evaluate_derivatives(const Real t,
-                                                CCData &u,
-                                                CCData &dudt,
-                                                const unsigned k)
+ void CCLotkaVolterraODEs::evaluate_time_derivatives(const Real t,
+                                                     CCData &u,
+                                                     CCData &dudt,
+                                                     const unsigned k)
  {
   // -----------------
   // u(0,k) Number of prey at history index k

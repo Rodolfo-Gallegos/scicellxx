@@ -1,18 +1,6 @@
-#include <iostream>
-#include <cmath>
-#include <fstream>
+// Include SciCell++ libraries
+#include "../../../src/scicellxx.h"
 
-// Include general/common includes, utilities and initialisation
-#include "../../../src/general/common_includes.h"
-#include "../../../src/general/utilities.h"
-#include "../../../src/general/initialise.h"
-
-// The required classes to solve Initial Value Problems (IVP)
-// The factory to create the time stepper (integration method)
-#include "../../../src/time_steppers/cc_factory_time_stepper.h"
-
-// Base class for the concrete problem
-#include "../../../src/problem/ac_ivp_for_odes.h"
 // Odes for Lotka-Volkaterra problem
 #include "cc_lotka_volterra_odes.h"
 

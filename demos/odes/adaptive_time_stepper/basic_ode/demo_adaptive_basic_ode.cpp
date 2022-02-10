@@ -1,37 +1,5 @@
-#include <iostream>
-#include <cmath>
-#include <fstream>
-
-// Include general/common includes, utilities and initialisation
-#include "../../../../src/general/common_includes.h"
-#include "../../../../src/general/utilities.h"
-#include "../../../../src/general/initialise.h"
-
-// An interpolator
-#include "../../../../src/interpolators/cc_newton_interpolator.h"
-
-// The required classes to solve Initial Value Problems (IVP)
-// The factory to create the time stepper (integration method)
-#include "../../../../src/time_steppers/cc_factory_time_stepper.h"
-// Integration methods
-#include "../../../../src/time_steppers/ac_adaptive_time_stepper.h"
-#include "../../../../src/time_steppers/cc_adaptive_runge_kutta_45F_method.h"
-#include "../../../../src/time_steppers/cc_adaptive_runge_kutta_45DP_method.h"
-
-#ifdef SCICELLXX_USES_ARMADILLO
-// Include Armadillo type matrices
-#include "../../../../src/matrices/cc_matrix_armadillo.h"
-#else
-#include "../../../../src/matrices/cc_matrix.h"
-#endif // #ifdef SCICELLXX_USES_ARMADILLO
-
-// The class used to store the values of u and dudt
-#include "../../../../src/data_structures/cc_data.h"
-// The class implementing the interfaces for the ODEs
-#include "../../../../src/data_structures/ac_odes.h"
-
-// Base class for the concrete problem
-#include "../../../../src/problem/ac_ivp_for_odes.h"
+// Include SciCell++ libraries
+#include "../../../../src/scicellxx.h"
 
 using namespace scicellxx;
 // =================================================================
@@ -63,7 +31,7 @@ public:
  
  /// Evaluates the system of odes at time 't', using the history
  /// values of u at index k
- void evaluate_derivatives(const Real t, CCData &u, CCData &dudt, const unsigned k = 0)
+ void evaluate_time_derivatives(const Real t, CCData &u, CCData &dudt, const unsigned k = 0)
  {
   // \frac{du}{dt} = -u^{2}
   dudt(0) = -(u(0,k)*u(0,k));
@@ -93,30 +61,31 @@ protected:
 // =================================================================
 // =================================================================
 // =================================================================
-// This class inherits from the ACIVPForODEs class and solves the
+// This class inherits from the ACIBVPForODEs class and solves the
 // system of ODEs from above. It implements additional processing for
 // the adaptive time step method
 // =================================================================
 // =================================================================
 // =================================================================
-class CCAdaptiveBasicODEsProblem : public virtual ACIVPForODEs
+template<class EQUATIONS_TYPE>
+class CCAdaptiveBasicODEsProblem : public virtual ACIBVP<EQUATIONS_TYPE>
 {
  
 public:
  
  /// Constructor
- CCAdaptiveBasicODEsProblem(ACODEs *odes_pt,
-                            ACTimeStepper *time_stepper_pt,
+ CCAdaptiveBasicODEsProblem(EQUATIONS_TYPE *odes_pt,
+                            ACTimeStepper<EQUATIONS_TYPE> *time_stepper_pt,
                             std::ostringstream &output_filename,
                             std::ostringstream &output_filename_error)
-  : ACIVPForODEs(odes_pt, time_stepper_pt)
+  : ACIBVP<EQUATIONS_TYPE>(odes_pt, time_stepper_pt)
  {
   Output_file.open((output_filename.str()).c_str());
   Output_error_file.open((output_filename_error.str()).c_str());
   
   // Cast the time stepper to get a pointer to the adaptive version of
   // the time stepper
-  Adaptive_time_stepper_pt = dynamic_cast<ACAdaptiveTimeStepper*>(time_stepper_pt);
+  Adaptive_time_stepper_pt = dynamic_cast<ACAdaptiveTimeStepper<EQUATIONS_TYPE> *>(time_stepper_pt);
   if (Adaptive_time_stepper_pt == NULL)
    {
     // Error message
@@ -139,16 +108,41 @@ public:
   Output_file.close();
   Output_error_file.close();
  }
+
+ // Complete problem configuration
+ void complete_problem_setup()
+ {
+  // Prepare time integration data
+  const Real initial_time = 0.0;
+  const Real final_time = 20.0;
+  const Real time_step = 0.1;
+  
+  // ----------------------------------------------------------------
+  // Configure problem
+  // ----------------------------------------------------------------
+  // Initial time
+  this->time() = initial_time;
+  
+  // Initial time step
+  this->time_step() = time_step;
+  
+  Final_time = final_time;
+  
+  // Set the fixed output step size
+  this->fixed_output_step() = 1.0;
+  
+  set_initial_conditions();
+ }
  
  // Set initial conditions
  void set_initial_conditions()
  {
   // Initial conditions
-  u(0) = 1.0;
+  this->u(0) = 1.0;
   
   // Add the intiial conditions to the interpolation vectors
   T_values_for_interpolator.push_back(0.0);
-  U_values_for_interpolator.push_back(u(0));
+  U_values_for_interpolator.push_back(this->u(0));
  }
  
  // The set of actions to be performed after a time stepping
@@ -161,7 +155,7 @@ public:
   if (Fixed_output)
    {
     // Compute the new time
-    const Real t = time() + time_step();
+    const Real t = this->time() + this->time_step();
     // Shift the data and leave those more recent if there are three
     // values already
     const unsigned n_data = T_values_for_interpolator.size();
@@ -172,13 +166,13 @@ public:
       U_values_for_interpolator.erase(U_values_for_interpolator.begin());
       // Add the current values
       T_values_for_interpolator.push_back(t);
-      U_values_for_interpolator.push_back(u(0));
+      U_values_for_interpolator.push_back(this->u(0));
      }
     else
      {
       // Add the current values to the interpolation vectors
       T_values_for_interpolator.push_back(t);
-      U_values_for_interpolator.push_back(u(0));
+      U_values_for_interpolator.push_back(this->u(0));
      }
    }
   
@@ -191,7 +185,7 @@ public:
   if (!Fixed_output)
    {
     // Output the current values of u
-    Output_file << time() << "\t" << u(0) << std::endl;
+    Output_file << this->time() << "\t" << this->u(0) << std::endl;
     output_error();
    }
   else
@@ -272,7 +266,7 @@ public:
   // Compute the error
   const Real t = this->time();
   const Real u_analytical = 1.0/(1.0+t);
-  const Real error = std::fabs(u(0)-u_analytical);
+  const Real error = std::fabs(this->u(0)-u_analytical);
   Output_error_file << t << "\t" << error << std::endl;
  }
  
@@ -294,6 +288,9 @@ public:
  inline void disable_fixed_output()
  {Fixed_output = false;}
  
+ // Return the final time
+ inline Real final_time() const {return Final_time;}
+ 
 protected:
  
  // The output file
@@ -302,7 +299,10 @@ protected:
  std::ofstream Output_error_file;
  
  // Keep track of the adaptive version of the time stepper
- ACAdaptiveTimeStepper *Adaptive_time_stepper_pt;
+ ACAdaptiveTimeStepper<EQUATIONS_TYPE> *Adaptive_time_stepper_pt;
+
+ // Final time
+ Real Final_time;
  
  // Indicates whether to perform fixed output
  bool Fixed_output;
@@ -331,8 +331,11 @@ protected:
 // ==================================================================
 int main(int argc, char *argv[])
 {
+ // Initialise scicellxx
+ initialise_scicellxx();
+ 
  // Create the factory for the time steppers (integration methods)
- CCFactoryTimeStepper factory_time_stepper;
+ CCFactoryTimeStepper<CCBasicODEs> factory_time_stepper;
  
  {
   std::cout << "Adaptive Runge-Kutta 4(5) Fehlberg test" << std::endl;
@@ -344,7 +347,7 @@ int main(int argc, char *argv[])
   // ----------------------------------------------------------------
   // Time stepper
   // ----------------------------------------------------------------
-  ACTimeStepper *time_stepper_pt =
+  ACTimeStepper<CCBasicODEs> *time_stepper_pt =
    factory_time_stepper.create_time_stepper("RK45F");
   
   // ----------------------------------------------------------------
@@ -360,35 +363,18 @@ int main(int argc, char *argv[])
   output_error_filename << "RESLT/rk45f_error.dat";
    
   // Create an instance of the problem
-  CCAdaptiveBasicODEsProblem basic_ode_problem(&odes,
-                                               time_stepper_pt,
-                                               output_filename,
-                                               output_error_filename);
-   
-  // Prepare time integration data
-  const Real initial_time = 0.0;
-  const Real final_time = 20.0;
-  const Real time_step = 0.1;
+  CCAdaptiveBasicODEsProblem<CCBasicODEs> basic_ode_problem(&odes,
+                                                            time_stepper_pt,
+                                                            output_filename,
+                                                            output_error_filename);
   
-  // ----------------------------------------------------------------
-  // Configure problem
-  // ----------------------------------------------------------------
-  // Initial time
-  basic_ode_problem.time() = initial_time;
-  
-  // Initial time step
-  basic_ode_problem.time_step() = time_step;
+  // Complete problem configuration
+  basic_ode_problem.complete_problem_setup();
   
   // Enable/disable fixed output
   //basic_ode_problem.disable_fixed_output();
   basic_ode_problem.enable_fixed_output();
   
-  // Set the fixed output step size
-  basic_ode_problem.fixed_output_step() = 1.0;
-   
-  // Set initial conditions
-  basic_ode_problem.set_initial_conditions();
-
   // Document initial configuration
   basic_ode_problem.document_solution();
    
@@ -407,7 +393,7 @@ int main(int argc, char *argv[])
     std::cerr << "t: " << basic_ode_problem.time() << " h: " << basic_ode_problem.time_step() << std::endl;
     
     // Check whether we have reached the final time
-    if (basic_ode_problem.time() >= final_time)
+    if (basic_ode_problem.time() >= basic_ode_problem.final_time())
      {
       LOOP = false;
      }
@@ -434,7 +420,7 @@ int main(int argc, char *argv[])
   // ----------------------------------------------------------------
   // Time stepper
   // ----------------------------------------------------------------
-  ACTimeStepper *time_stepper_pt =
+  ACTimeStepper<CCBasicODEs> *time_stepper_pt =
    factory_time_stepper.create_time_stepper("RK45DP");
   
   // ----------------------------------------------------------------
@@ -450,32 +436,18 @@ int main(int argc, char *argv[])
   output_error_filename << "RESLT/rk45dp_error.dat";
   
   // Create an instance of the problem
-  CCAdaptiveBasicODEsProblem basic_ode_problem(&odes,
-                                               time_stepper_pt,
-                                               output_filename,
-                                               output_error_filename);
+  CCAdaptiveBasicODEsProblem<CCBasicODEs> basic_ode_problem(&odes,
+                                                            time_stepper_pt,
+                                                            output_filename,
+                                                            output_error_filename);
   
-  // Prepare time integration data
-  const Real initial_time = 0.0;
-  const Real final_time = 20.0;
-  const Real time_step = 0.1;
-  
-  // ----------------------------------------------------------------
-  // Configure problem
-  // ----------------------------------------------------------------
-  // Initial time
-  basic_ode_problem.time() = initial_time;
-   
-  // Initial time step
-  basic_ode_problem.time_step() = time_step;
+  // Complete problem configuration
+  basic_ode_problem.complete_problem_setup();
   
   // Enable/disable fixed output
   basic_ode_problem.disable_fixed_output();
   //basic_ode_problem.enable_fixed_output();
   
-  // Set initial conditions
-  basic_ode_problem.set_initial_conditions();
-
   // Document initial configuration
   basic_ode_problem.document_solution();
    
@@ -494,7 +466,7 @@ int main(int argc, char *argv[])
     std::cerr << "t: " << basic_ode_problem.time() << " h: " << basic_ode_problem.time_step() << std::endl;
     
     // Check whether we have reached the final time
-    if (basic_ode_problem.time() >= final_time)
+    if (basic_ode_problem.time() >= basic_ode_problem.final_time())
      {
       LOOP = false;
      }
@@ -510,7 +482,10 @@ int main(int argc, char *argv[])
   time_stepper_pt = 0;
    
  }
-  
+ 
+ // Finalise scicellxx
+ finalise_scicellxx();
+ 
  return 0;
   
 }

@@ -25,10 +25,10 @@ namespace scicellxx
  // ===================================================================
  /// Evaluates the system of odes at time "t".
  // ===================================================================
- void CCChenODEs::evaluate_derivatives(const Real t,
-                                       CCData &u,
-                                       CCData &dudt,
-                                       const unsigned k)
+ void CCChenODEs::evaluate_time_derivatives(const Real t,
+                                            CCData &u,
+                                            CCData &dudt,
+                                            const unsigned k)
  {
   // -----------------
   /// \frac{du_{1}}{dt} = a*(u_{2} - u_{1})

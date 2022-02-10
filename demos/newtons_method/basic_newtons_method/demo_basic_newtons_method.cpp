@@ -1,28 +1,5 @@
-#include <iostream>
-#include <cmath>
-#include <fstream>
-
-// Include general/common includes, utilities and initialisation
-#include "../../../src/general/common_includes.h"
-#include "../../../src/general/utilities.h"
-#include "../../../src/general/initialise.h"
-
-#include "../../../src/data_structures/cc_data.h"
-
-#include "../../../src/matrices/cc_vector.h"
-#include "../../../src/matrices/cc_matrix.h"
-
-#ifdef SCICELLXX_USES_ARMADILLO
-// Include Armadillo type matrices in case that the example wants to
-// use them
-#include "../../../src/matrices/cc_vector_armadillo.h"
-#include "../../../src/matrices/cc_matrix_armadillo.h"
-#endif // #ifdef SCICELLXX_USES_ARMADILLO
-
-#include "../../../src/matrices/cc_factory_matrices.h"
-
-#include "../../../src/equations/ac_jacobian_and_residual.h"
-#include "../../../src/newtons_method/cc_newtons_method.h"
+// Include SciCell++ libraries
+#include "../../../src/scicellxx.h"
 
 using namespace scicellxx;
 
@@ -122,39 +99,28 @@ int main(int argc, char *argv[])
  // Initial guess
  const Real initial_guess = 5.0;
  
- // Create an instance of the factory for matrices and vectors
- CCFactoryMatrices factory_matrices_and_vectors;
- 
- ACVector *x_pt = factory_matrices_and_vectors.create_vector(n_dof);
- 
-#if 0
  // Create a vector with the initial guess
 #ifdef SCICELLXX_USES_ARMADILLO
  CCVectorArmadillo x(n_dof);
 #else 
  CCVector x(n_dof);
 #endif
-
-#endif // #if 0
  
  //x.allocate_memory();
- (*x_pt)(0) = initial_guess;
+ x(0) = initial_guess;
  
  // Set initial dofs in Jacobian and residual strategy
- jacobian_and_residual.set_x_pt(x_pt);
+ jacobian_and_residual.set_x_pt(&x);
  
  // Change maximum allowed residual
  newtons_method.set_maximum_allowed_residual(100.0);
  
  // Solver using Newton's method
- newtons_method.solve(x_pt);
+ newtons_method.solve(&x);
  
  // Print result
- x_pt->print();
- x_pt->print(output_test);
- 
- // Free memory
- delete x_pt;
+ x.print();
+ x.print(output_test);
  
  // Close the output for test
  output_test.close();

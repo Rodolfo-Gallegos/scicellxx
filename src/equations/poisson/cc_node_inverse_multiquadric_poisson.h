@@ -1,8 +1,7 @@
 #ifndef CCNODEIMQPOISSON_H
 #define CCNODEIMQPOISSON_H
 
-#include "../../general/common_includes.h"
-#include "../../general/utilities.h"
+#include "../../general/general.h"
 
 #include "../rbf/cc_inverse_multiquadric.h"
 
