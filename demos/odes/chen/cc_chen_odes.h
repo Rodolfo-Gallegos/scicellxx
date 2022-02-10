@@ -1,14 +1,8 @@
 #ifndef CCCHENODES_H
 #define CCCHENODES_H
 
-// Include general/common includes, utilities and initialisation
-#include "../../../src/general/common_includes.h"
-#include "../../../src/general/utilities.h"
-#include "../../../src/general/initialise.h"
-// The class used to store the values of u and dudt
-#include "../../../src/data_structures/cc_data.h"
-// The class implementing the interfaces for the ODEs
-#include "../../../src/data_structures/ac_odes.h"
+// Include SciCell++ libraries
+#include "../../../src/scicellxx.h"
 
 namespace scicellxx
 {
@@ -33,7 +27,7 @@ namespace scicellxx
   
   /// Evaluates the system of odes at time 't', using the history
   /// values of u at index k
-  void evaluate_derivatives(const Real t, CCData &u, CCData &dudt, const unsigned k = 0);
+  void evaluate_time_derivatives(const Real t, CCData &u, CCData &dudt, const unsigned k = 0);
   
  protected:
   

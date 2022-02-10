@@ -31,10 +31,10 @@ namespace scicellxx
  /// function at previous times are accessible via u(i,1), u(i,2) and
  /// so on. The evaluation produces results in the vector dudt.
  // ===================================================================
- void CCODEsBasic4Body::evaluate_derivatives(const Real t,
-                                             CCData &u,
-                                             CCData &dudt,
-                                             const unsigned k)
+ void CCODEsBasic4Body::evaluate_time_derivatives(const Real t,
+                                                  CCData &u,
+                                                  CCData &dudt,
+                                                  const unsigned k)
  {
   // -----------------
   // u(0,0) Current x-position of the 1st body

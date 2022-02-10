@@ -224,6 +224,9 @@ protected:
 // ==================================================================
 int main(int argc, char *argv[])
 {
+ // Initialise scicellxx
+ initialise_scicellxx();
+ 
  // Create the factory for the time steppers (integration methods)
  CCFactoryTimeStepper<CCBasicODEs> factory_time_stepper;
  
@@ -457,7 +460,7 @@ int main(int argc, char *argv[])
   stability_analysis_problem.complete_problem_setup();
   // Solve
   stability_analysis_problem.solve();
-    
+  
   std::cout << "[FINISHING UP] ... " << std::endl;
   
   // Free memory
@@ -789,6 +792,9 @@ int main(int argc, char *argv[])
   time_stepper_pt = 0;
   
  }
+
+ // Finalise scicellxx
+ finalise_scicellxx();
  
  return 0;
  

@@ -258,7 +258,7 @@ class CCBasicODEsProblem : public virtual ACIBVP<EQUATIONS_TYPE>
   }
   
   // Return the final time
-  inline Real final_time() {return Final_time;} 
+  inline Real final_time() const {return Final_time;}
   
  protected:
  
@@ -281,6 +281,9 @@ class CCBasicODEsProblem : public virtual ACIBVP<EQUATIONS_TYPE>
  // ==================================================================
  int main(int argc, char *argv[])
  {
+  // Initialise scicellxx
+  initialise_scicellxx();
+  
   // Create the factory for the time steppers (integration methods)
   // specifically for the ODEs on this demo
   CCFactoryTimeStepper<CCBasicODEs> factory_time_stepper;
@@ -807,7 +810,10 @@ class CCBasicODEsProblem : public virtual ACIBVP<EQUATIONS_TYPE>
    time_stepper_pt = 0;
   
   }
- 
+  
+  // Finalise scicellxx
+  finalise_scicellxx();
+  
   return 0;
  
 }
