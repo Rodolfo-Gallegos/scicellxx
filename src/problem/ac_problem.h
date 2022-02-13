@@ -33,18 +33,9 @@ namespace scicellxx
   /// Every derived class must implement its own solve method (calling
   /// the corresponding steady_solve() and unsteady_solve() methods)
   virtual void solve() = 0;
-    
+
   /// Document solution
-  virtual void document_solution()
-  {
-   // Error message
-   std::ostringstream error_message;
-   error_message << "Virtual function in ACProblem class, you should implement\n"
-                 << "it to document your solution" << std::endl;
-   throw SciCellxxLibError(error_message.str(),
-                          SCICELLXX_CURRENT_FUNCTION,
-                          SCICELLXX_EXCEPTION_LOCATION);
-  }
+  virtual void document_solution() = 0;
   
   /// Write access to the current time step
   inline unsigned &output_file_index() {return Output_file_index;}

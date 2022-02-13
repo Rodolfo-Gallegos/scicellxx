@@ -22,7 +22,8 @@ public:
 
 // This fucntion has it maximum value at the center, depending on the
 // dimension s. At the boundaries it is zero.
-const Real test_function(ACVector *x_pt, const unsigned s)
+template <class VECTOR_TYPE>
+const Real test_function(VECTOR_TYPE *x_pt, const unsigned s)
 {
  Real prod=1.0;
  for (unsigned i = 0; i < s; i++)
@@ -33,8 +34,9 @@ const Real test_function(ACVector *x_pt, const unsigned s)
  return pow(4, s)*prod;
 }
 
-void compute_distance_matrix(ACMatrix *data_sites_pt, ACMatrix *centers_pt,
-                             ACMatrix *distance_matrix_pt)
+template <class MATRIX_TYPE, class VECTOR_TYPE>
+void compute_distance_matrix(MATRIX_TYPE *data_sites_pt, MATRIX_TYPE *centers_pt,
+                             MATRIX_TYPE *distance_matrix_pt)
 {
  // Get the number of "vector points" on "data_sites_pt"
  // Get the number of "vector points" on "centers_pt"
@@ -61,8 +63,8 @@ void compute_distance_matrix(ACMatrix *data_sites_pt, ACMatrix *centers_pt,
   }
  
  // A factory to create matrices and vectors
- CCFactoryMatrices factory_matrices_and_vectors;
- ACVector *distance_pt = factory_matrices_and_vectors->create_vector(dimension);
+ CCFactoryMatrices<MATRIX_TYPE, VECTOR_TYPE> factory_matrices_and_vectors;
+ VECTOR_TYPE *distance_pt = factory_matrices_and_vectors->create_vector(dimension);
  
  // Loop over all the data points in the first matrix
  for (unsigned m = 0; m < n_vector_points_data_sites; m++)
@@ -83,6 +85,157 @@ void compute_distance_matrix(ACMatrix *data_sites_pt, ACMatrix *centers_pt,
 
  delete distance_pt;
  
+}
+
+template <class MATRIX_TYPE, class VECTOR_TYPE>
+class CCDistanceMatrixProblem : public virtual ACProblem
+{
+public:
+
+ /// Constructor
+ CCDistanceMatrixProblem(const unsigned dim, const unsigned degree, const unsigned n_evaluation_points_per_dimension)
+  : ACProblem(),
+    Dim(dim),
+    Degree(degree),
+    L(1), // One-dimensional lenght
+    N_nodes_per_dim(std::pow(2, degree+1)),
+    N_nodes(std::pow(n_nodes_per_dim, dim))
+ {
+  // Allocate memory for Nodes_pt vector
+  Nodes_pt.resize(N_nodes);  
+ }
+ 
+  /// Destructor
+ ~CCDistanceMatrixProblem();
+
+ void complete_problem_setup()
+ {
+  // Create nodes and assign position
+  bool random_positions = true;
+  create_nodes(random_positions);
+  
+  // Set initial conditions
+  set_initial_conditions();
+  
+ }
+ 
+ void set_initial_conditions()
+ {
+  // Get the number of variables per node
+  const unsigned n_variables = N_nodes_pt[0]->n_variables();
+  for (unsigned i = 0; i < N_nodes; i++)
+   {
+    // All variables to zero
+    const Real u = 0.0;
+    for (unsigned j = 0; j < n_variables; j++)
+     {
+      nodes_pt[i]->set_variable(u, j);
+     }
+   }
+ }
+ 
+ /// Solve the problem
+ void solve()
+ {
+  
+ }
+
+ /// Documento the solution of the problem
+ void document_solution()
+ {
+  
+ }
+
+private:
+
+ /// Copy constructor (we do not want this class to be
+ /// copiable). Check
+ /// http://www.learncpp.com/cpp-tutorial/912-shallow-vs-deep-copying/
+ CCDistanceMatrixProblem(const CCDistanceMatrixProblem &copy)
+  : ACProblem()
+ {
+  BrokenCopy::broken_copy("CCDistanceMatrixProblem");
+ }
+ 
+ /// Assignment operator (we do not want this class to be
+ /// copiable. Check
+6 /// http://www.learncpp.com/cpp-tutorial/912-shallow-vs-deep-copying/
+ void operator=(const CCDistanceMatrixProblem &copy)
+ {
+  BrokenCopy::broken_assign("CCDistanceMatrixProblem");
+ }
+ 
+ // Create nodes, assign dimension, number of variables per node, and
+ // number of history values per node
+ void create_nodes(bool random_position = true)
+ {
+  // Output supporting nodes
+  std::ofstream nodes_file("RESLT/nodes.csv");
+  
+  // Number of variables stored in each node
+  const unsigned n_variables = 1;
+  // Number of history values per variable
+  const unsigned n_history_values = 1;
+  
+  // Compute the `h` distance just in case random_position was not
+  // selected
+  // Distance between a pair of consecutive nodes
+  const Real h = L / (Real)(N_nodes_per_dim - 1);
+  std::vector<Real> x(Dim, 0.0);
+  
+  // Create the nodes, assign dimension, number of variables and
+  // number of history values per variable
+  for (unsigned i = 0; i < N_nodes; i++)
+   {
+    Nodes_pt[i] = new CCNode(Dim, n_variables, n_history_values);
+    for (unsigned k = 0; k < Dim; k++)
+     {
+      Real position;
+      if (random_position)
+       {
+        const Real r = rand();
+        position = static_cast<Real>(r / RAND_MAX) * L;
+        Nodes_pt[i]->set_position(position, k); 
+       }
+      else
+       {
+        position = x[k];
+        Nodes_pt[i]->set_position(position, k); 
+        x[k]+=h;
+       }
+      
+      // Output nodes positions to file
+      nodes_file << position;
+      if (k + 1 < Dim)
+       {
+        nodes_file << ",";
+       }
+     }
+    nodes_file << std::endl;
+   }
+  
+  // Close support nodes file
+  nodes_file.close();
+  
+ }
+ 
+ // The dimension of the problem
+ const unsigned Dim;
+
+ // Degree of the interpolant polynomial
+ const unsigned Degree;
+ 
+ // One-dimensional lenght of the domain
+ const unsigned L;
+
+ // Number of node per dimension
+ const unsigned N_nodes_per_dim;
+ 
+ // Total number of nodes
+ const unsigned N_nodes;
+
+ // The nodes
+ std::vector<CCNode *> Nodes_pt;
 }
 
 struct Args {
@@ -130,6 +283,9 @@ int main(int argc, char *argv[])
  
  // Parse the input arguments
  parser.parse_args(argc, argv);
+
+ // Create and initialise the problem
+ CCDistanceMatrixProblem<CCMatrix, CCVector>();
  
  // --------------------------------------------------------------
  // Domain specification

@@ -232,6 +232,21 @@ namespace scicellxx
   
   // Get the number of time steppers
   const unsigned n_time_steppers = this->n_time_steppers();
+
+#ifdef SCICELLXX_PANIC_MODE
+  // Check that there is at least one time stepper set
+  if (n_time_steppers == 0)
+   {
+    // Error message
+    std::ostringstream error_message;
+    error_message << "There are no time stepper set. Use the add_time_stepper() method\n"
+                  << "to set at least one\n"
+                  << std::endl;
+    throw SciCellxxLibError(error_message.str(),
+                           SCICELLXX_CURRENT_FUNCTION,
+                           SCICELLXX_EXCEPTION_LOCATION);
+   }
+#endif // #ifdef SCICELLXX_PANIC_MODE
   
   // If there are more than one time stepper then throw an error since
   // this feature has not been tested and it possibly wont work at
