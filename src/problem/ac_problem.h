@@ -18,10 +18,9 @@ namespace scicellxx
  {
   
  public:
-
-  /// Constructor, in charge of initialising any stuff required for
-  /// the framework
-  ACProblem();
+  
+  /// Constructor
+  ACProblem(const unsigned dim = 1);
   
   /// Destructor
   virtual ~ACProblem();
@@ -42,6 +41,18 @@ namespace scicellxx
   
   /// Read-only access to the current time step
   inline unsigned output_file_index() const {return Output_file_index;}
+  
+  /// Document nodes positions
+  void document_nodes_positions(const char *filename);
+  
+  /// The dimension of the problem
+  inline unsigned dim() const {return Dim;}
+  
+  /// Get the number of nodes
+  inline unsigned long n_nodes() const {return Nodes_pt.size();}
+  
+  /// Set/get the i-th node
+  const CCNode* node_pt(const unsigned long i);
   
  protected:
   
@@ -75,6 +86,15 @@ namespace scicellxx
   
   /// A counter to store the current output file index
   unsigned Output_file_index;
+  
+  /// Dimension
+  const unsigned Dim;
+  
+  // Total number of nodes
+  const unsigned N_nodes;
+  
+  // The nodes
+  std::vector<CCNode *> Nodes_pt;
   
  };
  
