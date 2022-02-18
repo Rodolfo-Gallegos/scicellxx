@@ -10,8 +10,7 @@ namespace scicellxx
  ACIBVP<EQUATIONS_TYPE>::ACIBVP()
   : ACProblem(),
     Time(0.0),
-    Time_step(0.0),
-    Allow_free_memory_for_U(false)
+    Time_step(0.0)
  {
   // Create an empty time steppers vector
   Time_stepper_pt.clear();
@@ -27,15 +26,14 @@ namespace scicellxx
  template<class EQUATIONS_TYPE>
  ACIBVP<EQUATIONS_TYPE>::ACIBVP(EQUATIONS_TYPE *equations_pt,
                                 ACTimeStepper<EQUATIONS_TYPE> *time_stepper_pt)
-  : Allow_free_memory_for_U(true),
-    Equations_pt(equations_pt)
+  : Equations_pt(equations_pt)
  {
   // Add time stepper
   add_time_stepper(time_stepper_pt);
   // Get the number of equations
   const unsigned n_equations = equations_pt->n_equations();
   const unsigned n_history_values = time_stepper_pt->n_history_values();
-  U_pt = new CCData(n_equations, n_history_values);
+  this->initialise_u(n_equations, n_history_values);
  }
  
  // ===================================================================
@@ -44,15 +42,7 @@ namespace scicellxx
  template<class EQUATIONS_TYPE>
  ACIBVP<EQUATIONS_TYPE>::~ACIBVP()
  {
-  if (Allow_free_memory_for_U)
-   {
-    // Free memory
-    delete U_pt;
-    // Set pointer to null
-    U_pt = 0;
-    // Disabled free memory for U
-    Allow_free_memory_for_U = false;
-   }
+  // Empty
  }
  
  // ===================================================================

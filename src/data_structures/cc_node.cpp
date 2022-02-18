@@ -14,7 +14,11 @@ namespace scicellxx
   : Dimension(dimension), N_variables(n_variables),
     N_history_values(n_history_values), X(Dimension, N_history_values),
     U(N_variables, N_history_values)
- { }
+ {
+  // Resize the equaiton number vector to keep track of the equation
+  // number in the problem
+  Equation_number.resize(N_variables);
+ }
  
  /// ===================================================================
  /// Empty destructor

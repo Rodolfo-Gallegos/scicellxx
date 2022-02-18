@@ -43,7 +43,7 @@ namespace scicellxx
   inline unsigned output_file_index() const {return Output_file_index;}
   
   /// Document nodes positions
-  void document_nodes_positions(const char *filename);
+  void document_nodes_positions(std::string &filename);
   
   /// The dimension of the problem
   inline unsigned dim() const {return Dim;}
@@ -52,17 +52,34 @@ namespace scicellxx
   inline unsigned long n_nodes() const {return Nodes_pt.size();}
   
   /// Set/get the i-th node
-  const CCNode* node_pt(const unsigned long i);
+  CCNode* node_pt(const unsigned long i);
+
+  /// Get access to the U vector
+  CCData *u_pt() const {return U_pt;}
+  
+  /// Read-only access to the vector U values
+  inline const Real u(const unsigned i, const unsigned t = 0) const {return U_pt->value(i,t);}
+  
+  /// Write access to the vector U values
+  inline Real &u(const unsigned i, const unsigned t = 0) {return U_pt->value(i,t);}
+  
+  /// Initialise the u vector (solution)
+  void initialise_u(const unsigned n_equations, const unsigned n_history_values);
+  
+  /// Assign equations number
+  void assign_equations_number();
   
  protected:
   
   /// Copy constructor (we do not want this class to be
   /// copiable). Check
   /// http://www.learncpp.com/cpp-tutorial/912-shallow-vs-deep-copying/
-  ACProblem(const ACProblem &copy)
-   {
-    BrokenCopy::broken_copy("ACProblem");
-   }
+ ACProblem(const ACProblem &copy)
+  : Output_file_index(0),
+   Dim(0)
+    {
+     BrokenCopy::broken_copy("ACProblem");
+    }
   
   /// Assignment operator (we do not want this class to be
   /// copiable. Check
@@ -86,15 +103,24 @@ namespace scicellxx
   
   /// A counter to store the current output file index
   unsigned Output_file_index;
-  
+    
   /// Dimension
   const unsigned Dim;
   
   // Total number of nodes
-  const unsigned N_nodes;
+  unsigned N_nodes;
   
   // The nodes
   std::vector<CCNode *> Nodes_pt;
+  
+  /// The storage for the computed solution
+  CCData *U_pt;
+  
+  /// Flag to allow release of memory by the class
+  bool Allow_free_memory_for_U;
+  
+  /// Store the number of equations of the problem
+  unsigned N_equations;
   
  };
  
