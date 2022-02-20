@@ -2,8 +2,8 @@
 #define ACPROBLEM_H
 
 #include "../general/general.h"
-
 #include "../time_steppers/time_steppers.h"
+#include "../data_structures/data_structures.h"
 
 namespace scicellxx
 {
@@ -64,10 +64,17 @@ namespace scicellxx
   inline Real &u(const unsigned i, const unsigned t = 0) {return U_pt->value(i,t);}
   
   /// Initialise the u vector (solution)
-  void initialise_u(const unsigned n_equations, const unsigned n_history_values);
+  void initialise_u(const unsigned n_equations, const unsigned n_history_values = 1);
   
   /// Assign equations number
-  void assign_equations_number();
+  const unsigned long assign_equations_number();
+  
+  /// Return the number of equations
+  inline const unsigned long n_equations() const {return N_equations;}
+  
+  // Get node and local variable number from equation number
+  inline std::pair<CCNode*, unsigned> &get_node_and_local_variable_from_global_equation(const unsigned long equation_number)
+  {return Global_equation_number_to_node_and_local_variable[equation_number];}
   
  protected:
   
@@ -120,7 +127,11 @@ namespace scicellxx
   bool Allow_free_memory_for_U;
   
   /// Store the number of equations of the problem
-  unsigned N_equations;
+  unsigned long N_equations;
+  
+  /// Keep track of the node pointer and the local variable number
+  /// associated to a global equation number
+  std::vector<std::pair<CCNode*, unsigned> > Global_equation_number_to_node_and_local_variable;
   
  };
  

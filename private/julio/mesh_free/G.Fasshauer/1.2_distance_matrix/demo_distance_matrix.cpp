@@ -56,7 +56,7 @@ public:
     delete node_pt(i);
    }
  }
-
+ 
  // Complete the setup of the problem
  void complete_problem_setup()
  {
@@ -67,8 +67,10 @@ public:
   // Set initial conditions
   set_initial_conditions();
   
+  const unsigned long n_eq = this->assign_equations_number();
+  
   // Initialise u
-  this->initialise_u();
+  this->initialise_u(n_eq);
   
  }
  

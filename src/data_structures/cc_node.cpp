@@ -55,8 +55,8 @@ namespace scicellxx
  /// position)
  /// ===================================================================
  void CCNode::output(std::ofstream &outfile,
-                        bool output_position,
-                        const unsigned t) const
+                     bool output_position,
+                     const unsigned t) const
  {
   // Check whether we should output positions
   if (output_position)

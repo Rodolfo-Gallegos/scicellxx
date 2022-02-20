@@ -10,7 +10,8 @@ namespace scicellxx
  ACProblem::ACProblem(const unsigned dim)
   : Output_file_index(0),
     Dim(dim),
-    Allow_free_memory_for_U(false)
+    Allow_free_memory_for_U(false),
+    N_equations(0)
  { 
   
  }
@@ -98,42 +99,59 @@ namespace scicellxx
  void ACProblem::initialise_u(const unsigned n_equations, const unsigned n_history_values)
  {
   U_pt = new CCData(n_equations, n_history_values);
-  Allow_free_memory_for_U = true;
+  Allow_free_memory_for_U = true;  
  }
 
  // ===================================================================
  /// Assign equations number
  // ===================================================================
- void ACProblem::assign_equations_number()
+ const unsigned long ACProblem::assign_equations_number()
  {
-  // Loop over the nodes and assign an equation number
-  unsigned long index = 0;
+  // Get the number of nodes
   const unsigned long nnodes = n_nodes();
+  // Get the number of variables of the first node to approximate the
+  // final size of the
+  // "Global_equation_number_to_node_and_local_variable" vector
+  const unsigned n_variables_first_node = node_pt(0)->n_variables();
+  // Reserve memory space
+  Global_equation_number_to_node_and_local_variable.
+   reserve(nnodes * n_variables_first_node);
+
+  // Loop over the nodes and assign an equation number
+  unsigned long inode = 0;
+  unsigned long eq_idx = 0;
   
-  while (index < n_nodes)
+  // Loop over all nodes and assign a global equation number
+  while (inode < nnodes)
    {
     // Get the i-th node
-    CNode *inode_pt = node_pt(index);
+    CCNode *inode_pt = node_pt(inode);
     
     // Get the number of variables in the node
     const unsigned nvariables = inode_pt->n_variables();
-
+    
     // Assign an equation number for each variable
     for (unsigned i = 0; i < nvariables; i++)
      {
       // Assign the equation number
-      inode_pt->equation_number(i) = index;
-      // Increase the equations number
-      index++;
+      inode_pt->equation_number(i) = eq_idx;
+      
+      // Keep track of the node pointer and the local variable number
+      Global_equation_number_to_node_and_local_variable[eq_idx++] =
+       std::make_pair(inode_pt, i);
+      
      }
-
+    
+    // Increase the index for nodes
+    inode++;
+    
    }
-  // Create a map that the key is the number of equation, and the
-  // value is the pair (node, variable number)
-
-  // When creating the vector U we need to loop over the equations
-  // number and get the data in the node and variable number
   
+  // Assign the number of equations
+  N_equations = eq_idx;
+  
+  // Return the number of equations
+  return eq_idx;
   
  }
  
