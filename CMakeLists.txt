@@ -1,5 +1,6 @@
 # Check for cmake minimum required version (previously working with v2.8)
-CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
+# Check for cmake minimum required version (previously working with v3.5), the version 3.9+ eases MPI support 
+CMAKE_MINIMUM_REQUIRED(VERSION 3.9)
 
 # ----------------------------------------------------------------------
 # Project intialisation
@@ -121,6 +122,39 @@ ENDIF (SCICELLXX_USES_VTK)
 MESSAGE( STATUS "-----------------------------------------------------------------------" )
 
 # ----------------------------------------------------------------------
+# Do we want to compile using MPI?
+# ----------------------------------------------------------------------
+MESSAGE( STATUS "" )
+MESSAGE( STATUS "-----------------------------------------------------------------------" )
+MESSAGE( STATUS "** MPI'S LIBRARY INFORMATION **" )
+MESSAGE( STATUS "-----------------------------------------------------------------------" )
+IF (SCICELLXX_USES_MPI)
+  IF (SCICELLXX_AUTO_FIND_MPI_PATHS)
+    # Set the suggested folder where to look for MPI's library
+    LIST(APPEND CMAKE_PREFIX_PATH ${MPI_AUTO_FIND_FOLDER})
+    # Try to find MPI
+    FIND_PACKAGE(MPI REQUIRED)
+    # https://cmake.org/cmake/help/latest/module/FindMPI.html
+    IF (MPI_FOUND)
+      MESSAGE( STATUS "FOUND MPI_C_INCLUDE_DIRS:             " ${MPI_C_INCLUDE_DIRS} )
+      MESSAGE( STATUS "FOUND MPI_C_LIBRARIES:                " ${MPI_C_LIBRARIES} )
+      MESSAGE( STATUS "FOUND MPI_CXX_INCLUDE_DIRS:             " ${MPI_CXX_INCLUDE_DIRS} )
+      MESSAGE( STATUS "FOUND MPI_CXX_LIBRARIES:                " ${MPI_CXX_LIBRARIES} )
+#      INCLUDE_DIRECTORIES(${MPI_INCLUDE_DIRS}) it seems this is not required due to CMake version 3.9+
+    ENDIF (MPI_FOUND)
+  ELSE (SCICELLXX_AUTO_FIND_MPI_PATHS)
+    MESSAGE( STATUS "USING YOUR OWN MPI'S INCLUDE AND LIB PATHS")
+    MESSAGE( STATUS "MPI_C_INCLUDE_DIRS:             " ${MPI_C_INCLUDE_DIRS} )
+    MESSAGE( STATUS "MPI_C_LIBRARIES:                " ${MPI_C_LIBRARIES} )
+    MESSAGE( STATUS "MPI_CXX_INCLUDE_DIRS:             " ${MPI_CXX_INCLUDE_DIRS} )
+    MESSAGE( STATUS "MPI_CXX_LIBRARIES:                " ${MPI_CXX_LIBRARIES} )
+#    INCLUDE_DIRECTORIES(${MPI_INCLUDE_DIRS}) it seems this is not required due to CMake version 3.9+
+  ENDIF (SCICELLXX_AUTO_FIND_MPI_PATHS)
+  
+ENDIF (SCICELLXX_USES_MPI)
+MESSAGE( STATUS "-----------------------------------------------------------------------" )
+
+# ----------------------------------------------------------------------
 
 # ----------------------------------------------------------------------
 # Modify compilation variables
@@ -187,6 +221,11 @@ IF (SCICELLXX_PANIC_MODE)
   SET(SCICELLXX_CXX_FLAGS "${SCICELLXX_CXX_FLAGS} ${SCICELLXX_PANIC_MODE_DEFINE}" )
 ENDIF (SCICELLXX_PANIC_MODE)
 
+SET(SCICELLXX_MPI_DEFINE "-DSCICELLXX_USES_MPI")
+IF (SCICELLXX_USES_MPI)
+  SET(SCICELLXX_CXX_FLAGS "${SCICELLXX_CXX_FLAGS} ${SCICELLXX_MPI_DEFINE}" )
+ENDIF (SCICELLXX_USES_MPI)
+
 # ----------------------------------------------------------------------
 # Set modified compilation variables
 # ----------------------------------------------------------------------
@@ -224,6 +263,52 @@ MESSAGE( STATUS "CMAKE_VERBOSE_MAKEFILE:       " ${CMAKE_VERBOSE_MAKEFILE} )
 
 MESSAGE( STATUS "-----------------------------------------------------------------------" )
 
+# ----------------------------------------------------------------------
+# Output MPI configuration
+# ----------------------------------------------------------------------
+IF (SCICELLXX_USES_MPI)
+   MESSAGE( STATUS "" )
+   MESSAGE( STATUS "-----------------------------------------------------------------------" )
+   MESSAGE( STATUS "** MPI STUFF **" )
+   MESSAGE( STATUS "-----------------------------------------------------------------------" )
+   MESSAGE( STATUS "" )
+   MESSAGE( STATUS "-----------------------------------------------------------------------" )
+   MESSAGE( STATUS "** MPI C **" )
+   MESSAGE( STATUS "-----------------------------------------------------------------------" )   
+   # Output information about MPI-C
+   MESSAGE( STATUS "MPI_C_FOUND:                     " ${MPI_C_FOUND} )
+   MESSAGE( STATUS "MPI_C_VERSION:                   " ${MPI_C_VERSION} )
+   MESSAGE( STATUS "MPI_C_COMPILER:                  " ${MPI_C_COMPILER} )
+   MESSAGE( STATUS "MPI_C_COMPILE_OPTIONS:           " ${MPI_C_COMPILE_OPTIONS} )
+   MESSAGE( STATUS "MPI_C_COMPILE_DEFINITIONS:       " ${MPI_C_COMPILE_DEFINITIONS} )
+   MESSAGE( STATUS "MPI_C_INCLUDE_DIRS:              " ${MPI_C_INCLUDE_DIRS} )
+   MESSAGE( STATUS "MPI_C_LINK_FLAGS:                " ${MPI_C_LINK_FLAGS} )
+   MESSAGE( STATUS "MPI_C_LINK_LIBRARIES:            " ${MPI_C_LINK_LIBRARIES} )
+   MESSAGE( STATUS "" )
+   MESSAGE( STATUS "-----------------------------------------------------------------------" )
+   MESSAGE( STATUS "** MPI CXX **" )
+   MESSAGE( STATUS "-----------------------------------------------------------------------" )   
+   # Output information about MPI-CXX
+   MESSAGE( STATUS "MPI_CXX_FOUND:                     " ${MPI_CXX_FOUND} )
+   MESSAGE( STATUS "MPI_CXX_VERSION:                   " ${MPI_CXX_VERSION} )
+   MESSAGE( STATUS "MPI_CXX_COMPILER:                  " ${MPI_CXX_COMPILER} )
+   MESSAGE( STATUS "MPI_CXX_COMPILE_OPTIONS:           " ${MPI_CXX_COMPILE_OPTIONS} )
+   MESSAGE( STATUS "MPI_CXX_COMPILE_DEFINITIONS:       " ${MPI_CXX_COMPILE_DEFINITIONS} )
+   MESSAGE( STATUS "MPI_CXX_INCLUDE_DIRS:              " ${MPI_CXX_INCLUDE_DIRS} )
+   MESSAGE( STATUS "MPI_CXX_LINK_FLAGS:                " ${MPI_CXX_LINK_FLAGS} )
+   MESSAGE( STATUS "MPI_CXX_LINK_LIBRARIES:            " ${MPI_CXX_LINK_LIBRARIES} )
+   MESSAGE( STATUS "" )
+   MESSAGE( STATUS "-----------------------------------------------------------------------" )
+   MESSAGE( STATUS "** MPI EXECUTABLE **" )
+   MESSAGE( STATUS "-----------------------------------------------------------------------" )   
+   # Output information about MPI exec
+   MESSAGE( STATUS "MPIEXEC_EXECUTABLE:                " ${MPIEXEC_EXECUTABLE} )
+   MESSAGE( STATUS "MPIEXEC_NUMPROC_FLAG:              " ${MPIEXEC_NUMPROC_FLAG} )
+   MESSAGE( STATUS "MPIEXEC_MAX_NUMPROCS:              " ${MPIEXEC_MAX_NUMPROCS} )
+   MESSAGE( STATUS "MPIEXEC_PREFLAGS:                  " ${MPIEXEC_PREFLAGS} )
+   MESSAGE( STATUS "MPIEXEC_POSTFLAGS:                 " ${MPIEXEC_POSTFLAGS} )
+ENDIF (SCICELLXX_USES_MPI)
+
 # The VARIABLE holding the names of the external libraries
 SET(LIB_external_src_lib 0)
 
@@ -248,6 +333,15 @@ ENDIF (SCICELLXX_USES_ARMADILLO)
 IF (SCICELLXX_USES_VTK)
   LIST(APPEND LIB_scicellxx_lib ${VTK_LIBRARIES})
 ENDIF (SCICELLXX_USES_VTK)
+
+# Check whether scicellxx is using MPI
+# It seems this is not required due to CMake Version 3.9+
+#IF (SCICELLXX_USES_MPI)
+#  LIST(APPEND LIB_scicellxx_lib ${MPI_LIBRARIES})
+#ENDIF (SCICELLXX_USES_MPI)
+
+# when linking a target use the following (supported in CMake 3.9+)
+#target_link_libraries(MyTarget PUBLIC MPI::MPI_CXX)
 
 # Add private folders (note that any source code in here is not
 # compiled but only added to the make list)

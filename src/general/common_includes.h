@@ -75,6 +75,12 @@
 // Include ArgParse
 #include "../../external_src/argparse/src/argparse.hpp"
 
+// MPI support
+
+#ifdef SCICELLXX_USES_MPI
+#include <mpi.h>
+#endif // #ifdef SCICELLXX_USES_MPI
+
 // Own scicellxx definitions
 #include "definitions.h"
 #include "cmake_definitions.h"
