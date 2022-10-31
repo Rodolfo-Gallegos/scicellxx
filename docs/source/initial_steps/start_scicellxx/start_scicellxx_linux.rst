@@ -19,7 +19,7 @@ Run Docker container with SciCell++
 
    .. code-block:: shell
 
-      sudo ./scicellxx/tools/common/run_scicellxx_on_docker.sh
+      sudo ./scicellxx/tools/run_scicellxx_on_docker.sh
 
       
  If you spot no errors then follow the instructions on section
@@ -42,5 +42,5 @@ start another one with the same name.
 
    .. code-block:: shell
 
-      sudo ./scicellxx/tools/common/stop_scicellxx_on_docker.sh
+      sudo ./scicellxx/tools/stop_scicellxx_on_docker.sh
                  

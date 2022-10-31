@@ -76,7 +76,7 @@ test_results_directory=test_results
 # Prompts for FULL configuration
 full_configuration=FALSE
 # Indicates whether to output building information (currently not in use)
-verbose=TRUE
+verbose=FALSE
 
 #====================================================================
 # Parse arguments
@@ -357,6 +357,7 @@ if ! cmake ../ \
      -DSCICELLXX_BUILD_VERSION=$lib_build \
      -DSCICELLXX_BUILD_DEMOS=$build_test_demos \
      -DSCICELLXX_CONFIGURATION_FILE=$configuration_file \
+     -DCMAKE_VERBOSE_MAKEFILE=$verbose \
      -DCMAKE_EXPORT_COMPILE_COMMANDS=1 ; then # Added to create the
                                               # 'compile_commands.json
                                               # file for emacs
