@@ -309,6 +309,8 @@ IF (SCICELLXX_USES_MPI)
    MESSAGE( STATUS "MPIEXEC_POSTFLAGS:                 " ${MPIEXEC_POSTFLAGS} )
 ENDIF (SCICELLXX_USES_MPI)
 
+#SET(CMAKE_CXX_COMPILER ${MPI_C_COMPILER})
+
 # The VARIABLE holding the names of the external libraries
 SET(LIB_external_src_lib 0)
 
