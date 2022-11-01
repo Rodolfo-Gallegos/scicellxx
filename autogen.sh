@@ -145,10 +145,10 @@ echo "============================================================= "
 echo ""
 echo ""
 
-echo "SciCell++ Copyright (C) 2021 Julio César Pérez Sansalvador This"
-echo "program comes with ABSOLUTELY NO WARRANTY; for details type show w."
+echo "SciCell++ Copyright (C) 2022 Julio César Pérez Sansalvador This"
+echo "program comes with ABSOLUTELY NO WARRANTY."
 echo "This is free software, and you are welcome to redistribute it"
-echo "under certain conditions."
+echo "under GNU GENERAL PUBLIC LICENSE conditions."
 echo ""
 echo ""
 
