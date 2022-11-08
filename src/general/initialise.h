@@ -44,6 +44,10 @@ namespace scicellxx
  /// Finalise function, call all finalisation methods, free memory
  /// allocated by scicellxx
  bool finalise_scicellxx();
+
+ /// Print compiler version information
+ void print_compiler_version_information();
+ 
  
 }
 

@@ -74,6 +74,19 @@ namespace scicellxx
 
  }
 
+ //=======================================================================
+ /// Helper namespace for file system operations -- mainly used to
+ /// create the RESLT folder
+ ///======================================================================
+ namespace SciCellxxFileSystem
+ {
+  // Check whether a given directory exists
+  extern bool directory_exists(std::string &directory_name);
+
+  // Create a directory
+  extern bool create_directory(std::string &directory_name);
+ }
+ 
  //=====================================================================
  /// Run-time exception handling  (error and warning).
  ///

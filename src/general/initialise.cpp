@@ -59,7 +59,9 @@ namespace scicellxx
                   << MINOR_VERSION
                   << "."
                   << PATCH_LEVEL
-                  << std::endl;
+                   << std::endl;
+  
+  print_compiler_version_information();
   
   /// Setup terminate helper
   TerminateHelper::setup();
@@ -104,6 +106,22 @@ namespace scicellxx
   // Everything was alright
   
   return true;
+ }
+
+/// Print compiler version information
+ void print_compiler_version_information()
+ {
+  // Took from this post
+  // https://stackoverflow.com/questions/2324658/how-to-determine-the-version-of-the-c-standard-used-by-the-compiler
+  
+  // Checkt the __cplusplus macro
+  scicellxx_output << "C++ compiler version: ";
+  if (__cplusplus == 201703L) scicellxx_output << "C++17\n";
+  else if (__cplusplus == 201402L) scicellxx_output << "C++14\n";
+  else if (__cplusplus == 201103L) scicellxx_output << "C++11\n";
+  else if (__cplusplus == 199711L) scicellxx_output << "C++98\n";
+  else scicellxx_output << "pre-standard C++\n";
+  scicellxx_output << "The __cplusplus macro value is: " << __cplusplus << std::endl;
  }
  
 }

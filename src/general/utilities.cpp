@@ -122,6 +122,82 @@ namespace scicellxx
   std::stringstream* Exception_stringstream_pt=0;
  }
 
+ //=======================================================================
+ /// Helper namespace for file system operations -- mainly used to
+ /// create the RESLT folder
+ ///======================================================================
+ namespace SciCellxxFileSystem
+ {
+  // Check whether a given directory exists
+  bool directory_exists(std::string &directory_name)
+  { 
+   struct stat info;
+   
+   if( stat( directory_name.c_str(), &info ) != 0 )
+    {
+     //printf( "cannot access %s\n", directory_name.c_str() );
+     return false; // The file or directory does not exist
+    }
+   else if( info.st_mode & S_IFDIR )  // S_ISDIR() doesn't exist on my windows
+    {
+     //printf( "%s is a directory\n", directory_name.c_str() );
+     return true;
+    }
+   else
+    {
+     //printf( "%s is no directory\n", directory_name.c_str() );
+     return false; // The name corresponds to a file, not to a directory
+    }
+   
+   return false;
+
+  }
+
+  // Create a directory
+  extern bool create_directory(std::string &directory_name)
+  {
+   if (directory_exists(directory_name))
+    {
+     // Error message
+     std::ostringstream error_message;
+     error_message << "The [" << directory_name << "] folder already exists (or there is a file with the same folder name).\n"
+                   << "We will not overwrite the data in that folder.\n"
+                   << "Use another folder name.\n"
+                   << std::endl;
+     throw SciCellxxLibError(error_message.str(),
+                             SCICELLXX_CURRENT_FUNCTION,
+                             SCICELLXX_EXCEPTION_LOCATION);
+    }
+   
+   // Check whether the directory was created
+   int check = mkdir(directory_name.c_str(), 0777);
+   
+   // check if directory is created or not
+   if (!check)
+    {
+     //printf("Directory created\n");
+     return true;
+    }
+   else
+    {
+     //printf("Unable to create directory\n");
+    }
+
+   // Error message
+   std::ostringstream error_message;
+   error_message << "The [" << directory_name << "] could not be created\n"
+                 << "Check you have the right permissions to work on the filesystem.\n"
+                 << std::endl;
+   throw SciCellxxLibError(error_message.str(),
+                           SCICELLXX_CURRENT_FUNCTION,
+                           SCICELLXX_EXCEPTION_LOCATION);
+   
+   return false;
+  }
+  
+}
+ 
+ 
  ///////////////////////////////////////////////////////////////////////
  ///////////////////////////////////////////////////////////////////////
  ///////////////////////////////////////////////////////////////////////

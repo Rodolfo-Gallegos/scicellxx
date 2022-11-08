@@ -43,6 +43,79 @@
 // Use the namespace of the framework
 using namespace scicellxx;
 
+// Used to define arguments
+struct Args {
+ argparse::ArgValue<unsigned> L;
+ argparse::ArgValue<unsigned> N;
+ argparse::ArgValue<Real> alpha_min;
+ argparse::ArgValue<Real> alpha_max;
+ argparse::ArgValue<unsigned> alpha_n_points;
+ argparse::ArgValue<Real> beta_min;
+ argparse::ArgValue<Real> beta_max;
+ argparse::ArgValue<unsigned> beta_n_points;
+ argparse::ArgValue<Real> rho_min;
+ argparse::ArgValue<Real> rho_max;
+ argparse::ArgValue<unsigned> rho_n_points;
+ argparse::ArgValue<Real> omega_in_min;
+ argparse::ArgValue<Real> omega_in_max;
+ argparse::ArgValue<unsigned> omega_in_n_points;
+ argparse::ArgValue<Real> omega_out_min;
+ argparse::ArgValue<Real> omega_out_max;
+ argparse::ArgValue<unsigned> omega_out_n_points;
+ argparse::ArgValue<unsigned> lateral_movement;
+ argparse::ArgValue<unsigned> max_experiments;
+ argparse::ArgValue<unsigned> max_simulations_per_experiment;
+ argparse::ArgValue<unsigned> simulation_step_to_start_gathering_data;
+ argparse::ArgValue<std::string> root_output_folder;
+ argparse::ArgValue<unsigned> output_experiment_state;
+ argparse::ArgValue<unsigned> output_microtubule_state;
+};
+
+// Output parameters to a file
+void output_parameters_to_file(std::string &filename, const int argc, const char **argv,  struct Args &args)
+{
+  // Output file
+  std::ofstream output_parameters(filename, std::ios_base::out);
+  
+  // Write the command line as a comment into the parameters file
+  output_parameters << "#";
+  for (int i = 0; i < argc-1; i++)
+   {
+    output_parameters << argv[i] << " ";
+   }
+  output_parameters << argv[argc-1] << std::endl;
+
+  const unsigned precision_real_values = 4;
+  
+  output_parameters << "L:" << args.L << std::endl;
+  output_parameters << "N:" << args.N << std::endl;
+  output_parameters << "alpha_min:" << setprecision(precision_real_values) << args.alpha_min << std::endl;
+  output_parameters << "alpha_max:" << setprecision(precision_real_values) << args.alpha_max << std::endl;
+  output_parameters << "alpha_n_points:" << args.alpha_n_points << std::endl;
+  output_parameters << "beta_min:" << setprecision(precision_real_values) << args.beta_min << std::endl;
+  output_parameters << "beta_max:" << setprecision(precision_real_values) << args.beta_max << std::endl;
+  output_parameters << "beta_n_points:" << args.beta_n_points << std::endl;
+  output_parameters << "rho_min:" << setprecision(precision_real_values) << args.rho_min << std::endl;
+  output_parameters << "rho_max:" << setprecision(precision_real_values) << args.rho_max << std::endl;
+  output_parameters << "rho_n_points:" << args.rho_n_points << std::endl;
+  output_parameters << "omega_in_min:" << setprecision(precision_real_values) << args.omega_in_min << std::endl;
+  output_parameters << "omega_in_max:" << setprecision(precision_real_values) << args.omega_in_max << std::endl;
+  output_parameters << "omega_in_n_points:" << args.omega_in_n_points << std::endl;
+  output_parameters << "omega_out_min:" << setprecision(precision_real_values) << args.omega_out_min << std::endl;
+  output_parameters << "omega_out_max:" << setprecision(precision_real_values) << args.omega_out_max << std::endl;
+  output_parameters << "omega_out_n_points:" << args.omega_out_n_points << std::endl;
+  output_parameters << "lateral_movement:" << args.lateral_movement << std::endl;
+  output_parameters << "max_experiments:" << args.max_experiments << std::endl;
+  output_parameters << "max_simulations_per_experiment:" << args.max_simulations_per_experiment << std::endl;
+  output_parameters << "simulation_step_to_start_gathering_data:" << args.simulation_step_to_start_gathering_data << std::endl;
+  output_parameters << "root_output_folder:" << args.root_output_folder << std::endl;
+  output_parameters << "output_experiment_state:" << args.output_experiment_state << std::endl;
+  output_parameters << "output_microtubule_state:" << args.output_microtubule_state << std::endl;
+  
+  // Close the parameters file
+  output_parameters.close(); 
+}
+
 /// Tries to perform a lateral movement on the particule at position
 /// (k, i) in the microtubule
 void try_lateral_movement(bool **m, const unsigned N, const unsigned L, const unsigned k, const unsigned i)
@@ -358,34 +431,6 @@ void matrix_to_csv_file(bool **m, const unsigned nrows, const unsigned ncolumns,
  
 } // matrix_to_csv_file
 
-// Used to define arguments
-struct Args {
- argparse::ArgValue<unsigned> L;
- argparse::ArgValue<unsigned> N;
- argparse::ArgValue<Real> alpha_min;
- argparse::ArgValue<Real> alpha_max;
- argparse::ArgValue<unsigned> alpha_n_points;
- argparse::ArgValue<Real> beta_min;
- argparse::ArgValue<Real> beta_max;
- argparse::ArgValue<unsigned> beta_n_points;
- argparse::ArgValue<Real> rho_min;
- argparse::ArgValue<Real> rho_max;
- argparse::ArgValue<unsigned> rho_n_points;
- argparse::ArgValue<Real> omega_in_min;
- argparse::ArgValue<Real> omega_in_max;
- argparse::ArgValue<unsigned> omega_in_n_points;
- argparse::ArgValue<Real> omega_out_min;
- argparse::ArgValue<Real> omega_out_max;
- argparse::ArgValue<unsigned> omega_out_n_points;
- argparse::ArgValue<unsigned> lateral_movement;
- argparse::ArgValue<unsigned> max_experiments;
- argparse::ArgValue<unsigned> max_simulations_per_experiment;
- argparse::ArgValue<unsigned> simulation_step_to_start_gathering_data;
- argparse::ArgValue<std::string> root_output_folder;
- argparse::ArgValue<unsigned> output_experiment_state;
- argparse::ArgValue<unsigned> output_microtubule_state;
-};
-
 //#define OUTPUT_ONE_SINGLE_RUN
 
 int main(int argc, const char** argv)
@@ -536,98 +581,13 @@ int main(int argc, const char** argv)
    {
     output_microtubule_state = true;
    }
-
   
-  /* Check for OUTPUT FOLDER to exist
- HERE HERE HER EHER HER
-  #include <sys/types.h>
-#include <sys/stat.h>
-
-struct stat info;
-
-if( stat( pathname, &info ) != 0 )
-    printf( "cannot access %s\n", pathname );
-else if( info.st_mode & S_IFDIR )  // S_ISDIR() doesn't exist on my windows 
-    printf( "%s is a directory\n", pathname );
-else
-    printf( "%s is no directory\n", pathname );
-  */
-
-  // Check if folder exists in Cpp
-  /*
-#include <iostream>
-#include <fstream>
-#include <cstdint>
-#include <filesystem>
-namespace fs = std::filesystem;
- 
-void demo_exists(const fs::path& p, fs::file_status s = fs::file_status{})
-{
-    std::cout << p;
-    if(fs::status_known(s) ? fs::exists(s) : fs::exists(p))
-        std::cout << " exists\n";
-    else
-        std::cout << " does not exist\n";
-}
- 
-int main()
-{
-    const fs::path sandbox{"sandbox"};
-    fs::create_directory(sandbox);
-    std::ofstream{sandbox/"file"}; // create regular file
-    fs::create_symlink("non-existing", sandbox/"symlink");
- 
-    demo_exists(sandbox);
- 
-    for (const auto& entry : fs::directory_iterator(sandbox))
-        demo_exists(entry, entry.status()); // use cached status from directory entry
- 
-    fs::remove_all(sandbox);
-}
-  */
-
+  // Create output directory
+  SciCellxxFileSystem::create_directory(root_output_folder);
   
-  //  HERE HER ERHER Mvove this to a function
-  // Output parameters
-  std::ofstream output_parameters("RESLT/parameters.txt", std::ios_base::out);
-  
-  // Write the command line as a comment into the parameters file
-  output_parameters << "#";
-  for (int i = 0; i < argc-1; i++)
-   {
-    output_parameters << argv[i] << " ";
-   }
-  output_parameters << argv[argc-1] << std::endl;
-
-  const unsigned precision_real_values = 4;
-  
-  output_parameters << "L:" << L << std::endl;
-  output_parameters << "N:" << N << std::endl;
-  output_parameters << "alpha_min:" << setprecision(precision_real_values) << alpha_min << std::endl;
-  output_parameters << "alpha_max:" << setprecision(precision_real_values) << alpha_max << std::endl;
-  output_parameters << "alpha_n_points:" << alpha_n_points << std::endl;
-  output_parameters << "beta_min:" << setprecision(precision_real_values) << beta_min << std::endl;
-  output_parameters << "beta_max:" << setprecision(precision_real_values) << beta_max << std::endl;
-  output_parameters << "beta_n_points:" << beta_n_points << std::endl;
-  output_parameters << "rho_min:" << setprecision(precision_real_values) << rho_min << std::endl;
-  output_parameters << "rho_max:" << setprecision(precision_real_values) << rho_max << std::endl;
-  output_parameters << "rho_n_points:" << rho_n_points << std::endl;
-  output_parameters << "omega_in_min:" << setprecision(precision_real_values) << omega_in_min << std::endl;
-  output_parameters << "omega_in_max:" << setprecision(precision_real_values) << omega_in_max << std::endl;
-  output_parameters << "omega_in_n_points:" << omega_in_n_points << std::endl;
-  output_parameters << "omega_out_min:" << setprecision(precision_real_values) << omega_out_min << std::endl;
-  output_parameters << "omega_out_max:" << setprecision(precision_real_values) << omega_out_max << std::endl;
-  output_parameters << "omega_out_n_points:" << omega_out_n_points << std::endl;
-  output_parameters << "lateral_movement:" << lateral_movement << std::endl;
-  output_parameters << "max_experiments:" << max_experiments << std::endl;
-  output_parameters << "max_simulations_per_experiment:" << max_simulations_per_experiment << std::endl;
-  output_parameters << "simulation_step_to_start_gathering_data:" << simulation_step_to_start_gathering_data << std::endl;
-  output_parameters << "root_output_folder:" << root_output_folder << std::endl;
-  output_parameters << "output_experiment_state:" << output_experiment_state << std::endl;
-  output_parameters << "output_microtubule_state:" << output_microtubule_state << std::endl;
-  
-  // Close the parameters file
-  output_parameters.close();
+  // Output parameters to a file
+  std::string parameters_filename(root_output_folder + "/parameters.txt");
+  output_parameters_to_file(parameters_filename, argc, argv, args);
   
   // Compute configurations
   const unsigned all_configurations = 1;
@@ -682,8 +642,8 @@ int main()
           std::ostringstream ss;
           ss << std::setw(width_number) << std::setfill(fill_char) << std::to_string(i_simulation_step);
           
-          //std::string csv_filename(std::string("RESLT/example_") + std::to_string(i_simulation_step) + std::string(".csv"));
-          std::string csv_filename(std::string("RESLT/example_") + ss.str() + std::string(".csv"));
+          //std::string csv_filename(root_output_folder + std::string("/example_") + std::to_string(i_simulation_step) + std::string(".csv"));
+          std::string csv_filename(root_output_folder + std::string("/example_") + ss.str() + std::string(".csv"));
           matrix_to_csv_file(m, N, L, csv_filename);
          }
        }
