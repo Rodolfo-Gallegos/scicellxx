@@ -553,7 +553,40 @@ else
     printf( "%s is no directory\n", pathname );
   */
 
+  // Check if folder exists in Cpp
+  /*
+#include <iostream>
+#include <fstream>
+#include <cstdint>
+#include <filesystem>
+namespace fs = std::filesystem;
+ 
+void demo_exists(const fs::path& p, fs::file_status s = fs::file_status{})
+{
+    std::cout << p;
+    if(fs::status_known(s) ? fs::exists(s) : fs::exists(p))
+        std::cout << " exists\n";
+    else
+        std::cout << " does not exist\n";
+}
+ 
+int main()
+{
+    const fs::path sandbox{"sandbox"};
+    fs::create_directory(sandbox);
+    std::ofstream{sandbox/"file"}; // create regular file
+    fs::create_symlink("non-existing", sandbox/"symlink");
+ 
+    demo_exists(sandbox);
+ 
+    for (const auto& entry : fs::directory_iterator(sandbox))
+        demo_exists(entry, entry.status()); // use cached status from directory entry
+ 
+    fs::remove_all(sandbox);
+}
+  */
 
+  
   //  HERE HER ERHER Mvove this to a function
   // Output parameters
   std::ofstream output_parameters("RESLT/parameters.txt", std::ios_base::out);
@@ -565,23 +598,25 @@ else
     output_parameters << argv[i] << " ";
    }
   output_parameters << argv[argc-1] << std::endl;
+
+  const unsigned precision_real_values = 4;
   
   output_parameters << "L:" << L << std::endl;
   output_parameters << "N:" << N << std::endl;
-  output_parameters << "alpha_min:" << setprecision(4) << alpha_min << std::endl;
-  output_parameters << "alpha_max:" << setprecision(4) << alpha_max << std::endl;
+  output_parameters << "alpha_min:" << setprecision(precision_real_values) << alpha_min << std::endl;
+  output_parameters << "alpha_max:" << setprecision(precision_real_values) << alpha_max << std::endl;
   output_parameters << "alpha_n_points:" << alpha_n_points << std::endl;
-  output_parameters << "beta_min:" << setprecision(4) << beta_min << std::endl;
-  output_parameters << "beta_max:" << setprecision(4) << beta_max << std::endl;
+  output_parameters << "beta_min:" << setprecision(precision_real_values) << beta_min << std::endl;
+  output_parameters << "beta_max:" << setprecision(precision_real_values) << beta_max << std::endl;
   output_parameters << "beta_n_points:" << beta_n_points << std::endl;
-  output_parameters << "rho_min:" << setprecision(4) << rho_min << std::endl;
-  output_parameters << "rho_max:" << setprecision(4) << rho_max << std::endl;
+  output_parameters << "rho_min:" << setprecision(precision_real_values) << rho_min << std::endl;
+  output_parameters << "rho_max:" << setprecision(precision_real_values) << rho_max << std::endl;
   output_parameters << "rho_n_points:" << rho_n_points << std::endl;
-  output_parameters << "omega_in_min:" << setprecision(4) << omega_in_min << std::endl;
-  output_parameters << "omega_in_max:" << setprecision(4) << omega_in_max << std::endl;
+  output_parameters << "omega_in_min:" << setprecision(precision_real_values) << omega_in_min << std::endl;
+  output_parameters << "omega_in_max:" << setprecision(precision_real_values) << omega_in_max << std::endl;
   output_parameters << "omega_in_n_points:" << omega_in_n_points << std::endl;
-  output_parameters << "omega_out_min:" << setprecision(4) << omega_out_min << std::endl;
-  output_parameters << "omega_out_max:" << setprecision(4) << omega_out_max << std::endl;
+  output_parameters << "omega_out_min:" << setprecision(precision_real_values) << omega_out_min << std::endl;
+  output_parameters << "omega_out_max:" << setprecision(precision_real_values) << omega_out_max << std::endl;
   output_parameters << "omega_out_n_points:" << omega_out_n_points << std::endl;
   output_parameters << "lateral_movement:" << lateral_movement << std::endl;
   output_parameters << "max_experiments:" << max_experiments << std::endl;
@@ -626,7 +661,7 @@ else
           m[i_channel][i_cell] = 0;
          }
        }
-
+      
       // Start simulation
       for (unsigned i_simulation_step = 0; i_simulation_step < max_simulations_per_experiment; i_simulation_step++)
        {
@@ -642,10 +677,13 @@ else
           //                     experiment_folder_name = "experiment_{:05d}_a_{:.4f}_b_{:.4f}_r_{:.4f}".format(iexperiment, alpha, beta, rho)
           //                      path_experiment_folder = os.path.join(current_path, experiment_folder_name)
           //          microtubule_filename = path_experiment_folder + "/microtubule_{:05d}.csv".format(simulation)
-          //std::cout << std::setfill('0') << std::setw(5);
-          std::cout.fill('0');
-          std::cout.width(5);
-          std::string csv_filename(std::string("RESLT/example_") + std::to_string(i_simulation_step) + std::string(".csv"));
+          const unsigned width_number = 5;
+          const char fill_char = '0';
+          std::ostringstream ss;
+          ss << std::setw(width_number) << std::setfill(fill_char) << std::to_string(i_simulation_step);
+          
+          //std::string csv_filename(std::string("RESLT/example_") + std::to_string(i_simulation_step) + std::string(".csv"));
+          std::string csv_filename(std::string("RESLT/example_") + ss.str() + std::string(".csv"));
           matrix_to_csv_file(m, N, L, csv_filename);
          }
        }
