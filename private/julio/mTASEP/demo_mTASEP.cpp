@@ -588,8 +588,43 @@ int main(int argc, const char** argv)
   // Output parameters to a file
   std::string parameters_filename(root_output_folder + "/parameters.txt");
   output_parameters_to_file(parameters_filename, argc, argv, args);
+
+  // ------------------------------------------------------------
+  // Generate all configurations as the cartesian product of the
+  // ranges of parameters
+  // ------------------------------------------------------------
   
-  // Compute configurations
+  // Alphas
+  std::vector<Real> alphas;
+  SciCellxxLinearSpace::create_linear_space(alphas, alpha_min, alpha_max, alpha_n_points);
+  // Betas
+  std::vector<Real> betas;
+  SciCellxxLinearSpace::create_linear_space(betas, beta_min, beta_max, beta_n_points);
+  
+  // Rhos
+  std::vector<Real> rhos;
+  SciCellxxLinearSpace::create_linear_space(rhos, rho_min, rho_max, rho_n_points);
+  
+  // Omegas_in
+  std::vector<Real> omegas_in;
+  SciCellxxLinearSpace::create_linear_space(omegas_in, omega_in_min, omega_in_max, omega_in_n_points);
+  
+  // Omegas_out
+  std::vector<Real> omegas_out;
+  SciCellxxLinearSpace::create_linear_space(omegas_out, omega_out_min, omega_out_max, omega_out_n_points);
+  
+  SciCellxxLinearSpace::print_linear_space(alphas);
+  SciCellxxLinearSpace::print_linear_space(betas);
+  SciCellxxLinearSpace::print_linear_space(rhos);
+  SciCellxxLinearSpace::print_linear_space(omegas_in);
+  SciCellxxLinearSpace::print_linear_space(omegas_out);
+
+  return 0;
+  
+  //
+  // HERE HERE HERE
+
+  
   const unsigned all_configurations = 1;
   
   // Run all configurations

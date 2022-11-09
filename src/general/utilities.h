@@ -86,6 +86,50 @@ namespace scicellxx
   // Create a directory
   extern bool create_directory(std::string &directory_name);
  }
+
+ //=======================================================================
+ /// Helper namespace to generate the catesian product of multiple
+ // /vectors
+ ///======================================================================
+ namespace SciCellxxCartesianProduct
+ {
+  // Print the cartesian product of the vectors
+  extern void print(const std::vector<std::vector<int > >& v);
+  // Compute the cartesian product of a set of vectors
+  extern auto product(const std::vector<std::vector<int> >& lists) -> std::vector<std::vector<int> >;
+ }
+
+ //=======================================================================
+ /// Helper namespace to a linearspace in the range [min_value,
+ /// max_value] with the specified number of points
+ ///======================================================================
+ namespace SciCellxxLinearSpace
+ {
+  // Create a linear space with Real values
+  extern void create_linear_space(std::vector<Real> &linear_space,
+                                  const Real min_value, const Real max_value,
+                                  const unsigned n_points);
+  
+  // Create a linear space with integer values
+  extern void create_linear_space(std::vector<int> &linear_space,
+                                  const int min_value, const int max_value,
+                                  const unsigned n_points);
+  
+  // Create a linear space with unsigned values
+  extern void create_linear_space(std::vector<unsigned> &linear_space,
+                                  const unsigned min_value,
+                                  const unsigned max_value,
+                                  const unsigned n_points);
+  
+  // Print the linear space (unsigned)
+  extern void print_linear_space(std::vector<unsigned> &linear_space);
+  // Print the linear space (int)
+  extern void print_linear_space(std::vector<int> &linear_space);
+  // Print the linear space (Real)
+  extern void print_linear_space(std::vector<Real> &linear_space);
+  
+  
+ }
  
  //=====================================================================
  /// Run-time exception handling  (error and warning).

@@ -154,7 +154,7 @@ namespace scicellxx
   }
 
   // Create a directory
-  extern bool create_directory(std::string &directory_name)
+  bool create_directory(std::string &directory_name)
   {
    if (directory_exists(directory_name))
     {
@@ -195,8 +195,176 @@ namespace scicellxx
    return false;
   }
   
-}
+ }
  
+ //=======================================================================
+ /// Helper namespace to generate the catesian product of multiple
+ // /vectors
+ ///======================================================================
+ namespace SciCellxxCartesianProduct
+ {
+  // Print the cartesian product of the vectors
+  void print(const std::vector<std::vector<int> >& v)
+  {
+   std::cout << "{ ";
+   for (const auto& p : v) {
+    std::cout << "(";
+    for (const auto& e : p) {
+     std::cout << e << " ";
+    }
+    std::cout << ") ";
+   }
+   std::cout << "}" << std::endl;
+  }
+
+  // Compute the cartesian product of a set of vectors
+  auto product(const std::vector<std::vector<int> >& lists) -> std::vector<std::vector<int> >
+  {
+   std::vector<std::vector<int> > result;
+   if (std::find_if(std::begin(lists), std::end(lists), 
+                    [](auto e) -> bool { return e.size() == 0; }) != std::end(lists))
+    {
+     return result;
+    }
+   
+   for (auto& e : lists[0])
+    {
+    result.push_back({ e });
+    }
+   
+   for (size_t i = 1; i < lists.size(); ++i)
+    {
+     std::vector<std::vector<int>> temp;
+     for (auto& e : result)
+      {
+      for (auto f : lists[i])
+       {
+        auto e_tmp = e;
+        e_tmp.push_back(f);
+        temp.push_back(e_tmp);
+       }
+      }
+     result = temp;
+    }
+   return result;
+  }
+  
+  /*  
+  int main() {
+   std::vector<std::vector<int>> prods[] = {
+    { { 1, 2 }, { 3, 4 } },
+    { { 3, 4 }, { 1, 2} },
+    { { 1, 2 }, { } },
+    { { }, { 1, 2 } },
+    { { 1776, 1789 }, { 7, 12 }, { 4, 14, 23 }, { 0, 1 } },
+    { { 1, 2, 3 }, { 30 }, { 500, 100 } },
+    { { 1, 2, 3 }, { }, { 500, 100 } }
+   };
+   for (const auto& p : prods) {
+    print(product(p));
+   }
+   std::cin.ignore();
+   std::cin.get();
+   return 0;
+  }
+  */
+ }
+ 
+ //=======================================================================
+ /// Helper namespace to a linearspace in the range [min_value,
+ /// max_value] with the specified number of points
+ ///======================================================================
+ namespace SciCellxxLinearSpace
+ {
+  // Create a linear space with Real values
+  void create_linear_space(std::vector<Real> &linear_space,
+                           const Real min_value, const Real max_value,
+                           const unsigned n_points)
+  {
+   const Real step = (max_value - min_value) / n_points;
+   Real ival = min_value;
+   for (unsigned i = 0; i < n_points; i++)
+    {
+     linear_space.push_back(ival);
+     ival+=step;
+    }
+   
+  }
+  
+  // Create a linear space with integer values
+  void create_linear_space(std::vector<int> &linear_space,
+                           const int min_value, const int max_value,
+                           const unsigned n_points)
+  {
+   int ival = min_value;
+   for (unsigned i = 0; i < n_points; i++)
+    {
+     linear_space.push_back(ival);
+     ival++;
+    }
+   
+  }
+  
+  // Create a linear space with unsigned values
+  void create_linear_space(std::vector<unsigned> &linear_space,
+                           const unsigned min_value, const unsigned max_value,
+                           const unsigned n_points)
+  {
+   unsigned ival = min_value;
+   for (unsigned i = 0; i < n_points; i++)
+    {
+     linear_space.push_back(ival);
+     ival++;
+    }
+
+  }
+  
+  // Print the linear space (unsigned)
+  void print_linear_space(std::vector<unsigned> &linear_space)
+  {
+   // Get the number of elements
+   const unsigned n_ele = linear_space.size();
+   // Print them
+   scicellxx_output << "["
+   for (unsigned i = 0; i < n_ele-1; i++)
+    {
+     scicellxx_output << linear_space[i] << ",";
+    }
+   scicellxx_output linear_space[i] << "]";
+   
+  }
+  
+  // Print the linear space (int)
+  void print_linear_space(std::vector<int> &linear_space)
+  {
+   // Get the number of elements
+   const unsigned n_ele = linear_space.size();
+   // Print them
+   scicellxx_output << "["
+   for (unsigned i = 0; i < n_ele-1; i++)
+    {
+     scicellxx_output << linear_space[i] << ",";
+    }
+   scicellxx_output linear_space[i] << "]";
+   
+  }
+  
+  // Print the linear space (Real)
+  void print_linear_space(std::vector<Real> &linear_space)
+  {
+   // Get the number of elements
+   const unsigned n_ele = linear_space.size();
+   // Print them
+   scicellxx_output << "["
+   for (unsigned i = 0; i < n_ele-1; i++)
+    {
+     scicellxx_output << linear_space[i] << ",";
+    }
+   scicellxx_output linear_space[i] << "]";
+   
+  }
+  
+ }
  
  ///////////////////////////////////////////////////////////////////////
  ///////////////////////////////////////////////////////////////////////
