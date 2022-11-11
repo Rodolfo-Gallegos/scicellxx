@@ -828,7 +828,7 @@ int main(int argc, const char** argv)
           boolean_matrix_to_csv_file(m, N, L, csv_filename);
          }
        }
-
+      
       // Check whether we should output the space/state diagram
       if (output_space_state_diagram)
        {

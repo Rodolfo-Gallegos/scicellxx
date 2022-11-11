@@ -75,11 +75,14 @@ def main():
         
         ax1.set_title("Multichannel-microtubule", fontsize=MEDIUM_SIZE)
         ax1.set_xticks(np.arange(0, n, step=int(n/10)))
-        #ax1.set_title(r'Time vs Space {filename}')
+        
+        ax1.axes.yaxis.set_ticklabels([])
+        
         #ax1.legend(loc="upper right", bbox_to_anchor=(1.25, 1.0))
         #plt.show()
 
-        ax1.set_aspect('auto')
+        # We cannot set this to auto because the particles are shown distorted
+        #ax1.set_aspect('auto')
         
         img_filename = filename_prefix + "{:05d}.jpeg".format(int_idx)
         fig1.savefig(img_filename)
