@@ -16,19 +16,19 @@ BIG_SIZE = 16
 EXTRA_BIG_SIZE = 18
 
 plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
-plt.rc('axes', titlesize=EXTRA_BIG_SIZE)    # fontsize of the axes title
+plt.rc('axes', titlesize=BIG_SIZE)    # fontsize of the axes title
 plt.rc('axes', labelsize=BIG_SIZE)    # fontsize of the x and y labels
-plt.rc('xtick', labelsize=BIG_SIZE)    # fontsize of the tick labels
-plt.rc('ytick', labelsize=BIG_SIZE)    # fontsize of the tick labels
-plt.rc('legend', fontsize=EXTRA_BIG_SIZE)   # legend fontsize
-plt.rc('figure', titlesize=MEDIUM_SIZE)  # fontsize of the figure title
+plt.rc('xtick', labelsize=EXTRA_SMALL_SIZE)    # fontsize of the tick labels
+plt.rc('ytick', labelsize=EXTRA_SMALL_SIZE)    # fontsize of the tick labels
+plt.rc('legend', fontsize=BIG_SIZE)   # legend fontsize
+plt.rc('figure', titlesize=BIG_SIZE)  # fontsize of the figure title
 
 Linewidth = 1;
 
 def main():
         
     # Create the parser to deal with the arguments
-    parser = argparse.ArgumentParser(description="Transform .csv into .jpeg files")
+    parser = argparse.ArgumentParser(description="Transform .csv into .jpeg files (for microtubule animations)")
     
     parser.add_argument("--filename_prefix", dest="filename_prefix", help="The filename prefix of the csv files", required=True)
     parser.add_argument("--initial_index", dest="initial_index", type=int, help="The initial index of the csv files", required=True)
@@ -70,14 +70,16 @@ def main():
         #ax1.imshow(matrix, interpolation='none')
         #ax1.set_axis_off()
         #ax1.scatter(x_space, matrix[0], color='black')
-        ax1.set_xlabel(r"Position $(x)$", fontsize=12)
-        ax1.set_ylabel(r"Channel", fontsize=12)
+        ax1.set_xlabel(r"Position $(x)$", fontsize=SMALL_SIZE)
+        ax1.set_ylabel(r"Channel", fontsize=SMALL_SIZE)
         
-        ax1.set_title("Multichannel-microtubule", fontsize=14)
+        ax1.set_title("Multichannel-microtubule", fontsize=MEDIUM_SIZE)
         ax1.set_xticks(np.arange(0, n, step=int(n/10)))
         #ax1.set_title(r'Time vs Space {filename}')
         #ax1.legend(loc="upper right", bbox_to_anchor=(1.25, 1.0))
         #plt.show()
+
+        ax1.set_aspect('auto')
         
         img_filename = filename_prefix + "{:05d}.jpeg".format(int_idx)
         fig1.savefig(img_filename)

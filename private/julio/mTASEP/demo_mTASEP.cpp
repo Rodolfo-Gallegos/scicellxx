@@ -72,7 +72,7 @@ struct Args {
  argparse::ArgValue<unsigned> max_simulations_per_experiment;
  argparse::ArgValue<unsigned> simulation_step_to_start_gathering_data;
  argparse::ArgValue<std::string> root_output_folder;
- argparse::ArgValue<unsigned> output_experiment_state;
+ argparse::ArgValue<unsigned> output_space_state_diagram;
  argparse::ArgValue<unsigned> output_microtubule_state;
 };
 
@@ -119,11 +119,39 @@ void output_parameters_to_file(std::string &filename, const int argc, const char
   output_parameters << "max_simulations_per_experiment:" << args.max_simulations_per_experiment << std::endl;
   output_parameters << "simulation_step_to_start_gathering_data:" << args.simulation_step_to_start_gathering_data << std::endl;
   output_parameters << "root_output_folder:" << args.root_output_folder << std::endl;
-  output_parameters << "output_experiment_state:" << args.output_experiment_state << std::endl;
+  output_parameters << "output_space_state_diagram:" << args.output_space_state_diagram << std::endl;
   output_parameters << "output_microtubule_state:" << args.output_microtubule_state << std::endl;
   
   // Close the parameters file
   output_parameters.close(); 
+}
+
+/// Computes the mean channels occupation (the mean of the occupation
+/// along all channels/for each column)
+std::vector<Real> compute_mean_channels_occupation(bool **m, const unsigned N, const unsigned L)
+{
+ /*
+   Computes the mean channels occupation of the microtubule
+   (cross-sectional occupation/along all channels/for each column)
+ */
+
+ // The vector storing the mean occupation (initialised with zeroes)
+ std::vector<Real> occupation(L, 0);
+ 
+ // Move along the microtubule and compute the mean occupation
+ for (unsigned i = 0; i < L; i++)
+  {
+   Real sum_occupation = 0.0;
+   for (unsigned k = 0; k < N; k++)
+    {
+     sum_occupation+=m[k][i];
+    }
+   // Mean of sum occupation
+   occupation[i] = sum_occupation / Real(N);
+  }
+
+ return occupation;
+ 
 }
 
 /// Tries to perform a lateral movement on the particule at position
@@ -420,8 +448,35 @@ void mTASEP(bool **m, const unsigned N, const unsigned L,
  
 }
 
-/// Output matrix into a csv file
-void matrix_to_csv_file(bool **m, const unsigned nrows, const unsigned ncolumns, std::string &file_name)
+/// Output boolean matrix into a csv file
+void real_matrix_to_csv_file(std::vector<std::vector<Real> > m, const unsigned nrows, const unsigned ncolumns, std::string &file_name)
+{
+ // Create file
+ std::ofstream output_file(file_name, std::ios_base::out);
+
+ /*
+ const unsigned precision_real_values = 8;
+ std::ostringstream ss;
+ ss << setprecision(precision_real_values);
+ */
+ 
+ for (unsigned i = 0; i < nrows; i++)
+  {
+   for (unsigned j = 0; j < ncolumns-1; j++)
+    {
+     output_file << m[i][j] << ",";
+    }
+   // The last element without the ','
+   output_file << m[i][ncolumns-1] << std::endl;
+  }
+ 
+ // Close the file
+ output_file.close();
+ 
+} // real_matrix_to_csv_file
+
+/// Output boolean matrix into a csv file
+void boolean_matrix_to_csv_file(bool **m, const unsigned nrows, const unsigned ncolumns, std::string &file_name)
 {
  // Create file
  std::ofstream output_file(file_name, std::ios_base::out);
@@ -439,7 +494,7 @@ void matrix_to_csv_file(bool **m, const unsigned nrows, const unsigned ncolumns,
  // Close the file
  output_file.close();
  
-} // matrix_to_csv_file
+} // boolean_matrix_to_csv_file
 
 //#define OUTPUT_ONE_SINGLE_RUN
 
@@ -563,8 +618,8 @@ int main(int argc, const char** argv)
   .help("The root output folder")
   .default_value("RESLT");
  
- parser.add_argument<unsigned>(args.output_experiment_state, "--output_experiment_state")
-  .help("Enables/disables output of experiments state (averaged space-time diagrams for all channels). Disable when performing large simulations")
+ parser.add_argument<unsigned>(args.output_space_state_diagram, "--output_space_state_diagram")
+  .help("Enables/disables output of the averaged space-time diagrams for all channels. Disable when performing large simulations")
   .default_value("0");
  
   parser.add_argument<unsigned>(args.output_microtubule_state, "--output_microtubule_state")
@@ -606,10 +661,10 @@ int main(int argc, const char** argv)
   const unsigned max_simulations_per_experiment = args.max_simulations_per_experiment;
   const unsigned simulation_step_to_start_gathering_data = args.simulation_step_to_start_gathering_data;
   std::string root_output_folder(args.root_output_folder);
-  bool output_experiment_state = false;
-  if (args.output_experiment_state)
+  bool output_space_state_diagram = false;
+  if (args.output_space_state_diagram)
    {
-    output_experiment_state = true;
+    output_space_state_diagram = true;
    }
   bool output_microtubule_state = false;
   if (args.output_microtubule_state)
@@ -745,11 +800,22 @@ int main(int argc, const char** argv)
          }
        }
       
+      // Store the space/state diagram with mean occupation (reserve
+      // memory for at least the max number of simulations per
+      // experiment)
+      std::vector<std::vector<Real> > mean_channels_occupation_space_state_all_simulations;
+      mean_channels_occupation_space_state_all_simulations.reserve(max_simulations_per_experiment);
+      
       // Start simulation
       for (unsigned i_simulation_step = 0; i_simulation_step < max_simulations_per_experiment; i_simulation_step++)
        {
         // Apply mTASEP
         mTASEP(m, N, L, alpha, beta, rho, omega_in, omega_out, lateral_movement);
+        
+        // Compute the occupation on the microtubule
+        std::vector<Real> mean_channels_occupation = compute_mean_channels_occupation(m, N, L);
+        // Add the occupation to the space_state diagram
+        mean_channels_occupation_space_state_all_simulations.push_back(mean_channels_occupation);
         
         // Store csv file with the microtubule state
         if (output_microtubule_state)
@@ -759,10 +825,18 @@ int main(int argc, const char** argv)
           
           //std::string csv_filename(root_output_folder + std::string("/example_") + std::to_string(i_simulation_step) + std::string(".csv"));
           std::string csv_filename(experiment_folder_name + std::string("/microtubule_") + ss.str() + std::string(".csv"));
-          matrix_to_csv_file(m, N, L, csv_filename);
+          boolean_matrix_to_csv_file(m, N, L, csv_filename);
          }
        }
 
+      // Check whether we should output the space/state diagram
+      if (output_space_state_diagram)
+       {
+        std::string csv_filename_space_state(experiment_folder_name + std::string(".csv"));
+        real_matrix_to_csv_file(mean_channels_occupation_space_state_all_simulations,
+                                max_simulations_per_experiment, L, csv_filename_space_state);
+       }
+      
       // Free memory for multichannel-microtubule
       for (unsigned i_channel = 0; i_channel < N; i_channel++)
        {
