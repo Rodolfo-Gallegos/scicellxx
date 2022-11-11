@@ -96,7 +96,7 @@ namespace scicellxx
   // Print the cartesian product of the vectors
   extern void print(const std::vector<std::vector<int > >& v);
   // Compute the cartesian product of a set of vectors
-  extern auto product(const std::vector<std::vector<int> >& lists) -> std::vector<std::vector<int> >;
+  extern auto product(const std::vector<std::vector<int> >& lists);
  }
 
  //=======================================================================

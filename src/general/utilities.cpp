@@ -218,7 +218,7 @@ namespace scicellxx
   }
 
   // Compute the cartesian product of a set of vectors
-  auto product(const std::vector<std::vector<int> >& lists) -> std::vector<std::vector<int> >
+  auto product(const std::vector<std::vector<int> >& lists)
   {
    std::vector<std::vector<int> > result;
    if (std::find_if(std::begin(lists), std::end(lists), 
@@ -325,12 +325,12 @@ namespace scicellxx
    // Get the number of elements
    const unsigned n_ele = linear_space.size();
    // Print them
-   scicellxx_output << "["
+   scicellxx_output << "[";
    for (unsigned i = 0; i < n_ele-1; i++)
     {
      scicellxx_output << linear_space[i] << ",";
     }
-   scicellxx_output linear_space[i] << "]";
+   scicellxx_output << linear_space[n_ele-1] << "]";
    
   }
   
@@ -340,12 +340,12 @@ namespace scicellxx
    // Get the number of elements
    const unsigned n_ele = linear_space.size();
    // Print them
-   scicellxx_output << "["
+   scicellxx_output << "[";
    for (unsigned i = 0; i < n_ele-1; i++)
     {
      scicellxx_output << linear_space[i] << ",";
     }
-   scicellxx_output linear_space[i] << "]";
+   scicellxx_output << linear_space[n_ele-1] << "]";
    
   }
   
@@ -355,12 +355,12 @@ namespace scicellxx
    // Get the number of elements
    const unsigned n_ele = linear_space.size();
    // Print them
-   scicellxx_output << "["
+   scicellxx_output << "[";
    for (unsigned i = 0; i < n_ele-1; i++)
     {
      scicellxx_output << linear_space[i] << ",";
     }
-   scicellxx_output linear_space[i] << "]";
+   scicellxx_output << linear_space[n_ele-1] << "]";
    
   }
   
