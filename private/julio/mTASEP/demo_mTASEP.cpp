@@ -49,18 +49,23 @@ struct Args {
  argparse::ArgValue<unsigned> N;
  argparse::ArgValue<Real> alpha_min;
  argparse::ArgValue<Real> alpha_max;
+ argparse::ArgValue<Real> alpha_step;
  argparse::ArgValue<unsigned> alpha_n_points;
  argparse::ArgValue<Real> beta_min;
  argparse::ArgValue<Real> beta_max;
+ argparse::ArgValue<Real> beta_step;
  argparse::ArgValue<unsigned> beta_n_points;
  argparse::ArgValue<Real> rho_min;
  argparse::ArgValue<Real> rho_max;
+ argparse::ArgValue<Real> rho_step;
  argparse::ArgValue<unsigned> rho_n_points;
  argparse::ArgValue<Real> omega_in_min;
  argparse::ArgValue<Real> omega_in_max;
+ argparse::ArgValue<Real> omega_in_step;
  argparse::ArgValue<unsigned> omega_in_n_points;
  argparse::ArgValue<Real> omega_out_min;
  argparse::ArgValue<Real> omega_out_max;
+ argparse::ArgValue<Real> omega_out_step;
  argparse::ArgValue<unsigned> omega_out_n_points;
  argparse::ArgValue<unsigned> lateral_movement;
  argparse::ArgValue<unsigned> max_experiments;
@@ -91,18 +96,23 @@ void output_parameters_to_file(std::string &filename, const int argc, const char
   output_parameters << "N:" << args.N << std::endl;
   output_parameters << "alpha_min:" << setprecision(precision_real_values) << args.alpha_min << std::endl;
   output_parameters << "alpha_max:" << setprecision(precision_real_values) << args.alpha_max << std::endl;
+  output_parameters << "alpha_step:" << setprecision(precision_real_values) << args.alpha_step << std::endl;
   output_parameters << "alpha_n_points:" << args.alpha_n_points << std::endl;
   output_parameters << "beta_min:" << setprecision(precision_real_values) << args.beta_min << std::endl;
   output_parameters << "beta_max:" << setprecision(precision_real_values) << args.beta_max << std::endl;
+  output_parameters << "beta_step:" << setprecision(precision_real_values) << args.beta_step << std::endl;
   output_parameters << "beta_n_points:" << args.beta_n_points << std::endl;
   output_parameters << "rho_min:" << setprecision(precision_real_values) << args.rho_min << std::endl;
   output_parameters << "rho_max:" << setprecision(precision_real_values) << args.rho_max << std::endl;
+  output_parameters << "rho_step:" << setprecision(precision_real_values) << args.rho_step << std::endl;
   output_parameters << "rho_n_points:" << args.rho_n_points << std::endl;
   output_parameters << "omega_in_min:" << setprecision(precision_real_values) << args.omega_in_min << std::endl;
   output_parameters << "omega_in_max:" << setprecision(precision_real_values) << args.omega_in_max << std::endl;
+  output_parameters << "omega_in_step:" << setprecision(precision_real_values) << args.omega_in_step << std::endl;
   output_parameters << "omega_in_n_points:" << args.omega_in_n_points << std::endl;
   output_parameters << "omega_out_min:" << setprecision(precision_real_values) << args.omega_out_min << std::endl;
   output_parameters << "omega_out_max:" << setprecision(precision_real_values) << args.omega_out_max << std::endl;
+  output_parameters << "omega_out_step:" << setprecision(precision_real_values) << args.omega_out_step << std::endl;
   output_parameters << "omega_out_n_points:" << args.omega_out_n_points << std::endl;
   output_parameters << "lateral_movement:" << args.lateral_movement << std::endl;
   output_parameters << "max_experiments:" << args.max_experiments << std::endl;
@@ -460,6 +470,10 @@ int main(int argc, const char** argv)
  parser.add_argument<Real>(args.alpha_max, "--alpha_max")
   .help("The maximum probability to introduce a particle to the microtubule (at the first --left-- position of the microtubule)")
   .default_value("1.0");
+
+ parser.add_argument<Real>(args.alpha_step, "--alpha_step")
+  .help("The distance between alpha values")
+  .default_value("0.1");
  
  parser.add_argument<unsigned>(args.alpha_n_points, "--alpha_n_points")
   .help("The number of points in the range alpha_min to alpha_max")
@@ -472,6 +486,10 @@ int main(int argc, const char** argv)
  parser.add_argument<Real>(args.beta_max, "--beta_max")
   .help("The maximum probability to remove a particle from the microtubule (from the last --right-- position of the microtubule)")
   .default_value("1.0");
+
+ parser.add_argument<Real>(args.beta_step, "--beta_step")
+  .help("The distance between beta values")
+  .default_value("0.1");
  
  parser.add_argument<unsigned>(args.beta_n_points, "--beta_n_points")
   .help("The number of points in the range beta_min to beta_max")
@@ -484,6 +502,10 @@ int main(int argc, const char** argv)
  parser.add_argument<Real>(args.rho_max, "--rho_max")
   .help("The maximum probability for a particle to step-forward")
   .default_value("1.0");
+
+ parser.add_argument<Real>(args.rho_step, "--rho_step")
+  .help("The distance between rho values")
+  .default_value("0.1");
  
  parser.add_argument<unsigned>(args.rho_n_points, "--rho_n_points")
   .help("The number of points in the range rho_min to rho_max")
@@ -495,11 +517,15 @@ int main(int argc, const char** argv)
  
  parser.add_argument<Real>(args.omega_in_max, "--omega_in_max")
   .help("The maximum probability for a particle to attach to a site in the microtubule")
-  .default_value("1.0");
+  .default_value("0.0");
+
+ parser.add_argument<Real>(args.omega_in_step, "--omega_in_step")
+  .help("The distance between omega_in values")
+  .default_value("0.0");
  
  parser.add_argument<unsigned>(args.omega_in_n_points, "--omega_in_n_points")
   .help("The number of points in the range omega_in_min to omega_in_max")
-  .default_value("11");
+  .default_value("1");
  
  parser.add_argument<Real>(args.omega_out_min, "--omega_out_min")
   .help("The minimum probability for a particle to detach from a site in the microtubule")
@@ -507,11 +533,15 @@ int main(int argc, const char** argv)
  
  parser.add_argument<Real>(args.omega_out_max, "--omega_out_max")
   .help("The maximum probability for a particle to detach from a site in the microtubule")
-  .default_value("1.0");
+  .default_value("0.0");
+
+ parser.add_argument<Real>(args.omega_out_step, "--omega_out_step")
+  .help("The distance between omega_out values")
+  .default_value("0.0");
  
  parser.add_argument<unsigned>(args.omega_out_n_points, "--omega_out_n_points")
   .help("The number of points in the range omega_out_min to omega_out_max")
-  .default_value("11");
+  .default_value("1");
  
  parser.add_argument<unsigned>(args.lateral_movement, "--lateral_movement")
   .help("Enables/disables lateral movement")
@@ -540,7 +570,7 @@ int main(int argc, const char** argv)
   parser.add_argument<unsigned>(args.output_microtubule_state, "--output_microtubule_state")
   .help("Enables/disables output of microtubule state (space-time diagrams for all channels). Disable when performing large simulations")
   .default_value("0");
- 
+  
   // Parse the input arguments
   parser.parse_args(argc, argv);
 
@@ -549,18 +579,23 @@ int main(int argc, const char** argv)
   const unsigned N = args.N; // Number of channels of the microtubule
   const Real alpha_min = args.alpha_min;
   const Real alpha_max = args.alpha_max;
+  const Real alpha_step = args.alpha_step;
   const unsigned alpha_n_points = args.alpha_n_points;
   const Real beta_min = args.beta_min;
   const Real beta_max = args.beta_max;
+  const Real beta_step = args.beta_step;
   const unsigned beta_n_points = args.beta_n_points;
   const Real rho_min = args.rho_min;
   const Real rho_max = args.rho_max;
+  const Real rho_step = args.rho_step;
   const unsigned rho_n_points = args.rho_n_points;
   const Real omega_in_min = args.omega_in_min;
   const Real omega_in_max = args.omega_in_max;
+  const Real omega_in_step = args.omega_in_step;
   const unsigned omega_in_n_points = args.omega_in_n_points;
   const Real omega_out_min = args.omega_out_min;
   const Real omega_out_max = args.omega_out_max;
+  const Real omega_out_step = args.omega_out_step;
   const unsigned omega_out_n_points = args.omega_out_n_points;
   bool lateral_movement = false;
   if (args.lateral_movement)
@@ -582,6 +617,11 @@ int main(int argc, const char** argv)
     output_microtubule_state = true;
    }
   
+  // Output formating (files names, folders names and output to files)
+  const unsigned width_number = 5;
+  const char fill_char = '0';
+  const unsigned precision_real_values = 4;
+  
   // Create output directory
   SciCellxxFileSystem::create_directory(root_output_folder);
   
@@ -593,54 +633,102 @@ int main(int argc, const char** argv)
   // Generate all configurations as the cartesian product of the
   // ranges of parameters
   // ------------------------------------------------------------
-  
+
+  // Create the "set/list" with all values for each parameter
+
   // Alphas
   std::vector<Real> alphas;
-  SciCellxxLinearSpace::create_linear_space(alphas, alpha_min, alpha_max, alpha_n_points);
+  SciCellxxLinearSpace::create_linear_space(alphas, alpha_min, alpha_max, alpha_step, alpha_n_points);
   // Betas
   std::vector<Real> betas;
-  SciCellxxLinearSpace::create_linear_space(betas, beta_min, beta_max, beta_n_points);
+  SciCellxxLinearSpace::create_linear_space(betas, beta_min, beta_max, beta_step, beta_n_points);
   
   // Rhos
   std::vector<Real> rhos;
-  SciCellxxLinearSpace::create_linear_space(rhos, rho_min, rho_max, rho_n_points);
+  SciCellxxLinearSpace::create_linear_space(rhos, rho_min, rho_max, rho_step, rho_n_points);
   
   // Omegas_in
   std::vector<Real> omegas_in;
-  SciCellxxLinearSpace::create_linear_space(omegas_in, omega_in_min, omega_in_max, omega_in_n_points);
+  SciCellxxLinearSpace::create_linear_space(omegas_in, omega_in_min, omega_in_max, omega_in_step, omega_in_n_points);
   
   // Omegas_out
   std::vector<Real> omegas_out;
-  SciCellxxLinearSpace::create_linear_space(omegas_out, omega_out_min, omega_out_max, omega_out_n_points);
+  SciCellxxLinearSpace::create_linear_space(omegas_out, omega_out_min, omega_out_max, omega_out_step, omega_out_n_points);
   
   SciCellxxLinearSpace::print_linear_space(alphas);
   SciCellxxLinearSpace::print_linear_space(betas);
   SciCellxxLinearSpace::print_linear_space(rhos);
   SciCellxxLinearSpace::print_linear_space(omegas_in);
   SciCellxxLinearSpace::print_linear_space(omegas_out);
-
-  return 0;
   
-  //
-  // HERE HERE HERE
-
+  // Create the list with the list of parameter values
+  std::vector<std::vector<Real> > lists;
+  lists.push_back(alphas);
+  lists.push_back(betas);
+  lists.push_back(rhos);
+  lists.push_back(omegas_in);
+  lists.push_back(omegas_out);
   
-  const unsigned all_configurations = 1;
+  // Perform cartesian product
+  std::vector<std::vector<Real> > configurations = SciCellxxCartesianProduct::product(lists);
+  scicellxx_output << "Cartesian product:" << std::endl;
+  SciCellxxCartesianProduct::print(configurations);
+  scicellxx_output << std::endl;
+  
+  const unsigned all_configurations = configurations.size();
+
+  // Report the total number of configurations and the partitioning
+  // for parallel computing
+  scicellxx_output << "Total number of configurations: " << all_configurations << std::endl;
+  scicellxx_output << "Number of cores: " << all_configurations << std::endl;
+  scicellxx_output << "Number of configurations per core: " << all_configurations << std::endl;
   
   // Run all configurations
-  for (unsigned i_configuration = 0; i_configuration < all_configurations; i_configuration++)
+  for (unsigned i_config = 0; i_config < all_configurations; i_config++)
    {
-    
-    // Get values for a simulation configuration
-    Real alpha = alpha_min;
-    Real beta = beta_min;
-    Real rho = rho_min;
-    Real omega_in = omega_in_min;
-    Real omega_out = omega_out_min;
+    // Get values for each configuration and perform the simulation
+    const Real alpha = configurations[i_config][0];
+    const Real beta = configurations[i_config][1];
+    const Real rho = configurations[i_config][2];
+    const Real omega_in = configurations[i_config][3];
+    const Real omega_out = configurations[i_config][4];
+
+    // Transform to string in case we need to generate a folder for
+    // each experiment
+    std::ostringstream ss_alpha;
+    ss_alpha << setprecision(precision_real_values) << alpha;
+    std::ostringstream ss_beta;
+    ss_beta << setprecision(precision_real_values) << beta;
+    std::ostringstream ss_rho;
+    ss_rho << setprecision(precision_real_values) << rho;
+    std::ostringstream ss_omega_in;
+    ss_omega_in << setprecision(precision_real_values) << omega_in;
+    std::ostringstream ss_omega_out;
+    ss_omega_out << setprecision(precision_real_values) << omega_out;
     
     // Run all experiments for the current configuration
     for (unsigned i_experiment = 0; i_experiment < max_experiments; i_experiment++)
      {
+      // Experiment number to string
+      std::ostringstream ss_iexperiment;
+      ss_iexperiment << std::setw(width_number) << std::setfill(fill_char) << std::to_string(i_experiment);
+
+      // Folder name for each experiment
+      std::string experiment_folder_name(root_output_folder +
+                                         std::string("/exp") + ss_iexperiment.str() +
+                                         std::string("_a") + ss_alpha.str() +
+                                         std::string("_b") + ss_beta.str() +
+                                         std::string("_r") + ss_rho.str() +
+                                         std::string("_oi") + ss_omega_in.str() +
+                                         std::string("_oo") + ss_omega_out.str());
+
+      // Create the folder for the output of each experiment
+      if (output_microtubule_state)
+       {
+        // Create output directory
+        SciCellxxFileSystem::create_directory(experiment_folder_name);
+       }
+      
       // Construct the microtubule with N channels and L cells on each channel
       bool **m = new bool*[N];
       for (unsigned i_channel = 0; i_channel < N; i_channel++)
@@ -666,19 +754,11 @@ int main(int argc, const char** argv)
         // Store csv file with the microtubule state
         if (output_microtubule_state)
          {
-          // HERE HERE HERE HERE
-          // Consider zeroes for filenames
-          // Check for outputfolder
-          //                     experiment_folder_name = "experiment_{:05d}_a_{:.4f}_b_{:.4f}_r_{:.4f}".format(iexperiment, alpha, beta, rho)
-          //                      path_experiment_folder = os.path.join(current_path, experiment_folder_name)
-          //          microtubule_filename = path_experiment_folder + "/microtubule_{:05d}.csv".format(simulation)
-          const unsigned width_number = 5;
-          const char fill_char = '0';
           std::ostringstream ss;
           ss << std::setw(width_number) << std::setfill(fill_char) << std::to_string(i_simulation_step);
           
           //std::string csv_filename(root_output_folder + std::string("/example_") + std::to_string(i_simulation_step) + std::string(".csv"));
-          std::string csv_filename(root_output_folder + std::string("/example_") + ss.str() + std::string(".csv"));
+          std::string csv_filename(experiment_folder_name + std::string("/microtubule_") + ss.str() + std::string(".csv"));
           matrix_to_csv_file(m, N, L, csv_filename);
          }
        }
@@ -692,7 +772,7 @@ int main(int argc, const char** argv)
       
      } // for (i_experiment < max_experiments)
     
-   } // for (i_configuration < all_configurations)
+   } // for (i_config < all_config)
   
   // Finalise chapcom
   finalise_scicellxx();

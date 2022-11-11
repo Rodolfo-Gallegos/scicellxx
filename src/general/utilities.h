@@ -94,9 +94,9 @@ namespace scicellxx
  namespace SciCellxxCartesianProduct
  {
   // Print the cartesian product of the vectors
-  extern void print(const std::vector<std::vector<int > >& v);
+  extern void print(const std::vector<std::vector<Real > >& v);
   // Compute the cartesian product of a set of vectors
-  extern auto product(const std::vector<std::vector<int> >& lists);
+  extern std::vector<std::vector<Real> > product(const std::vector<std::vector<Real> >& lists);
  }
 
  //=======================================================================
@@ -108,18 +108,18 @@ namespace scicellxx
   // Create a linear space with Real values
   extern void create_linear_space(std::vector<Real> &linear_space,
                                   const Real min_value, const Real max_value,
-                                  const unsigned n_points);
+                                  const Real step, const unsigned n_points);
   
   // Create a linear space with integer values
   extern void create_linear_space(std::vector<int> &linear_space,
                                   const int min_value, const int max_value,
-                                  const unsigned n_points);
+                                  const int step, const unsigned n_points);
   
   // Create a linear space with unsigned values
   extern void create_linear_space(std::vector<unsigned> &linear_space,
                                   const unsigned min_value,
                                   const unsigned max_value,
-                                  const unsigned n_points);
+                                  const unsigned, const unsigned n_points);
   
   // Print the linear space (unsigned)
   extern void print_linear_space(std::vector<unsigned> &linear_space);

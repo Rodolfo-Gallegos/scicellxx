@@ -204,7 +204,7 @@ namespace scicellxx
  namespace SciCellxxCartesianProduct
  {
   // Print the cartesian product of the vectors
-  void print(const std::vector<std::vector<int> >& v)
+  void print(const std::vector<std::vector<Real> >& v)
   {
    std::cout << "{ ";
    for (const auto& p : v) {
@@ -218,9 +218,9 @@ namespace scicellxx
   }
 
   // Compute the cartesian product of a set of vectors
-  auto product(const std::vector<std::vector<int> >& lists)
+  std::vector<std::vector<Real> > product(const std::vector<std::vector<Real> >& lists)
   {
-   std::vector<std::vector<int> > result;
+   std::vector<std::vector<Real> > result;
    if (std::find_if(std::begin(lists), std::end(lists), 
                     [](auto e) -> bool { return e.size() == 0; }) != std::end(lists))
     {
@@ -234,7 +234,7 @@ namespace scicellxx
    
    for (size_t i = 1; i < lists.size(); ++i)
     {
-     std::vector<std::vector<int>> temp;
+     std::vector<std::vector<Real>> temp;
      for (auto& e : result)
       {
       for (auto f : lists[i])
@@ -279,9 +279,8 @@ namespace scicellxx
   // Create a linear space with Real values
   void create_linear_space(std::vector<Real> &linear_space,
                            const Real min_value, const Real max_value,
-                           const unsigned n_points)
+                           const Real step, const unsigned n_points)
   {
-   const Real step = (max_value - min_value) / n_points;
    Real ival = min_value;
    for (unsigned i = 0; i < n_points; i++)
     {
@@ -294,13 +293,13 @@ namespace scicellxx
   // Create a linear space with integer values
   void create_linear_space(std::vector<int> &linear_space,
                            const int min_value, const int max_value,
-                           const unsigned n_points)
+                           const int step, const unsigned n_points)
   {
    int ival = min_value;
    for (unsigned i = 0; i < n_points; i++)
     {
      linear_space.push_back(ival);
-     ival++;
+     ival+=step;
     }
    
   }
@@ -308,13 +307,13 @@ namespace scicellxx
   // Create a linear space with unsigned values
   void create_linear_space(std::vector<unsigned> &linear_space,
                            const unsigned min_value, const unsigned max_value,
-                           const unsigned n_points)
+                           const unsigned step, const unsigned n_points)
   {
    unsigned ival = min_value;
    for (unsigned i = 0; i < n_points; i++)
     {
      linear_space.push_back(ival);
-     ival++;
+     ival+=step;
     }
 
   }
@@ -330,7 +329,7 @@ namespace scicellxx
     {
      scicellxx_output << linear_space[i] << ",";
     }
-   scicellxx_output << linear_space[n_ele-1] << "]";
+   scicellxx_output << linear_space[n_ele-1] << "]" << std::endl;
    
   }
   
@@ -345,7 +344,7 @@ namespace scicellxx
     {
      scicellxx_output << linear_space[i] << ",";
     }
-   scicellxx_output << linear_space[n_ele-1] << "]";
+   scicellxx_output << linear_space[n_ele-1] << "]" << std::endl;
    
   }
   
@@ -360,7 +359,7 @@ namespace scicellxx
     {
      scicellxx_output << linear_space[i] << ",";
     }
-   scicellxx_output << linear_space[n_ele-1] << "]";
+   scicellxx_output << linear_space[n_ele-1] << "]" << std::endl;
    
   }
   
