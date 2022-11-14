@@ -612,7 +612,7 @@ int main(int argc, const char** argv)
  
  parser.add_argument<unsigned>(args.simulation_step_to_start_gathering_data, "--simulation_step_to_start_gathering_data")
   .help("Set the simulation step to start gathering data (must be smaller than max_simulations_per_experiment)")
-  .default_value("1");
+  .default_value("0");
 
  parser.add_argument<std::string>(args.root_output_folder, "--root_output_folder")
   .help("The root output folder")
@@ -670,6 +670,21 @@ int main(int argc, const char** argv)
   if (args.output_microtubule_state)
    {
     output_microtubule_state = true;
+   }
+
+  // Validate parameters values
+  if (simulation_step_to_start_gathering_data > max_simulations_per_experiment)
+   {
+        // Error message
+    std::ostringstream error_message;
+    error_message << "There step number to start gathering data is greater than\n"
+                  << "the maximum number of simulations per experiment\n"
+                  << "simulation_step_to_start_gathering_data:" << simulation_step_to_start_gathering_data
+                  << "max_simulations_per_experiment:" << max_simulations_per_experiment
+                  << std::endl;
+    throw SciCellxxLibError(error_message.str(),
+                            SCICELLXX_CURRENT_FUNCTION,
+                            SCICELLXX_EXCEPTION_LOCATION);
    }
   
   // Output formating (files names, folders names and output to files)
@@ -738,6 +753,13 @@ int main(int argc, const char** argv)
   scicellxx_output << "Number of cores: " << all_configurations << std::endl;
   scicellxx_output << "Number of configurations per core: " << all_configurations << std::endl;
   
+  // Keep track of the means, standard deviation and median of the
+  // channel occupation space/state per configuration
+  std::vector<Real> mean_occupations(all_configurations);
+  std::vector<Real> stdev_occupations(all_configurations);
+  std::vector<Real> median_occupations(all_configurations);
+  unsigned config_counter = 0;
+  
   // Run all configurations
   for (unsigned i_config = 0; i_config < all_configurations; i_config++)
    {
@@ -760,6 +782,13 @@ int main(int argc, const char** argv)
     ss_omega_in << setprecision(precision_real_values) << omega_in;
     std::ostringstream ss_omega_out;
     ss_omega_out << setprecision(precision_real_values) << omega_out;
+    
+    // Keep track of the means, standard deviation and median of the
+    // channel occupation space/state per experiment
+    std::vector<Real> mean_occupations_iconfig(max_experiments);
+    std::vector<Real> stdev_occupations_iconfig(max_experiments);
+    std::vector<Real> median_occupations_iconfig(max_experiments);
+    unsigned experiment_counter = 0;
     
     // Run all experiments for the current configuration
     for (unsigned i_experiment = 0; i_experiment < max_experiments; i_experiment++)
@@ -805,6 +834,13 @@ int main(int argc, const char** argv)
       // experiment)
       std::vector<std::vector<Real> > mean_channels_occupation_space_state_all_simulations;
       mean_channels_occupation_space_state_all_simulations.reserve(max_simulations_per_experiment);
+
+      // The number of data to collect
+      const unsigned n_data_to_gather = max_simulations_per_experiment - simulation_step_to_start_gathering_data;
+      
+      // Keep track of the means of the mean channel occupation space/state
+      std::vector<Real> mean_occupations_iexperiment(n_data_to_gather);
+      unsigned simulation_counter = 0;
       
       // Start simulation
       for (unsigned i_simulation_step = 0; i_simulation_step < max_simulations_per_experiment; i_simulation_step++)
@@ -816,6 +852,16 @@ int main(int argc, const char** argv)
         std::vector<Real> mean_channels_occupation = compute_mean_channels_occupation(m, N, L);
         // Add the occupation to the space_state diagram
         mean_channels_occupation_space_state_all_simulations.push_back(mean_channels_occupation);
+
+        if (i_simulation_step >= simulation_step_to_start_gathering_data)
+         {
+          // Compute the mean occupation for this simulation step
+          // (occupation along the microtubule)
+          Real imean = 0.0;
+          SciCellxxStatistics::statistics_mean(mean_channels_occupation, imean);
+          // Keep track of the means for each simulation step
+          mean_occupations_iexperiment[simulation_counter++] = imean;
+         }
         
         // Store csv file with the microtubule state
         if (output_microtubule_state)
@@ -827,7 +873,19 @@ int main(int argc, const char** argv)
           std::string csv_filename(experiment_folder_name + std::string("/microtubule_") + ss.str() + std::string(".csv"));
           boolean_matrix_to_csv_file(m, N, L, csv_filename);
          }
-       }
+        
+       } // for (i_simulation_step < max_simulations_per_experiment)
+
+      // Compute the mean, standard deviation and median for occupations on this experiment
+      Real imean = 0.0;
+      Real istdev = 0.0;
+      Real imedian = 0.0;
+      SciCellxxStatistics::statistics_mean_std_median(mean_occupations_iexperiment, imean, istdev, imedian);
+      // Keep track of the mean, standard deviation and median for each experiment
+      mean_occupations_iconfig[experiment_counter] = imean;
+      stdev_occupations_iconfig[experiment_counter] = istdev;
+      median_occupations_iconfig[experiment_counter] = imedian;
+      experiment_counter++;
       
       // Check whether we should output the space/state diagram
       if (output_space_state_diagram)
@@ -846,7 +904,72 @@ int main(int argc, const char** argv)
       
      } // for (i_experiment < max_experiments)
     
+    // Compute the mean, standard deviation and median for occupations on this configuration
+    Real imean = 0.0;
+    Real istdev = 0.0;
+    Real imedian = 0.0;
+    SciCellxxStatistics::statistics_mean(mean_occupations_iconfig, imean);
+    SciCellxxStatistics::statistics_mean(stdev_occupations_iconfig, istdev);
+    SciCellxxStatistics::statistics_mean(median_occupations_iconfig, imedian);
+    // Keep track of the mean, standard deviation and median for each configuration
+    mean_occupations[config_counter] = imean;
+    stdev_occupations[config_counter] = istdev;
+    median_occupations[config_counter] = imedian;
+    config_counter++;
+    
    } // for (i_config < all_config)
+
+  // ****************************************************************************************
+  // Report results into a file
+  // ****************************************************************************************
+  
+  // Open the file
+  std::string output_final_results_filename("output.csv");
+  std::ofstream output_final_results_file(output_final_results_filename, std::ios_base::out);
+  // The header
+  output_final_results_file << "alpha,beta,rho,omega_in,omega_out,mean_occupation,std_occupation,median_occupation" << std::endl;
+  
+  // For each configuration
+  for (unsigned i_config = 0; i_config < all_configurations; i_config++)
+   {
+    // Get values for each configuration
+    const Real alpha = configurations[i_config][0];
+    const Real beta = configurations[i_config][1];
+    const Real rho = configurations[i_config][2];
+    const Real omega_in = configurations[i_config][3];
+    const Real omega_out = configurations[i_config][4];
+
+    const Real imean = mean_occupations[i_config];
+    const Real istdev = stdev_occupations[i_config];
+    const Real imedian = median_occupations[i_config];
+    
+    // Transform to string to output to file
+    std::ostringstream ss_alpha;
+    ss_alpha << setprecision(precision_real_values) << alpha;
+    std::ostringstream ss_beta;
+    ss_beta << setprecision(precision_real_values) << beta;
+    std::ostringstream ss_rho;
+    ss_rho << setprecision(precision_real_values) << rho;
+    std::ostringstream ss_omega_in;
+    ss_omega_in << setprecision(precision_real_values) << omega_in;
+    std::ostringstream ss_omega_out;
+    ss_omega_out << setprecision(precision_real_values) << omega_out;
+    
+    std::ostringstream ss_imean;
+    ss_imean << setprecision(precision_real_values) << imean;
+    std::ostringstream ss_istdev;
+    ss_istdev << setprecision(precision_real_values) << istdev;
+    std::ostringstream ss_imedian;
+    ss_imedian << setprecision(precision_real_values) << imedian;
+    
+    output_final_results_file << ss_alpha.str() << "," << ss_beta.str() << "," << ss_rho.str() << "," << ss_omega_in.str() << "," << ss_omega_out.str() << "," << ss_imean.str() << "," << ss_istdev.str() << "," << ss_imedian.str() << std::endl;
+    
+    scicellxx_output << ss_alpha.str() << "," << ss_beta.str() << "," << ss_rho.str() << "," << ss_omega_in.str() << "," << ss_omega_out.str() << "," << ss_imean.str() << "," << ss_istdev.str() << "," << ss_imedian.str() << std::endl;
+    
+   } // for (i_config < all_config)
+  
+  // Close the file
+  output_final_results_file.close();
   
   // Finalise chapcom
   finalise_scicellxx();

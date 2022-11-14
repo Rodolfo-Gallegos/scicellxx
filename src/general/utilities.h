@@ -128,6 +128,18 @@ namespace scicellxx
   // Print the linear space (Real)
   extern void print_linear_space(std::vector<Real> &linear_space);
   
+ }
+ 
+ //=======================================================================
+ /// Helper namespace to compute statistics from certain data structures
+ ///======================================================================
+ namespace SciCellxxStatistics
+ {
+  // Computes statistics for a std::vector
+  extern void statistics_mean_std_median(std::vector<Real> &v, Real &mean, Real &stdev, Real &median);
+  
+  // Computes mean for a std::vector
+  extern void statistics_mean(std::vector<Real> &v, Real &mean);
   
  }
  

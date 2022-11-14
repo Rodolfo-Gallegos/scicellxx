@@ -365,6 +365,45 @@ namespace scicellxx
   
  }
  
+ //=======================================================================
+ /// Helper namespace to compute statistics from certain data structures
+ ///======================================================================
+ namespace SciCellxxStatistics
+ {
+  // Computes statistics for a std::vector
+  void statistics_mean_std_median(std::vector<Real> &v, Real &mean, Real &stdev, Real &median)
+  {
+   // Vector size
+   const unsigned v_size = v.size();
+   // Mean
+   const Real sum = std::accumulate(v.begin(), v.end(), 0.0);
+   mean = sum / Real(v_size);
+
+   // Standard deviation
+   std::vector<Real> diff(v_size);
+   //std::transform(v.begin(), v.end(), diff.begin(),
+   //               std::bind2nd(std::minus<double>(), mean));
+   std::transform(v.begin(), v.end(), diff.begin(), [mean](Real x) { return x - mean; });
+   const Real sq_sum = std::inner_product(diff.begin(), diff.end(), diff.begin(), 0.0);
+   stdev = std::sqrt(sq_sum / Real(v_size));
+
+   // Median
+   median = v[std::floor(v_size/2)];
+  }
+  
+  // Computes mean for a std::vector
+  void statistics_mean(std::vector<Real> &v, Real &mean)
+  {
+   // Vector size
+   const unsigned v_size = v.size();
+   // Mean
+   const Real sum = std::accumulate(v.begin(), v.end(), 0.0);
+   mean = sum / Real(v_size);
+   
+  }
+  
+ }
+ 
  ///////////////////////////////////////////////////////////////////////
  ///////////////////////////////////////////////////////////////////////
  ///////////////////////////////////////////////////////////////////////
