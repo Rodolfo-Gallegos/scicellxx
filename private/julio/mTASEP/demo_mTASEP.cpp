@@ -126,19 +126,19 @@ void output_parameters_to_file(std::string &filename, const int argc, const char
   output_parameters.close(); 
 }
 
-/// Computes the mean channels occupation (the mean of the occupation
+/// Computes the mean channels density (the mean of the density
 /// along all channels/for each column)
-std::vector<Real> compute_mean_channels_occupation(bool **m, const unsigned N, const unsigned L)
+std::vector<Real> compute_mean_channels_density(bool **m, const unsigned N, const unsigned L)
 {
  /*
-   Computes the mean channels occupation of the microtubule
-   (cross-sectional occupation/along all channels/for each column)
+   Computes the mean channels density of the microtubule
+   (cross-sectional density/along all channels/for each column)
  */
 
- // The vector storing the mean occupation (initialised with zeroes)
- std::vector<Real> occupation(L, 0);
+ // The vector storing the mean density (initialised with zeroes)
+ std::vector<Real> density(L, 0);
  
- // Move along the microtubule and compute the mean occupation
+ // Move along the microtubule and compute the mean density
  for (unsigned i = 0; i < L; i++)
   {
    Real sum_occupation = 0.0;
@@ -146,11 +146,11 @@ std::vector<Real> compute_mean_channels_occupation(bool **m, const unsigned N, c
     {
      sum_occupation+=m[k][i];
     }
-   // Mean of sum occupation
-   occupation[i] = sum_occupation / Real(N);
+   // Mean of sum density
+   density[i] = sum_occupation / Real(N);
   }
 
- return occupation;
+ return density;
  
 }
 
@@ -725,11 +725,11 @@ int main(int argc, const char** argv)
   std::vector<Real> omegas_out;
   SciCellxxLinearSpace::create_linear_space(omegas_out, omega_out_min, omega_out_max, omega_out_step, omega_out_n_points);
   
-  SciCellxxLinearSpace::print_linear_space(alphas);
-  SciCellxxLinearSpace::print_linear_space(betas);
-  SciCellxxLinearSpace::print_linear_space(rhos);
-  SciCellxxLinearSpace::print_linear_space(omegas_in);
-  SciCellxxLinearSpace::print_linear_space(omegas_out);
+  SciCellxxLinearSpace::print_linear_space<Real>(alphas);
+  SciCellxxLinearSpace::print_linear_space<Real>(betas);
+  SciCellxxLinearSpace::print_linear_space<Real>(rhos);
+  SciCellxxLinearSpace::print_linear_space<Real>(omegas_in);
+  SciCellxxLinearSpace::print_linear_space<Real>(omegas_out);
   
   // Create the list with the list of parameter values
   std::vector<std::vector<Real> > lists;
@@ -754,10 +754,10 @@ int main(int argc, const char** argv)
   scicellxx_output << "Number of configurations per core: " << all_configurations << std::endl;
   
   // Keep track of the means, standard deviation and median of the
-  // channel occupation space/state per configuration
-  std::vector<Real> mean_occupations(all_configurations);
-  std::vector<Real> stdev_occupations(all_configurations);
-  std::vector<Real> median_occupations(all_configurations);
+  // channel density space/state per configuration
+  std::vector<Real> mean_density(all_configurations);
+  std::vector<Real> stdev_density(all_configurations);
+  std::vector<Real> median_density(all_configurations);
   unsigned config_counter = 0;
   
   // Run all configurations
@@ -784,10 +784,10 @@ int main(int argc, const char** argv)
     ss_omega_out << setprecision(precision_real_values) << omega_out;
     
     // Keep track of the means, standard deviation and median of the
-    // channel occupation space/state per experiment
-    std::vector<Real> mean_occupations_iconfig(max_experiments);
-    std::vector<Real> stdev_occupations_iconfig(max_experiments);
-    std::vector<Real> median_occupations_iconfig(max_experiments);
+    // channel density space/state per experiment
+    std::vector<Real> mean_density_iconfig(max_experiments);
+    std::vector<Real> stdev_density_iconfig(max_experiments);
+    std::vector<Real> median_density_iconfig(max_experiments);
     unsigned experiment_counter = 0;
     
     // Run all experiments for the current configuration
@@ -829,17 +829,17 @@ int main(int argc, const char** argv)
          }
        }
       
-      // Store the space/state diagram with mean occupation (reserve
+      // Store the space/state diagram with mean density (reserve
       // memory for at least the max number of simulations per
       // experiment)
-      std::vector<std::vector<Real> > mean_channels_occupation_space_state_all_simulations;
-      mean_channels_occupation_space_state_all_simulations.reserve(max_simulations_per_experiment);
+      std::vector<std::vector<Real> > mean_channels_density_space_state_all_simulations;
+      mean_channels_density_space_state_all_simulations.reserve(max_simulations_per_experiment);
 
       // The number of data to collect
       const unsigned n_data_to_gather = max_simulations_per_experiment - simulation_step_to_start_gathering_data;
       
-      // Keep track of the means of the mean channel occupation space/state
-      std::vector<Real> mean_occupations_iexperiment(n_data_to_gather);
+      // Keep track of the means of the mean channel density space/state
+      std::vector<Real> mean_density_iexperiment(n_data_to_gather);
       unsigned simulation_counter = 0;
       
       // Start simulation
@@ -848,19 +848,19 @@ int main(int argc, const char** argv)
         // Apply mTASEP
         mTASEP(m, N, L, alpha, beta, rho, omega_in, omega_out, lateral_movement);
         
-        // Compute the occupation on the microtubule
-        std::vector<Real> mean_channels_occupation = compute_mean_channels_occupation(m, N, L);
-        // Add the occupation to the space_state diagram
-        mean_channels_occupation_space_state_all_simulations.push_back(mean_channels_occupation);
+        // Compute the density on the microtubule
+        std::vector<Real> mean_channels_density = compute_mean_channels_density(m, N, L);
+        // Add the density to the space_state diagram
+        mean_channels_density_space_state_all_simulations.push_back(mean_channels_density);
 
         if (i_simulation_step >= simulation_step_to_start_gathering_data)
          {
-          // Compute the mean occupation for this simulation step
-          // (occupation along the microtubule)
+          // Compute the mean density for this simulation step
+          // (density along the microtubule)
           Real imean = 0.0;
-          SciCellxxStatistics::statistics_mean(mean_channels_occupation, imean);
+          SciCellxxStatistics::statistics_mean(mean_channels_density, imean);
           // Keep track of the means for each simulation step
-          mean_occupations_iexperiment[simulation_counter++] = imean;
+          mean_density_iexperiment[simulation_counter++] = imean;
          }
         
         // Store csv file with the microtubule state
@@ -876,22 +876,22 @@ int main(int argc, const char** argv)
         
        } // for (i_simulation_step < max_simulations_per_experiment)
 
-      // Compute the mean, standard deviation and median for occupations on this experiment
+      // Compute the mean, standard deviation and median for density on this experiment
       Real imean = 0.0;
       Real istdev = 0.0;
       Real imedian = 0.0;
-      SciCellxxStatistics::statistics_mean_std_median(mean_occupations_iexperiment, imean, istdev, imedian);
+      SciCellxxStatistics::statistics_mean_std_median(mean_density_iexperiment, imean, istdev, imedian);
       // Keep track of the mean, standard deviation and median for each experiment
-      mean_occupations_iconfig[experiment_counter] = imean;
-      stdev_occupations_iconfig[experiment_counter] = istdev;
-      median_occupations_iconfig[experiment_counter] = imedian;
+      mean_density_iconfig[experiment_counter] = imean;
+      stdev_density_iconfig[experiment_counter] = istdev;
+      median_density_iconfig[experiment_counter] = imedian;
       experiment_counter++;
       
       // Check whether we should output the space/state diagram
       if (output_space_state_diagram)
        {
         std::string csv_filename_space_state(experiment_folder_name + std::string(".csv"));
-        real_matrix_to_csv_file(mean_channels_occupation_space_state_all_simulations,
+        real_matrix_to_csv_file(mean_channels_density_space_state_all_simulations,
                                 max_simulations_per_experiment, L, csv_filename_space_state);
        }
       
@@ -904,17 +904,17 @@ int main(int argc, const char** argv)
       
      } // for (i_experiment < max_experiments)
     
-    // Compute the mean, standard deviation and median for occupations on this configuration
+    // Compute the mean, standard deviation and median for density on this configuration
     Real imean = 0.0;
     Real istdev = 0.0;
     Real imedian = 0.0;
-    SciCellxxStatistics::statistics_mean(mean_occupations_iconfig, imean);
-    SciCellxxStatistics::statistics_mean(stdev_occupations_iconfig, istdev);
-    SciCellxxStatistics::statistics_mean(median_occupations_iconfig, imedian);
+    SciCellxxStatistics::statistics_mean(mean_density_iconfig, imean);
+    SciCellxxStatistics::statistics_mean(stdev_density_iconfig, istdev);
+    SciCellxxStatistics::statistics_mean(median_density_iconfig, imedian);
     // Keep track of the mean, standard deviation and median for each configuration
-    mean_occupations[config_counter] = imean;
-    stdev_occupations[config_counter] = istdev;
-    median_occupations[config_counter] = imedian;
+    mean_density[config_counter] = imean;
+    stdev_density[config_counter] = istdev;
+    median_density[config_counter] = imedian;
     config_counter++;
     
    } // for (i_config < all_config)
@@ -924,10 +924,10 @@ int main(int argc, const char** argv)
   // ****************************************************************************************
   
   // Open the file
-  std::string output_final_results_filename("output.csv");
+  std::string output_final_results_filename(root_output_folder + "/output.csv");
   std::ofstream output_final_results_file(output_final_results_filename, std::ios_base::out);
   // The header
-  output_final_results_file << "alpha,beta,rho,omega_in,omega_out,mean_occupation,std_occupation,median_occupation" << std::endl;
+  output_final_results_file << "alpha,beta,rho,omega_in,omega_out,density,std_density,median_density" << std::endl;
   
   // For each configuration
   for (unsigned i_config = 0; i_config < all_configurations; i_config++)
@@ -939,9 +939,9 @@ int main(int argc, const char** argv)
     const Real omega_in = configurations[i_config][3];
     const Real omega_out = configurations[i_config][4];
 
-    const Real imean = mean_occupations[i_config];
-    const Real istdev = stdev_occupations[i_config];
-    const Real imedian = median_occupations[i_config];
+    const Real imean = mean_density[i_config];
+    const Real istdev = stdev_density[i_config];
+    const Real imedian = median_density[i_config];
     
     // Transform to string to output to file
     std::ostringstream ss_alpha;
@@ -964,7 +964,7 @@ int main(int argc, const char** argv)
     
     output_final_results_file << ss_alpha.str() << "," << ss_beta.str() << "," << ss_rho.str() << "," << ss_omega_in.str() << "," << ss_omega_out.str() << "," << ss_imean.str() << "," << ss_istdev.str() << "," << ss_imedian.str() << std::endl;
     
-    scicellxx_output << ss_alpha.str() << "," << ss_beta.str() << "," << ss_rho.str() << "," << ss_omega_in.str() << "," << ss_omega_out.str() << "," << ss_imean.str() << "," << ss_istdev.str() << "," << ss_imedian.str() << std::endl;
+    scicellxx_output << "alpha:" << ss_alpha.str() << "\tbeta:" << ss_beta.str() << "\trho:" << ss_rho.str() << "\tomega_in:" << ss_omega_in.str() << "\tomega_out:" << ss_omega_out.str() << "\tdensity:" << ss_imean.str() << "\tdensity(std):" << ss_istdev.str() << "\tdensity(median):" << ss_imedian.str() << std::endl;
     
    } // for (i_config < all_config)
   
