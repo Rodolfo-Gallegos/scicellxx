@@ -235,7 +235,7 @@ void try_lateral_movement(bool **m, const unsigned N, const unsigned L, const un
 void mTASEP(bool **m, const unsigned N, const unsigned L,
             const Real alpha, const Real beta, const Real rho,
             const Real omega_in, const Real omega_out,
-            bool lateral_movement)
+            bool lateral_movement, Real &mean_current)
 {
  /*
     Applies TASEP algorithm to a multichannel microtubule
@@ -260,6 +260,9 @@ void mTASEP(bool **m, const unsigned N, const unsigned L,
  // Used to generate a random position in the microtubule (avoid first
  // and last positions)
  std::uniform_int_distribution<> dis_microtubule_size(1, L-2);
+
+ // Compute the current for each channel on the microtubule
+ std::vector<unsigned> mean_current_per_channel(N, 0);
  
  // Perform the method for each channel
  for (unsigned k = 0; k < N; k++)
@@ -383,6 +386,8 @@ void mTASEP(bool **m, const unsigned N, const unsigned L,
      const unsigned i = step_forward_particles_list[j];
      m[k][i] = 0;
      m[k][i+1] = 1;
+     // Add the movement to the current per channel vector
+     mean_current_per_channel[k]+=1;
     }
    
    // *******************************************
@@ -445,6 +450,17 @@ void mTASEP(bool **m, const unsigned N, const unsigned L,
     }
    
   } // for (k < N)
+ 
+ // Compute the averaged current on all the microtubules
+ mean_current = 0.0;
+ for (unsigned i = 0; i < N; i++)
+  {
+   mean_current+=mean_current_per_channel[i];
+  }
+ 
+ const Real factor = 1.0/static_cast<Real>(L*N);
+ 
+ mean_current=mean_current*factor;
  
 }
 
@@ -758,6 +774,13 @@ int main(int argc, const char** argv)
   std::vector<Real> mean_density(all_configurations);
   std::vector<Real> stdev_density(all_configurations);
   std::vector<Real> median_density(all_configurations);
+  
+  // Keep track of the means, standard deviation and median of the
+  // microtubule current per configuration
+  std::vector<Real> mean_current(all_configurations);
+  std::vector<Real> stdev_current(all_configurations);
+  std::vector<Real> median_current(all_configurations);
+  
   unsigned config_counter = 0;
   
   // Run all configurations
@@ -788,6 +811,13 @@ int main(int argc, const char** argv)
     std::vector<Real> mean_density_iconfig(max_experiments);
     std::vector<Real> stdev_density_iconfig(max_experiments);
     std::vector<Real> median_density_iconfig(max_experiments);
+
+    // Keep track of the means, standard deviation and median of the
+    // microtubule current per experiment
+    std::vector<Real> mean_current_iconfig(max_experiments);
+    std::vector<Real> stdev_current_iconfig(max_experiments);
+    std::vector<Real> median_current_iconfig(max_experiments);
+    
     unsigned experiment_counter = 0;
     
     // Run all experiments for the current configuration
@@ -840,13 +870,17 @@ int main(int argc, const char** argv)
       
       // Keep track of the means of the mean channel density space/state
       std::vector<Real> mean_density_iexperiment(n_data_to_gather);
+      // Keep track of the means of the current
+      std::vector<Real> mean_current_iexperiment(n_data_to_gather);
       unsigned simulation_counter = 0;
       
       // Start simulation
       for (unsigned i_simulation_step = 0; i_simulation_step < max_simulations_per_experiment; i_simulation_step++)
        {
+        // Store the current
+        Real local_mean_current = 0.0;
         // Apply mTASEP
-        mTASEP(m, N, L, alpha, beta, rho, omega_in, omega_out, lateral_movement);
+        mTASEP(m, N, L, alpha, beta, rho, omega_in, omega_out, lateral_movement, local_mean_current);
         
         // Compute the density on the microtubule
         std::vector<Real> mean_channels_density = compute_mean_channels_density(m, N, L);
@@ -857,10 +891,15 @@ int main(int argc, const char** argv)
          {
           // Compute the mean density for this simulation step
           // (density along the microtubule)
-          Real imean = 0.0;
-          SciCellxxStatistics::statistics_mean(mean_channels_density, imean);
+          Real local_mean_density = 0.0;
+          SciCellxxStatistics::statistics_mean(mean_channels_density, local_mean_density);
           // Keep track of the means for each simulation step
-          mean_density_iexperiment[simulation_counter++] = imean;
+          mean_density_iexperiment[simulation_counter] = local_mean_density;
+          mean_current_iexperiment[simulation_counter] = local_mean_current;
+          
+          // Increase counter
+          simulation_counter++;
+          
          }
         
         // Store csv file with the microtubule state
@@ -877,14 +916,25 @@ int main(int argc, const char** argv)
        } // for (i_simulation_step < max_simulations_per_experiment)
 
       // Compute the mean, standard deviation and median for density on this experiment
-      Real imean = 0.0;
-      Real istdev = 0.0;
-      Real imedian = 0.0;
-      SciCellxxStatistics::statistics_mean_std_median(mean_density_iexperiment, imean, istdev, imedian);
-      // Keep track of the mean, standard deviation and median for each experiment
-      mean_density_iconfig[experiment_counter] = imean;
-      stdev_density_iconfig[experiment_counter] = istdev;
-      median_density_iconfig[experiment_counter] = imedian;
+      Real imean_density = 0.0;
+      Real istdev_density = 0.0;
+      Real imedian_density = 0.0;
+      SciCellxxStatistics::statistics_mean_std_median(mean_density_iexperiment, imean_density, istdev_density, imedian_density);
+      // Keep track of the mean, standard deviation and median of the density for each experiment
+      mean_density_iconfig[experiment_counter] = imean_density;
+      stdev_density_iconfig[experiment_counter] = istdev_density;
+      median_density_iconfig[experiment_counter] = imedian_density;
+      
+      // Compute the mean, standard deviation and median for current on this experiment
+      Real imean_current = 0.0;
+      Real istdev_current = 0.0;
+      Real imedian_current = 0.0;
+      SciCellxxStatistics::statistics_mean_std_median(mean_current_iexperiment, imean_current, istdev_current, imedian_current);
+      // Keep track of the mean, standard deviation and median of the current for each experiment
+      mean_current_iconfig[experiment_counter] = imean_current;
+      stdev_current_iconfig[experiment_counter] = istdev_current;
+      median_current_iconfig[experiment_counter] = imedian_current;
+      
       experiment_counter++;
       
       // Check whether we should output the space/state diagram
@@ -905,16 +955,29 @@ int main(int argc, const char** argv)
      } // for (i_experiment < max_experiments)
     
     // Compute the mean, standard deviation and median for density on this configuration
-    Real imean = 0.0;
-    Real istdev = 0.0;
-    Real imedian = 0.0;
-    SciCellxxStatistics::statistics_mean(mean_density_iconfig, imean);
-    SciCellxxStatistics::statistics_mean(stdev_density_iconfig, istdev);
-    SciCellxxStatistics::statistics_mean(median_density_iconfig, imedian);
-    // Keep track of the mean, standard deviation and median for each configuration
-    mean_density[config_counter] = imean;
-    stdev_density[config_counter] = istdev;
-    median_density[config_counter] = imedian;
+    Real imean_density = 0.0;
+    Real istdev_density = 0.0;
+    Real imedian_density = 0.0;
+    SciCellxxStatistics::statistics_mean(mean_density_iconfig, imean_density);
+    SciCellxxStatistics::statistics_mean(stdev_density_iconfig, istdev_density);
+    SciCellxxStatistics::statistics_mean(median_density_iconfig, imedian_density);
+    // Keep track of the mean, standard deviation and median of the density for each configuration
+    mean_density[config_counter] = imean_density;
+    stdev_density[config_counter] = istdev_density;
+    median_density[config_counter] = imedian_density;
+    
+    // Compute the mean, standard deviation and median for current on this configuration
+    Real imean_current = 0.0;
+    Real istdev_current = 0.0;
+    Real imedian_current = 0.0;
+    SciCellxxStatistics::statistics_mean(mean_current_iconfig, imean_current);
+    SciCellxxStatistics::statistics_mean(stdev_current_iconfig, istdev_current);
+    SciCellxxStatistics::statistics_mean(median_current_iconfig, imedian_current);
+    // Keep track of the mean, standard deviation and median of the current for each configuration
+    mean_current[config_counter] = imean_current;
+    stdev_current[config_counter] = istdev_current;
+    median_current[config_counter] = imedian_current;
+    
     config_counter++;
     
    } // for (i_config < all_config)
@@ -927,7 +990,7 @@ int main(int argc, const char** argv)
   std::string output_final_results_filename(root_output_folder + "/output.csv");
   std::ofstream output_final_results_file(output_final_results_filename, std::ios_base::out);
   // The header
-  output_final_results_file << "alpha,beta,rho,omega_in,omega_out,density,std_density,median_density" << std::endl;
+  output_final_results_file << "alpha,beta,rho,omega_in,omega_out,density,std_density,median_density,current,std_current,median_current" << std::endl;
   
   // For each configuration
   for (unsigned i_config = 0; i_config < all_configurations; i_config++)
@@ -939,9 +1002,13 @@ int main(int argc, const char** argv)
     const Real omega_in = configurations[i_config][3];
     const Real omega_out = configurations[i_config][4];
 
-    const Real imean = mean_density[i_config];
-    const Real istdev = stdev_density[i_config];
-    const Real imedian = median_density[i_config];
+    const Real imean_density = mean_density[i_config];
+    const Real istdev_density = stdev_density[i_config];
+    const Real imedian_density = median_density[i_config];
+    
+    const Real imean_current = mean_current[i_config];
+    const Real istdev_current = stdev_current[i_config];
+    const Real imedian_current = median_current[i_config];
     
     // Transform to string to output to file
     std::ostringstream ss_alpha;
@@ -955,16 +1022,23 @@ int main(int argc, const char** argv)
     std::ostringstream ss_omega_out;
     ss_omega_out << setprecision(precision_real_values) << omega_out;
     
-    std::ostringstream ss_imean;
-    ss_imean << setprecision(precision_real_values) << imean;
-    std::ostringstream ss_istdev;
-    ss_istdev << setprecision(precision_real_values) << istdev;
-    std::ostringstream ss_imedian;
-    ss_imedian << setprecision(precision_real_values) << imedian;
+    std::ostringstream ss_imean_density;
+    ss_imean_density << setprecision(precision_real_values) << imean_density;
+    std::ostringstream ss_istdev_density;
+    ss_istdev_density << setprecision(precision_real_values) << istdev_density;
+    std::ostringstream ss_imedian_density;
+    ss_imedian_density << setprecision(precision_real_values) << imedian_density;
     
-    output_final_results_file << ss_alpha.str() << "," << ss_beta.str() << "," << ss_rho.str() << "," << ss_omega_in.str() << "," << ss_omega_out.str() << "," << ss_imean.str() << "," << ss_istdev.str() << "," << ss_imedian.str() << std::endl;
+    std::ostringstream ss_imean_current;
+    ss_imean_current << setprecision(precision_real_values) << imean_current;
+    std::ostringstream ss_istdev_current;
+    ss_istdev_current << setprecision(precision_real_values) << istdev_current;
+    std::ostringstream ss_imedian_current;
+    ss_imedian_current << setprecision(precision_real_values) << imedian_current;
     
-    scicellxx_output << "alpha:" << ss_alpha.str() << "\tbeta:" << ss_beta.str() << "\trho:" << ss_rho.str() << "\tomega_in:" << ss_omega_in.str() << "\tomega_out:" << ss_omega_out.str() << "\tdensity:" << ss_imean.str() << "\tdensity(std):" << ss_istdev.str() << "\tdensity(median):" << ss_imedian.str() << std::endl;
+    output_final_results_file << ss_alpha.str() << "," << ss_beta.str() << "," << ss_rho.str() << "," << ss_omega_in.str() << "," << ss_omega_out.str() << "," << ss_imean_density.str() << "," << ss_istdev_density.str() << "," << ss_imedian_density.str() << "," << ss_imean_current.str() << "," << ss_istdev_current.str() << "," << ss_imedian_current.str() << std::endl;
+    
+    scicellxx_output << "alpha:" << ss_alpha.str() << "\tbeta:" << ss_beta.str() << "\trho:" << ss_rho.str() << "\tomega_in:" << ss_omega_in.str() << "\tomega_out:" << ss_omega_out.str() << "\tdensity:" << ss_imean_density.str() << "\tdensity(std):" << ss_istdev_density.str() << "\tdensity(median):" << ss_imedian_density.str() << "\tcurrent:" << ss_imean_current.str() << "\tcurrent(std):" << ss_istdev_current.str() << "\tcurrent(median):" << ss_imedian_current.str() << std::endl;
     
    } // for (i_config < all_config)
   
