@@ -1,3 +1,34 @@
+//LIC// ====================================================================
+//LIC// This file forms part of SciCell++, an object-oriented, 
+//LIC// framework for the the simulation of biological and physical
+//LIC// phenomena modelled as continuous or discrete processes.
+//LIC// 
+//LIC// You can find a copy at https://github.com/tachidok/scicellxx
+//LIC// 
+//LIC//    Version 0.6.0
+//LIC//
+//LIC// 31/10/2022
+//LIC// 
+//LIC// SciCell++ Copyright (C) 2016-2022 Julio César Pérez Sansalvador
+//LIC// 
+//LIC// This framework is free software; you can redistribute it and/or
+//LIC// modify it under the terms of the GNU GENERAL PUBLIC LICENSE
+//LIC// published by the Free Software Foundation; either version 3 of
+//LIC// the License, or (at your option) any later version.
+//LIC// 
+//LIC// This framework is distributed in the hope that it will be useful,
+//LIC// but WITHOUT ANY WARRANTY; without even the implied warranty of
+//LIC// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+//LIC// GNU GENERAL PUBLIC LICENSE for more details.
+//LIC// 
+//LIC// You should have received a copy of the GNU GENERAL PUBLIC LICENSE
+//LIC// along with this framework; if not, write to the Free Software
+//LIC// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+//LIC// 02110-1301  USA.
+//LIC// 
+//LIC// The author may be contacted at jcp.sansalvador@inaoep.mx
+//LIC// 
+//LIC// ====================================================================
 #include "utilities.h"
 
 namespace scicellxx
@@ -90,7 +121,82 @@ namespace scicellxx
   /// String stream that records the error message
   std::stringstream* Exception_stringstream_pt=0;
  }
+ 
+ //=======================================================================
+ /// Helper namespace for file system operations -- mainly used to
+ /// create the RESLT folder
+ ///======================================================================
+ namespace SciCellxxFileSystem
+ {
+  // Check whether a given directory exists
+  bool directory_exists(std::string &directory_name)
+  { 
+   struct stat info;
+   
+   if( stat( directory_name.c_str(), &info ) != 0 )
+    {
+     //printf( "cannot access %s\n", directory_name.c_str() );
+     return false; // The file or directory does not exist
+    }
+   else if( info.st_mode & S_IFDIR )  // S_ISDIR() doesn't exist on my windows
+    {
+     //printf( "%s is a directory\n", directory_name.c_str() );
+     return true;
+    }
+   else
+    {
+     //printf( "%s is no directory\n", directory_name.c_str() );
+     return false; // The name corresponds to a file, not to a directory
+    }
+   
+   return false;
 
+  }
+  
+  // Create a directory
+  bool create_directory(std::string &directory_name)
+  {
+   if (directory_exists(directory_name))
+    {
+     // Error message
+     std::ostringstream error_message;
+     error_message << "The [" << directory_name << "] folder already exists (or there is a file with the same folder name).\n"
+                   << "We will not overwrite the data in that folder.\n"
+                   << "Use another folder name.\n"
+                   << std::endl;
+     throw SciCellxxLibError(error_message.str(),
+                             SCICELLXX_CURRENT_FUNCTION,
+                             SCICELLXX_EXCEPTION_LOCATION);
+    }
+   
+   // Check whether the directory was created
+   int check = mkdir(directory_name.c_str(), 0777);
+   
+   // check if directory is created or not
+   if (!check)
+    {
+     //printf("Directory created\n");
+     return true;
+    }
+   else
+    {
+     //printf("Unable to create directory\n");
+    }
+
+   // Error message
+   std::ostringstream error_message;
+   error_message << "The [" << directory_name << "] could not be created\n"
+                 << "Check you have the right permissions to work on the filesystem.\n"
+                 << std::endl;
+   throw SciCellxxLibError(error_message.str(),
+                           SCICELLXX_CURRENT_FUNCTION,
+                           SCICELLXX_EXCEPTION_LOCATION);
+   
+   return false;
+  }
+  
+ }
+ 
  ///////////////////////////////////////////////////////////////////////
  ///////////////////////////////////////////////////////////////////////
  ///////////////////////////////////////////////////////////////////////

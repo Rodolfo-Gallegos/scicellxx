@@ -76,7 +76,7 @@ test_results_directory=test_results
 # Prompts for FULL configuration
 full_configuration=FALSE
 # Indicates whether to output building information (currently not in use)
-verbose=TRUE
+verbose=FALSE
 
 #====================================================================
 # Parse arguments
@@ -145,10 +145,10 @@ echo "============================================================= "
 echo ""
 echo ""
 
-echo "SciCell++ Copyright (C) 2021 Julio César Pérez Sansalvador This"
-echo "program comes with ABSOLUTELY NO WARRANTY; for details type show w."
+echo "SciCell++ Copyright (C) 2022 Julio César Pérez Sansalvador This"
+echo "program comes with ABSOLUTELY NO WARRANTY."
 echo "This is free software, and you are welcome to redistribute it"
-echo "under certain conditions."
+echo "under GNU GENERAL PUBLIC LICENSE conditions."
 echo ""
 echo ""
 
@@ -357,7 +357,7 @@ if ! cmake ../ \
      -DSCICELLXX_BUILD_VERSION=$lib_build \
      -DSCICELLXX_BUILD_DEMOS=$build_test_demos \
      -DSCICELLXX_CONFIGURATION_FILE=$configuration_file \
-     -DCMAKE_VERBOSE_MAKEFILE=ON \
+     -DCMAKE_VERBOSE_MAKEFILE=$verbose \
      -DCMAKE_EXPORT_COMPILE_COMMANDS=1 ; then # Added to create the
                                               # 'compile_commands.json
                                               # file for emacs
