@@ -9,7 +9,16 @@ ADD_EXECUTABLE(julio_demo_mTASEP EXCLUDE_FROM_ALL ${SRC_demo_mTASEP})
 SET(LIB_demo_mTASEP ${LIB_scicellxx_lib})
 
 # ... and link againts them  
-TARGET_LINK_LIBRARIES(julio_demo_mTASEP ${LIB_demo_mTASEP})
+#TARGET_LINK_LIBRARIES(julio_demo_mTASEP ${LIB_demo_mTASEP})
+# Temporal solution for MPI
+# when linking a target use the following (supported in CMake 3.9+)
+#target_link_libraries(MyTarget PUBLIC MPI::MPI_CXX)
+
+IF (SCICELLXX_USES_MPI)
+   TARGET_LINK_LIBRARIES(julio_demo_mTASEP PUBLIC ${LIB_demo_mTASEP} MPI::MPI_CXX)
+ELSE (SCICELLXX_USES_MPI)
+   TARGET_LINK_LIBRARIES(julio_demo_mTASEP PUBLIC ${LIB_demo_mTASEP})
+ENDIF (SCICELLXX_USES_MPI)
 
 # Check if the output/bin directory exists
 IF(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/bin)

@@ -118,7 +118,6 @@
 #include "../../external_src/argparse/src/argparse.hpp"
 
 // MPI support
-
 #ifdef SCICELLXX_USES_MPI
 #include <mpi.h>
 #endif // #ifdef SCICELLXX_USES_MPI

@@ -37,6 +37,12 @@
 // Include SciCell++ libraries
 #include "../../../src/scicellxx.h"
 
+// MPI support
+#ifdef SCICELLXX_USES_MPI
+//#define TMP_MPI
+//#include <mpi.h>
+#endif // #ifdef SCICELLXX_USES_MPI
+
 // Include mTASEP algorithm
 //#include "cc_mTASEP.h"
 
@@ -518,6 +524,21 @@ int main(int argc, const char** argv)
 {
  // Initialise scicellxx
  initialise_scicellxx();
+
+#ifdef TMP_MPI
+ // Initialize MPI
+ MPI_Init(NULL, NULL);
+ 
+ // Get the number of processes
+ int nprocs;
+ MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
+ 
+ // Get the rank of the process
+ int rank;
+ MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+ 
+ std::cerr << "This is process " << rank << " out of " << nprocs << std::endl;
+#endif //#ifdef TMP_MPI
  
  // Instantiate parser
  Args args;
@@ -762,11 +783,16 @@ int main(int argc, const char** argv)
   scicellxx_output << std::endl;
   
   const unsigned all_configurations = configurations.size();
-
+  
   // Report the total number of configurations and the partitioning
   // for parallel computing
   scicellxx_output << "Total number of configurations: " << all_configurations << std::endl;
   scicellxx_output << "Number of cores: " << all_configurations << std::endl;
+
+#ifdef TMP_MPI
+  // Here goes the partitioning and distribution of the workload among MPI tasks
+#endif // #endif TMP_MPI
+  
   scicellxx_output << "Number of configurations per core: " << all_configurations << std::endl;
   
   // Keep track of the means, standard deviation and median of the
@@ -1044,6 +1070,11 @@ int main(int argc, const char** argv)
   
   // Close the file
   output_final_results_file.close();
+
+#ifdef TMP_MPI
+  // Finalize the MPI environment.
+  MPI_Finalize();
+#endif // #ifdef TMP_MPI
   
   // Finalise chapcom
   finalise_scicellxx();

@@ -13,3 +13,4 @@ VTK_INCLUDE_DIRS=/home/tachidok/local/working/research/VTK-8.1.1/VTK-bin/install
 VTK_LIBRARIES=/home/tachidok/local/working/research/VTK-8.1.1/VTK-bin/installation/lib/libvtkalglib-8.1.so.1
 SCICELLXX_PANIC_MODE=TRUE
 SCICELLXX_USES_MPI=FALSE
+SCICELLXX_AUTO_FIND_MPI_PATHS=FALSE

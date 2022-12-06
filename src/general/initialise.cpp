@@ -70,6 +70,11 @@ namespace scicellxx
   Global_timings::Global_initial_wall_time=Timing::wall_time();
   // Initialise CPU clock time
   Global_timings::Global_initial_cpu_clock_time=Timing::cpu_clock_time();
+
+#ifdef SCICELLXX_USES_MPI
+  // Initialise MPI
+  initialise_MPI();
+#endif // #ifdef SCICELLXX_USES_MPI
   
   scicellxx_output << "[DONE]: SciCell++ initialisation" << std::endl;
   scicellxx_output << "---------------------------------------" << std::endl;
@@ -86,6 +91,11 @@ namespace scicellxx
   scicellxx_output << std::endl;
   scicellxx_output << "---------------------------------------" << std::endl;
   scicellxx_output << "Finalising SciCell++ ..." << std::endl;
+
+#ifdef SCICELLXX_USES_MPI
+  // Finalise MPI
+  finalise_MPI();
+#endif // #ifdef SCICELLXX_USES_MPI
   
   // Get the wall and cpu execution time of the program
   time_t final_wall_time = Timing::wall_time();
@@ -108,7 +118,47 @@ namespace scicellxx
   return true;
  }
 
-/// Print compiler version information
+#ifdef SCICELLXX_USES_MPI
+ /// Initialise MPI
+ bool initialise_MPI()
+ {
+  scicellxx_output << "Initialising MPI ..." << std::endl;
+  
+  // Initialize MPI
+  MPI_Init(NULL, NULL);
+  
+  // Get the number of processes
+  MPI_Comm_size(MPI_COMM_WORLD, &SciCellxxMPI::nprocs);
+  
+  // Get the rank of the process
+  MPI_Comm_rank(MPI_COMM_WORLD, &SciCellxxMPI::rank);
+  
+  scicellxx_output << "This is process " << SciCellxxMPI::rank << " out of " << SciCellxxMPI::nprocs << std::endl;
+
+  scicellxx_output << "---------------------------------------" << std::endl;
+  scicellxx_output << "[DONE]: MPI initialisation" << std::endl;
+  scicellxx_output << "---------------------------------------" << std::endl;
+
+  return true;
+ }
+ 
+ /// Finalise MPI
+ bool finalise_MPI()
+ {
+  scicellxx_output << "Finalising MPI ..." << std::endl;
+  
+  // Finalize the MPI environment.
+  MPI_Finalize();
+
+  scicellxx_output << "---------------------------------------" << std::endl;
+  scicellxx_output << "[DONE]: MPI termination" << std::endl;
+  scicellxx_output << "---------------------------------------" << std::endl;
+  
+  return true;
+ }
+#endif // #ifdef SCICELLXX_USES_MPI
+ 
+ /// Print compiler version information
  void print_compiler_version_information()
  {
   // Took from this post

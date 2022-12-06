@@ -331,5 +331,16 @@ namespace scicellxx
  /// is used throughout the library as a "replacement" for std::cout
  // ========================================================================
  SciCellxxOutput scicellxx_output;
-  
+ 
+#ifdef SCICELLXX_USES_MPI
+ //=======================================================================
+ /// Helper namespace for MPI variables
+ //=======================================================================
+ // Store the number of processors on MPI_WORLD
+ int SciCellxxMPI::nprocs;
+ // Store the rank of this process
+ int SciCellxxMPI::rank;
+ 
+#endif // #ifdef SCICELLXX_USES_MPI
+ 
 }

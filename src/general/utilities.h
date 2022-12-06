@@ -86,6 +86,19 @@ namespace scicellxx
   // Create a directory
   bool create_directory(std::string &directory_name);
  }
+
+#ifdef SCICELLXX_USES_MPI
+ //=======================================================================
+ /// Helper namespace for MPI variables
+ //=======================================================================
+ namespace SciCellxxMPI
+ {
+  // Store the number of processors on MPI_WORLD
+  extern int nprocs;
+  // Store the rank of this process
+  extern int rank;
+ }
+#endif // #ifdef SCICELLXX_USES_MPI
  
  //=====================================================================
  /// Run-time exception handling  (error and warning).
