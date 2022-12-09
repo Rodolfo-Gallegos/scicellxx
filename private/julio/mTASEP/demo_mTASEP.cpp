@@ -92,6 +92,7 @@ void output_parameters_to_file(std::string &filename, const int argc, const char
 
   const unsigned precision_real_values = 4;
   
+  output_parameters << "MPI_CORES:" << SciCellxxMPI::nprocs << std::endl;
   output_parameters << "L:" << args.L << std::endl;
   output_parameters << "N:" << args.N << std::endl;
   output_parameters << "alpha_min:" << setprecision(precision_real_values) << args.alpha_min << std::endl;
@@ -512,8 +513,6 @@ void boolean_matrix_to_csv_file(bool **m, const unsigned nrows, const unsigned n
  
 } // boolean_matrix_to_csv_file
 
-//#define OUTPUT_ONE_SINGLE_RUN
-
 int main(int argc, const char** argv)
 {
  // Initialise scicellxx
@@ -707,14 +706,22 @@ int main(int argc, const char** argv)
   const unsigned width_number = 5;
   const char fill_char = '0';
   const unsigned precision_real_values = 4;
-  
+
+  // Thgis throws an error when using MPI since multile cores try to
+  // create the same output folder
+#ifndef SCICELLXX_USES_MPI
   // Create output directory
   SciCellxxFileSystem::create_directory(root_output_folder);
+#endif // #ifdef SCICELLXX_USES_MPI
+  
+  // The string stream for the rank (used on output filenames)
+  std::ostringstream ss_rank;
+  ss_rank << SciCellxxMPI::rank;
   
   // Output parameters to a file
-  std::string parameters_filename(root_output_folder + "/parameters.txt");
+  std::string parameters_filename(root_output_folder + "/parameters_r" + ss_rank.str() + ".txt");
   output_parameters_to_file(parameters_filename, argc, argv, args);
-
+  
   // ------------------------------------------------------------
   // Generate all configurations as the cartesian product of the
   // ranges of parameters
@@ -761,43 +768,77 @@ int main(int argc, const char** argv)
   SciCellxxCartesianProduct::print(configurations);
   scicellxx_output << std::endl;
   
-  const unsigned all_configurations = configurations.size();
+  const unsigned n_all_configurations = configurations.size();
   
   // Report the total number of configurations and the partitioning
   // for parallel computing
-  scicellxx_output << "Total number of configurations: " << all_configurations << std::endl;
-  scicellxx_output << "Number of cores: " << all_configurations << std::endl;
-
-#ifdef TMP_MPI
-  // Here goes the partitioning and distribution of the workload among MPI tasks
-#endif // #endif TMP_MPI
+  scicellxx_output << "Total number of all configurations: " << n_all_configurations << std::endl;
+  scicellxx_output << "Number of cores: " << SciCellxxMPI::nprocs << std::endl;
   
-  scicellxx_output << "Number of configurations per core: " << all_configurations << std::endl;
+  // Validate that the number of cores is no larger than the number of
+  // configurations
+  if ((unsigned)SciCellxxMPI::nprocs > n_all_configurations)
+   {
+        // Error message
+    std::ostringstream error_message;
+    error_message << "The number of cores is larger than the number of configurations.\n"
+                  << "Reduce the number of cores such that each core process at least one configuration\n"
+                  << std::endl;
+    throw SciCellxxLibError(error_message.str(),
+                            SCICELLXX_CURRENT_FUNCTION,
+                            SCICELLXX_EXCEPTION_LOCATION);
+   }
+  
+  // Compute the number of configurations per core
+  const unsigned n_configurations_per_core = n_all_configurations / SciCellxxMPI::nprocs;
+  scicellxx_output << "Number of configurations per core: " << n_configurations_per_core << std::endl;
+  
+  // For each core get its corresponding processing configurations
+  // (the indices on the all configurations vector)
+  std::vector<unsigned> indices_configurations_per_core;
+  indices_configurations_per_core.reserve(n_configurations_per_core + 1);
+  
+  for (unsigned i = SciCellxxMPI::rank; i < n_all_configurations; i+=SciCellxxMPI::nprocs)
+   {
+    indices_configurations_per_core.push_back(i);
+   } // for (i < n_all_configurations)
+
+  // Print the indices of configurations per core
+  for (unsigned i = 0; i < indices_configurations_per_core.size(); i++)
+   {
+    scicellxx_output << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank,SciCellxxMPI::nprocs) << indices_configurations_per_core[i] << std::endl;
+   }
+  
+  // Get the real number of configuration for this core (probably
+  // different from n_configurations_per_core due to rounding errors)
+  const unsigned n_configurations_this_core = indices_configurations_per_core.size();
   
   // Keep track of the means, standard deviation and median of the
   // channel density space/state per configuration
-  std::vector<Real> mean_density(all_configurations);
-  std::vector<Real> stdev_density(all_configurations);
-  std::vector<Real> median_density(all_configurations);
+  std::vector<Real> mean_density(n_configurations_this_core);
+  std::vector<Real> stdev_density(n_configurations_this_core);
+  std::vector<Real> median_density(n_configurations_this_core);
   
   // Keep track of the means, standard deviation and median of the
   // microtubule current per configuration
-  std::vector<Real> mean_current(all_configurations);
-  std::vector<Real> stdev_current(all_configurations);
-  std::vector<Real> median_current(all_configurations);
+  std::vector<Real> mean_current(n_configurations_this_core);
+  std::vector<Real> stdev_current(n_configurations_this_core);
+  std::vector<Real> median_current(n_configurations_this_core);
   
   unsigned config_counter = 0;
   
   // Run all configurations
-  for (unsigned i_config = 0; i_config < all_configurations; i_config++)
+  for (unsigned i_config = 0; i_config < n_configurations_this_core; i_config++)
    {
+    // Get the index for the corresponding configuration for this core
+    const unsigned configuration_index = indices_configurations_per_core[i_config];
     // Get values for each configuration and perform the simulation
-    const Real alpha = configurations[i_config][0];
-    const Real beta = configurations[i_config][1];
-    const Real rho = configurations[i_config][2];
-    const Real omega_in = configurations[i_config][3];
-    const Real omega_out = configurations[i_config][4];
-
+    const Real alpha = configurations[configuration_index][0];
+    const Real beta = configurations[configuration_index][1];
+    const Real rho = configurations[configuration_index][2];
+    const Real omega_in = configurations[configuration_index][3];
+    const Real omega_out = configurations[configuration_index][4];
+    
     // Transform to string in case we need to generate a folder for
     // each experiment
     std::ostringstream ss_alpha;
@@ -831,7 +872,7 @@ int main(int argc, const char** argv)
       // Experiment number to string
       std::ostringstream ss_iexperiment;
       ss_iexperiment << std::setw(width_number) << std::setfill(fill_char) << std::to_string(i_experiment);
-
+      
       // Folder name for each experiment
       std::string experiment_folder_name(root_output_folder +
                                          std::string("/exp") + ss_iexperiment.str() +
@@ -840,7 +881,7 @@ int main(int argc, const char** argv)
                                          std::string("_r") + ss_rho.str() +
                                          std::string("_oi") + ss_omega_in.str() +
                                          std::string("_oo") + ss_omega_out.str());
-
+      
       // Create the folder for the output of each experiment
       if (output_microtubule_state)
        {
@@ -891,7 +932,7 @@ int main(int argc, const char** argv)
         std::vector<Real> mean_channels_density = compute_mean_channels_density(m, N, L);
         // Add the density to the space_state diagram
         mean_channels_density_space_state_all_simulations.push_back(mean_channels_density);
-
+        
         if (i_simulation_step >= simulation_step_to_start_gathering_data)
          {
           // Compute the mean density for this simulation step
@@ -985,28 +1026,31 @@ int main(int argc, const char** argv)
     
     config_counter++;
     
-   } // for (i_config < all_config)
-
+   } // for (i_config < n_configurations_this_core)
+  
   // ****************************************************************************************
-  // Report results into a file
+  // Each core reports its results into a file
   // ****************************************************************************************
   
   // Open the file
-  std::string output_final_results_filename(root_output_folder + "/output.csv");
-  std::ofstream output_final_results_file(output_final_results_filename, std::ios_base::out);
+  std::string output_final_results_this_core_filename(root_output_folder + "/output_r" + ss_rank.str() + ".csv");
+  std::ofstream output_final_results_this_core_file(output_final_results_this_core_filename, std::ios_base::out);
   // The header
-  output_final_results_file << "alpha,beta,rho,omega_in,omega_out,density,std_density,median_density,current,std_current,median_current" << std::endl;
+  output_final_results_this_core_file << "id,alpha,beta,rho,omega_in,omega_out,density,std_density,median_density,current,std_current,median_current" << std::endl;
   
   // For each configuration
-  for (unsigned i_config = 0; i_config < all_configurations; i_config++)
+  for (unsigned i_config = 0; i_config < n_configurations_this_core; i_config++)
    {
+    // Get the index for the corresponding configuration for this core
+    const unsigned configuration_index = indices_configurations_per_core[i_config];
+    
     // Get values for each configuration
-    const Real alpha = configurations[i_config][0];
-    const Real beta = configurations[i_config][1];
-    const Real rho = configurations[i_config][2];
-    const Real omega_in = configurations[i_config][3];
-    const Real omega_out = configurations[i_config][4];
-
+    const Real alpha = configurations[configuration_index][0];
+    const Real beta = configurations[configuration_index][1];
+    const Real rho = configurations[configuration_index][2];
+    const Real omega_in = configurations[configuration_index][3];
+    const Real omega_out = configurations[configuration_index][4];
+     
     const Real imean_density = mean_density[i_config];
     const Real istdev_density = stdev_density[i_config];
     const Real imedian_density = median_density[i_config];
@@ -1041,14 +1085,173 @@ int main(int argc, const char** argv)
     std::ostringstream ss_imedian_current;
     ss_imedian_current << setprecision(precision_real_values) << imedian_current;
     
-    output_final_results_file << ss_alpha.str() << "," << ss_beta.str() << "," << ss_rho.str() << "," << ss_omega_in.str() << "," << ss_omega_out.str() << "," << ss_imean_density.str() << "," << ss_istdev_density.str() << "," << ss_imedian_density.str() << "," << ss_imean_current.str() << "," << ss_istdev_current.str() << "," << ss_imedian_current.str() << std::endl;
+    output_final_results_this_core_file << configuration_index << "," << ss_alpha.str() << "," << ss_beta.str() << "," << ss_rho.str() << "," << ss_omega_in.str() << "," << ss_omega_out.str() << "," << ss_imean_density.str() << "," << ss_istdev_density.str() << "," << ss_imedian_density.str() << "," << ss_imean_current.str() << "," << ss_istdev_current.str() << "," << ss_imedian_current.str() << std::endl;
     
-    scicellxx_output << "alpha:" << ss_alpha.str() << "\tbeta:" << ss_beta.str() << "\trho:" << ss_rho.str() << "\tomega_in:" << ss_omega_in.str() << "\tomega_out:" << ss_omega_out.str() << "\tdensity:" << ss_imean_density.str() << "\tdensity(std):" << ss_istdev_density.str() << "\tdensity(median):" << ss_imedian_density.str() << "\tcurrent:" << ss_imean_current.str() << "\tcurrent(std):" << ss_istdev_current.str() << "\tcurrent(median):" << ss_imedian_current.str() << std::endl;
+    scicellxx_output << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs) << "id:" << configuration_index << "\talpha:" << ss_alpha.str() << "\tbeta:" << ss_beta.str() << "\trho:" << ss_rho.str() << "\tomega_in:" << ss_omega_in.str() << "\tomega_out:" << ss_omega_out.str() << "\tdensity:" << ss_imean_density.str() << "\tdensity(std):" << ss_istdev_density.str() << "\tdensity(median):" << ss_imedian_density.str() << "\tcurrent:" << ss_imean_current.str() << "\tcurrent(std):" << ss_istdev_current.str() << "\tcurrent(median):" << ss_imedian_current.str() << std::endl;
     
-   } // for (i_config < all_config)
+   } // for (i_config < n_configurations_this_core)
   
   // Close the file
-  output_final_results_file.close();
+  output_final_results_this_core_file.close();
+  
+  // ****************************************************************************************
+  // GATHER RESULTS INTO A MASTER CORE
+  // ****************************************************************************************
+  
+  // ****************************************************************************************
+  // Send the results from each core to a master core
+  // ****************************************************************************************
+  
+  // Store the results into a vector to send it to a master node that
+  // will reports results in a single file
+  const unsigned n_fields_of_data_to_transfer = 12;
+  // This number incluces storage for the global id
+  Real *data_sent_to_master = new Real[n_fields_of_data_to_transfer*n_configurations_this_core];
+  
+  // For each configuration
+  for (unsigned i_config = 0; i_config < n_configurations_this_core; i_config++)
+   {
+    // Get the index for the corresponding configuration for this core
+    const unsigned configuration_index = indices_configurations_per_core[i_config];
+    
+    // Get values for each configuration
+    const Real alpha = configurations[configuration_index][0];
+    const Real beta = configurations[configuration_index][1];
+    const Real rho = configurations[configuration_index][2];
+    const Real omega_in = configurations[configuration_index][3];
+    const Real omega_out = configurations[configuration_index][4];
+    
+    const Real imean_density = mean_density[i_config];
+    const Real istdev_density = stdev_density[i_config];
+    const Real imedian_density = median_density[i_config];
+    
+    const Real imean_current = mean_current[i_config];
+    const Real istdev_current = stdev_current[i_config];
+    const Real imedian_current = median_current[i_config];
+
+    const unsigned start_index = i_config*n_fields_of_data_to_transfer;
+    data_sent_to_master[start_index + 0] = configuration_index;
+    data_sent_to_master[start_index + 1] = alpha;
+    data_sent_to_master[start_index + 2] = beta;
+    data_sent_to_master[start_index + 3] = rho;
+    data_sent_to_master[start_index + 4] = omega_in;
+    data_sent_to_master[start_index + 5] = omega_out;
+    data_sent_to_master[start_index + 6] = imean_density;
+    data_sent_to_master[start_index + 7] = istd_density;
+    data_sent_to_master[start_index + 8] = imedian_density;
+    data_sent_to_master[start_index + 9] = imean_current;
+    data_sent_to_master[start_index + 10] = istd_current;
+    data_sent_to_master[start_index + 11] = imedian_current;
+    
+   } // for (i_config < n_configurations_this_core)
+  
+  // The number of configurations to recieve from each core into master
+  unsigned *n_configurations_to_receive_on_master_from_each_core = new unsigned[SciCellxx::nprocs];
+  MPI Gather
+   
+  unsigned all_configurations_mpi_reduce = 0;
+  MPI all reduce SUM
+
+   MPI_Reduce();
+
+  MPI_Reduce(
+    void* send_data,
+    void* recv_data,
+    int count,
+    MPI_Datatype datatype,
+    MPI_Op op,
+    int root,
+    MPI_Comm communicator)
+  
+  // Validate that the sum of configurations to receive is the same as
+  // the original number of total configurations
+  if (all_configurations_mpi_reduce != n_all_configurations)
+   {
+    // Error message
+    std::ostringstream error_message;
+    error_message << "The sum of configurations to receive is different than the original\n"
+                  << "number of total configurations\n"
+                  << "(all_configurations_mpi_reduce):" << all_configurations_mpi_reduce << std::endl
+                  << "(n_all_configurations):" << n_all_configurations << std::endl
+     throw SciCellxxLibError(error_message.str(),
+                             SCICELLXX_CURRENT_FUNCTION,
+                             SCICELLXX_EXCEPTION_LOCATION);
+   }
+  
+  
+  // Vector to receive data from cores
+  Read *data_received_on_master = new Real[n_fields_of_data_to_transfer*n_all_configurations];
+  MPI Gather;
+   
+  // ****************************************************************************************
+  // Generate a single output file with the results from all processors
+  // ****************************************************************************************
+
+  if (SciCellxx::rank == 0)
+   {
+    // Open the file
+    std::string output_final_results_filename(root_output_folder + "/output" + ss_rank.str() + ".csv");
+    std::ofstream output_final_results_file(output_final_results_filename, std::ios_base::out);
+    // The header
+    output_final_results_file << "id,alpha,beta,rho,omega_in,omega_out,density,std_density,median_density,current,std_current,median_current" << std::endl;
+    
+    // For each configuration
+    for (unsigned i_config = 0; i_config < n_all_configurations; i_config++)
+     {
+      const unsigned start_index = i_config*n_fields_of_data_to_transfer;
+      
+      // Get values for each configuration
+      const unsigned configuration_index = static_cast<unsigned>(data_received_on_master[start_index + 0]);
+      const Real alpha = data_received_on_master[start_index + 1];
+      const Real beta = data_received_on_master[start_index + 2];
+      const Real rho = data_received_on_master[start_index + 3];
+      const Real omega_in = data_received_on_master[start_index + 4];
+      const Real omega_out = data_received_on_master[start_index + 5];
+      
+      const Real imean_density = data_received_on_master[start_index + 6];
+      const Real istdev_density = data_received_on_master[start_index + 7];
+      const Real imedian_density = data_received_on_master[start_index + 8];
+      
+      const Real imean_current = data_received_on_master[start_index + 9];
+      const Real istdev_current = data_received_on_master[start_index + 10];
+      const Real imedian_current = data_received_on_master[start_index + 11];
+      
+      // Transform to string to output to file
+      std::ostringstream ss_alpha;
+      ss_alpha << setprecision(precision_real_values) << alpha;
+      std::ostringstream ss_beta;
+      ss_beta << setprecision(precision_real_values) << beta;
+      std::ostringstream ss_rho;
+      ss_rho << setprecision(precision_real_values) << rho;
+      std::ostringstream ss_omega_in;
+      ss_omega_in << setprecision(precision_real_values) << omega_in;
+      std::ostringstream ss_omega_out;
+      ss_omega_out << setprecision(precision_real_values) << omega_out;
+      
+      std::ostringstream ss_imean_density;
+      ss_imean_density << setprecision(precision_real_values) << imean_density;
+      std::ostringstream ss_istdev_density;
+      ss_istdev_density << setprecision(precision_real_values) << istdev_density;
+      std::ostringstream ss_imedian_density;
+      ss_imedian_density << setprecision(precision_real_values) << imedian_density;
+      
+      std::ostringstream ss_imean_current;
+      ss_imean_current << setprecision(precision_real_values) << imean_current;
+      std::ostringstream ss_istdev_current;
+      ss_istdev_current << setprecision(precision_real_values) << istdev_current;
+      std::ostringstream ss_imedian_current;
+      ss_imedian_current << setprecision(precision_real_values) << imedian_current;
+      
+      output_final_results_file << configuration_index << "," << ss_alpha.str() << "," << ss_beta.str() << "," << ss_rho.str() << "," << ss_omega_in.str() << "," << ss_omega_out.str() << "," << ss_imean_density.str() << "," << ss_istdev_density.str() << "," << ss_imedian_density.str() << "," << ss_imean_current.str() << "," << ss_istdev_current.str() << "," << ss_imedian_current.str() << std::endl;
+      
+      scicellxx_output << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs) << "id:" << configuration_index << "\talpha:" << ss_alpha.str() << "\tbeta:" << ss_beta.str() << "\trho:" << ss_rho.str() << "\tomega_in:" << ss_omega_in.str() << "\tomega_out:" << ss_omega_out.str() << "\tdensity:" << ss_imean_density.str() << "\tdensity(std):" << ss_istdev_density.str() << "\tdensity(median):" << ss_imedian_density.str() << "\tcurrent:" << ss_imean_current.str() << "\tcurrent(std):" << ss_istdev_current.str() << "\tcurrent(median):" << ss_imedian_current.str() << std::endl;
+      
+     } // for (i_config < n_all_configurations)
+    
+    // Close the file
+    output_final_results_file.close();
+    
+   } // if (SciCellxx::rank == 0)
   
   // Finalise chapcom
   finalise_scicellxx();

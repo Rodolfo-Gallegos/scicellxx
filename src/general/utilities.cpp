@@ -339,8 +339,7 @@ namespace scicellxx
  // Store the number of processors on MPI_WORLD
  int SciCellxxMPI::nprocs;
  // Store the rank of this process
- int SciCellxxMPI::rank;
- 
+ int SciCellxxMPI::rank; 
 #endif // #ifdef SCICELLXX_USES_MPI
  
 }
