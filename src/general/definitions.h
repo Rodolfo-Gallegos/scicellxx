@@ -37,8 +37,14 @@ namespace scicellxx
 
 #ifdef TYPEDEF_REAL_IS_DOUBLE
  typedef double Real;
+#ifdef SCICELLXX_USES_MPI
+#define MPI_MYREAL MPI_DOUBLE
+#endif // #ifdef SCICELLXX_USES_MPI
 #else
  typedef float Real;
+#ifdef SCICELLXX_USES_MPI
+#define MPI_MYREAL MPI_FLOAT
+#endif // #ifdef SCICELLXX_USES_MPI
 #endif // #ifdef TYPEDEF_REAL_IS_DOUBLE
 
 #ifdef SCICELLXX_USES_MPI

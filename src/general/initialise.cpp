@@ -128,13 +128,19 @@ namespace scicellxx
   MPI_Init(NULL, NULL);
   
   // Get the number of processes
-  MPI_Comm_size(MPI_COMM_WORLD, &SciCellxxMPI::nprocs);
+  MPI_Comm_size(SciCellxxMPI::comm, &SciCellxxMPI::nprocs);
   
   // Get the rank of the process
-  MPI_Comm_rank(MPI_COMM_WORLD, &SciCellxxMPI::rank);
+  MPI_Comm_rank(SciCellxxMPI::comm, &SciCellxxMPI::rank);
   
-  scicellxx_output << "This is process " << SciCellxxMPI::rank << " out of " << SciCellxxMPI::nprocs << std::endl;
-
+  char processor_name[100];
+  int processor_name_length;
+  // Get the name of the processor
+  MPI_Get_processor_name(processor_name, &processor_name_length);
+  
+  scicellxx_output << "Initialising MPI on processor [" << processor_name
+                   << "], rank " << SciCellxxMPI::rank << " out of " << SciCellxxMPI::nprocs << " processors." << std::endl;
+  
   scicellxx_output << "---------------------------------------" << std::endl;
   scicellxx_output << "[DONE]: MPI initialisation" << std::endl;
   scicellxx_output << "---------------------------------------" << std::endl;

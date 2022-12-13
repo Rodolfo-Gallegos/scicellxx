@@ -1137,31 +1137,25 @@ int main(int argc, const char** argv)
     data_sent_to_master[start_index + 4] = omega_in;
     data_sent_to_master[start_index + 5] = omega_out;
     data_sent_to_master[start_index + 6] = imean_density;
-    data_sent_to_master[start_index + 7] = istd_density;
+    data_sent_to_master[start_index + 7] = istdev_density;
     data_sent_to_master[start_index + 8] = imedian_density;
     data_sent_to_master[start_index + 9] = imean_current;
-    data_sent_to_master[start_index + 10] = istd_current;
+    data_sent_to_master[start_index + 10] = istdev_current;
     data_sent_to_master[start_index + 11] = imedian_current;
     
    } // for (i_config < n_configurations_this_core)
   
   // The number of configurations to recieve from each core into master
-  unsigned *n_configurations_to_receive_on_master_from_each_core = new unsigned[SciCellxx::nprocs];
-  MPI Gather
-   
+  unsigned *n_configurations_to_receive_on_master_from_each_core = new unsigned[SciCellxxMPI::nprocs];
+  
+  // On a master core gather the number of configurations on each core
+  MPI_Gather(&n_configurations_this_core, 1, MPI_UNSIGNED,
+             n_configurations_to_receive_on_master_from_each_core, 1, MPI_UNSIGNED,
+             SciCellxxMPI::master_core, SciCellxxMPI::comm);
+  
   unsigned all_configurations_mpi_reduce = 0;
-  MPI all reduce SUM
-
-   MPI_Reduce();
-
-  MPI_Reduce(
-    void* send_data,
-    void* recv_data,
-    int count,
-    MPI_Datatype datatype,
-    MPI_Op op,
-    int root,
-    MPI_Comm communicator)
+  MPI_Reduce(&n_configurations_this_core, &all_configurations_mpi_reduce, 1, MPI_UNSIGNED, MPI_SUM,
+             SciCellxxMPI::master_core, SciCellxxMPI::comm);
   
   // Validate that the sum of configurations to receive is the same as
   // the original number of total configurations
@@ -1172,22 +1166,37 @@ int main(int argc, const char** argv)
     error_message << "The sum of configurations to receive is different than the original\n"
                   << "number of total configurations\n"
                   << "(all_configurations_mpi_reduce):" << all_configurations_mpi_reduce << std::endl
-                  << "(n_all_configurations):" << n_all_configurations << std::endl
+                  << "(n_all_configurations):" << n_all_configurations << std::endl;
      throw SciCellxxLibError(error_message.str(),
                              SCICELLXX_CURRENT_FUNCTION,
                              SCICELLXX_EXCEPTION_LOCATION);
    }
   
+  const unsigned n_data_sent_to_master = n_fields_of_data_to_transfer*n_configurations_this_core;
   
   // Vector to receive data from cores
-  Read *data_received_on_master = new Real[n_fields_of_data_to_transfer*n_all_configurations];
-  MPI Gather;
+  Real *data_received_on_master = new Real[n_fields_of_data_to_transfer*n_all_configurations];
+  
+  // Compute the displacements vector
+  unsigned *n_displacement_on_mater_for_each_core = new unsigned[SciCellxxMPI::nprocs];
+  unsigned displ = 0;
+  for (unsigned i = 0; i < SciCellxxMPI::nprocs; i++)
+   {
+    n_displacement_on_mater_for_each_core[i] = displ;
+    displ+=n_configurations_to_receive_on_master_from_each_core[i]*n_fields_of_data_to_transfer;
+   }
+  
+  // On a master core gather the configurations from all cores
+  MPI_Gatherv(data_sent_to_master, n_data_sent_to_master, MPI_MYREAL,
+              data_received_on_master, n_configurations_to_receive_on_master_from_each_core,
+              n_displacement_on_mater_for_each_core, MPI_MYREAL,
+              SciCellxxMPI::master_core, SciCellxxMPI::comm);
    
   // ****************************************************************************************
   // Generate a single output file with the results from all processors
   // ****************************************************************************************
-
-  if (SciCellxx::rank == 0)
+  
+  if (SciCellxx::rank == SciCellxxMPI::master_core)
    {
     // Open the file
     std::string output_final_results_filename(root_output_folder + "/output" + ss_rank.str() + ".csv");
@@ -1251,7 +1260,7 @@ int main(int argc, const char** argv)
     // Close the file
     output_final_results_file.close();
     
-   } // if (SciCellxx::rank == 0)
+   } // if (SciCellxx::rank == SciCellxxMPI::master_core)
   
   // Finalise chapcom
   finalise_scicellxx();

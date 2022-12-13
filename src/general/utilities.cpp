@@ -336,10 +336,15 @@ namespace scicellxx
  //=======================================================================
  /// Helper namespace for MPI variables
  //=======================================================================
+ 
+ // Store the MPI communicator
+ MPI_Comm SciCellxxMPI::comm = MPI_COMM_WORLD;
  // Store the number of processors on MPI_WORLD
  int SciCellxxMPI::nprocs;
  // Store the rank of this process
- int SciCellxxMPI::rank; 
+ int SciCellxxMPI::rank;
+ // Store the master core number
+ int SciCellxxMPI::master_core = 0;
 #endif // #ifdef SCICELLXX_USES_MPI
  
 }

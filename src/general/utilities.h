@@ -93,10 +93,16 @@ namespace scicellxx
  //=======================================================================
  namespace SciCellxxMPI
  {
+  // Store the MPI communicator
+  extern MPI_Comm comm;
+  
   // Store the number of processors on MPI_WORLD
   extern int nprocs;
   // Store the rank of this process
   extern int rank;
+  
+  // Store the master core number
+  extern int master_core;
  }
 #endif // #ifdef SCICELLXX_USES_MPI
  
