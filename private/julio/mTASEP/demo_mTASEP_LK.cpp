@@ -804,10 +804,10 @@ int main(int argc, const char** argv)
    } // for (i < n_all_configurations)
 
   // Print the indices of configurations per core
-  for (unsigned i = 0; i < indices_configurations_per_core.size(); i++)
-   {
-    scicellxx_output << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank,SciCellxxMPI::nprocs) << indices_configurations_per_core[i] << std::endl;
-   }
+  //for (unsigned i = 0; i < indices_configurations_per_core.size(); i++)
+  // {
+  //  scicellxx_output << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank,SciCellxxMPI::nprocs) << indices_configurations_per_core[i] << std::endl;
+  // }
   
   // Get the real number of configuration for this core (probably
   // different from n_configurations_per_core due to rounding errors)
@@ -1146,12 +1146,15 @@ int main(int argc, const char** argv)
    } // for (i_config < n_configurations_this_core)
   
   // The number of configurations to recieve from each core into master
-  unsigned *n_configurations_to_receive_on_master_from_each_core = new unsigned[SciCellxxMPI::nprocs];
+  int *n_configurations_to_receive_on_master_from_each_core = new int[SciCellxxMPI::nprocs];
   
   // On a master core gather the number of configurations on each core
   MPI_Gather(&n_configurations_this_core, 1, MPI_UNSIGNED,
-             n_configurations_to_receive_on_master_from_each_core, 1, MPI_UNSIGNED,
+             n_configurations_to_receive_on_master_from_each_core, 1, MPI_INT,
              SciCellxxMPI::master_core, SciCellxxMPI::comm);
+
+  //std::cerr << "This core configs:\n";
+  //std::cerr << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs) << n_configurations_this_core << std::endl;
   
   unsigned all_configurations_mpi_reduce = 0;
   MPI_Reduce(&n_configurations_this_core, &all_configurations_mpi_reduce, 1, MPI_UNSIGNED, MPI_SUM,
@@ -1159,47 +1162,73 @@ int main(int argc, const char** argv)
   
   // Validate that the sum of configurations to receive is the same as
   // the original number of total configurations
-  if (all_configurations_mpi_reduce != n_all_configurations)
+  if (SciCellxxMPI::rank == SciCellxxMPI::master_core)
    {
-    // Error message
-    std::ostringstream error_message;
-    error_message << "The sum of configurations to receive is different than the original\n"
-                  << "number of total configurations\n"
-                  << "(all_configurations_mpi_reduce):" << all_configurations_mpi_reduce << std::endl
-                  << "(n_all_configurations):" << n_all_configurations << std::endl;
-     throw SciCellxxLibError(error_message.str(),
-                             SCICELLXX_CURRENT_FUNCTION,
-                             SCICELLXX_EXCEPTION_LOCATION);
+    if (all_configurations_mpi_reduce != n_all_configurations)
+     {
+      // Error message
+      std::ostringstream error_message;
+      error_message << "The sum of configurations to receive is different than the original\n"
+                    << "number of total configurations\n"
+                    << "(all_configurations_mpi_reduce):" << all_configurations_mpi_reduce << std::endl
+                    << "(n_all_configurations):" << n_all_configurations << std::endl;
+      throw SciCellxxLibError(error_message.str(),
+                              SCICELLXX_CURRENT_FUNCTION,
+                              SCICELLXX_EXCEPTION_LOCATION);
+     }
    }
   
   const unsigned n_data_sent_to_master = n_fields_of_data_to_transfer*n_configurations_this_core;
+  //std::cerr << "N data sent to master:\n";
+  //std::cerr << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs) << n_data_sent_to_master << std::endl;
   
   // Vector to receive data from cores
   Real *data_received_on_master = new Real[n_fields_of_data_to_transfer*n_all_configurations];
   
-  // Compute the displacements vector
-  unsigned *n_displacement_on_mater_for_each_core = new unsigned[SciCellxxMPI::nprocs];
-  unsigned displ = 0;
-  for (unsigned i = 0; i < SciCellxxMPI::nprocs; i++)
+  // The number of data to receive on master from each core
+  int *n_data_to_receive_on_master_from_each_core = new int[SciCellxxMPI::nprocs];
+  
+  if (SciCellxxMPI::rank == SciCellxxMPI::master_core)
    {
-    n_displacement_on_mater_for_each_core[i] = displ;
-    displ+=n_configurations_to_receive_on_master_from_each_core[i]*n_fields_of_data_to_transfer;
+    //std::cerr << "Master core configs:\n";
+    for (int i = 0; i < SciCellxxMPI::nprocs; i++)
+     {
+      n_data_to_receive_on_master_from_each_core[i] = n_configurations_to_receive_on_master_from_each_core[i] * n_fields_of_data_to_transfer;
+      //std::cerr << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs)
+      //          << "[" << i << "] confgs "<< n_configurations_to_receive_on_master_from_each_core[i] << std::endl;
+      //std::cerr << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs)
+      //          << "[" << i << "] data "<< n_data_to_receive_on_master_from_each_core[i] << std::endl;
+     }
    }
   
+  // Compute the displacements vector
+  int *n_displacement_on_mater_for_each_core = new int[SciCellxxMPI::nprocs];
+  unsigned displ = 0;
+  if (SciCellxxMPI::rank == SciCellxxMPI::master_core)
+   {
+    for (int i = 0; i < SciCellxxMPI::nprocs; i++)
+     {
+      n_displacement_on_mater_for_each_core[i] = displ;
+      displ+=n_data_to_receive_on_master_from_each_core[i];
+      //std::cerr << "N displacement on master for each core:\n";
+      //std::cerr << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs) << "["<<i<<"]: "<< n_displacement_on_mater_for_each_core[i] << std::endl;
+     }
+   } // if (SciCellxxMPI::rank == SciCellxxMPI::master_core)
+  
   // On a master core gather the configurations from all cores
-  MPI_Gatherv(data_sent_to_master, n_data_sent_to_master, MPI_MYREAL,
-              data_received_on_master, n_configurations_to_receive_on_master_from_each_core,
-              n_displacement_on_mater_for_each_core, MPI_MYREAL,
+  MPI_Gatherv(data_sent_to_master, n_data_sent_to_master, MPI_SC_REAL,
+              data_received_on_master, n_data_to_receive_on_master_from_each_core,
+              n_displacement_on_mater_for_each_core, MPI_SC_REAL,
               SciCellxxMPI::master_core, SciCellxxMPI::comm);
-   
+  
   // ****************************************************************************************
   // Generate a single output file with the results from all processors
   // ****************************************************************************************
   
-  if (SciCellxx::rank == SciCellxxMPI::master_core)
+  if (SciCellxxMPI::rank == SciCellxxMPI::master_core)
    {
     // Open the file
-    std::string output_final_results_filename(root_output_folder + "/output" + ss_rank.str() + ".csv");
+    std::string output_final_results_filename(root_output_folder + "/output" + ".csv");
     std::ofstream output_final_results_file(output_final_results_filename, std::ios_base::out);
     // The header
     output_final_results_file << "id,alpha,beta,rho,omega_in,omega_out,density,std_density,median_density,current,std_current,median_current" << std::endl;
@@ -1260,7 +1289,7 @@ int main(int argc, const char** argv)
     // Close the file
     output_final_results_file.close();
     
-   } // if (SciCellxx::rank == SciCellxxMPI::master_core)
+   } // if (SciCellxxMPI::rank == SciCellxxMPI::master_core)
   
   // Finalise chapcom
   finalise_scicellxx();

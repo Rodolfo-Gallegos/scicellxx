@@ -122,7 +122,8 @@ namespace scicellxx
  /// Initialise MPI
  bool initialise_MPI()
  {
-  scicellxx_output << "Initialising MPI ..." << std::endl;
+  scicellxx_output << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs)
+                   << "Initialising MPI ..." << std::endl;
   
   // Initialize MPI
   MPI_Init(NULL, NULL);
@@ -138,12 +139,16 @@ namespace scicellxx
   // Get the name of the processor
   MPI_Get_processor_name(processor_name, &processor_name_length);
   
-  scicellxx_output << "Initialising MPI on processor [" << processor_name
+  scicellxx_output << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs)
+                   << "Initialising MPI on processor [" << processor_name
                    << "], rank " << SciCellxxMPI::rank << " out of " << SciCellxxMPI::nprocs << " processors." << std::endl;
   
-  scicellxx_output << "---------------------------------------" << std::endl;
-  scicellxx_output << "[DONE]: MPI initialisation" << std::endl;
-  scicellxx_output << "---------------------------------------" << std::endl;
+  scicellxx_output << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs)
+                   << "---------------------------------------" << std::endl;
+  scicellxx_output << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs)
+                   << "[DONE]: MPI initialisation" << std::endl;
+  scicellxx_output << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs)
+                   << "---------------------------------------" << std::endl;
 
   return true;
  }
@@ -151,14 +156,22 @@ namespace scicellxx
  /// Finalise MPI
  bool finalise_MPI()
  {
-  scicellxx_output << "Finalising MPI ..." << std::endl;
+  scicellxx_output << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs)
+                   << "Finalising MPI ..." << std::endl;
+  
+  //scicellxx_output << "Processor [" << SciCellxxMPI::rank << "] waiting on MPI_Barrier for finalisation" << std::endl;
+  //MPI_Barrier(SciCellxxMPI::comm);
+  //scicellxx_output << "Processor [" << SciCellxxMPI::rank << "] passed the MPI_Barrier for finalisation" << std::endl;
   
   // Finalize the MPI environment.
   MPI_Finalize();
-
-  scicellxx_output << "---------------------------------------" << std::endl;
-  scicellxx_output << "[DONE]: MPI termination" << std::endl;
-  scicellxx_output << "---------------------------------------" << std::endl;
+  
+  scicellxx_output << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs)
+                   << "---------------------------------------" << std::endl;
+  scicellxx_output << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs)
+                   << "[DONE]: MPI termination" << std::endl;
+  scicellxx_output << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs)
+                   << "---------------------------------------" << std::endl;
   
   return true;
  }
