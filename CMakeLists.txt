@@ -361,6 +361,13 @@ IF (SCICELLXX_USES_VTK)
   LIST(APPEND LIB_scicellxx_lib ${VTK_LIBRARIES})
 ENDIF (SCICELLXX_USES_VTK)
 
+# This is required for non-mpi demos to compile, otherwise they throw
+#  an error regarding "undefined reference to `MPI_Init` and
+#  `MPI_Finalize`"
+IF (SCICELLXX_USES_MPI)
+  LIST(APPEND LIB_scicellxx_lib MPI::MPI_CXX)
+ENDIF (SCICELLXX_USES_MPI)
+
 # Check whether scicellxx is using MPI
 # It seems this is not required due to CMake Version 3.9+
 #IF (SCICELLXX_USES_MPI)
