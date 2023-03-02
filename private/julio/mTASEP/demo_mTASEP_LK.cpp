@@ -258,16 +258,89 @@ void mTASEP(bool **m, const unsigned N, const unsigned L,
  // [0,1)
  std::uniform_real_distribution<> dis(0.0, 1.0);
  
- // Used to generate a random position in the microtubule (avoid first
- // and last positions)
- std::uniform_int_distribution<> dis_microtubule_size(1, L-2);
-
+ // Used to generate a random position in the microtubule (including
+ // the first and the last position)
+ std::uniform_int_distribution<> dis_microtubule_size(0, L-1);
+ 
  // Compute the current for each channel on the microtubule
  std::vector<unsigned> mean_current_per_channel(N, 0);
  
  // Perform the method for each channel
  for (unsigned k = 0; k < N; k++)
   {
+   // *******************************************
+   // Apply TASEP-LK rules
+   // *******************************************
+   
+   // -------------------------------------------
+   /// Attach (omega in)
+   // -------------------------------------------
+   
+   // Keep track of the position of the molecule attached by omega_in
+   // because the just attached molecule cannot move
+   bool omega_in_attached_a_molecule = false;
+   const unsigned r_pos_omega_in = 0;
+   
+   if (omega_in > 0.0)
+    {
+     // Choose a random position at the microtubule
+     const unsigned r_pos = dis_microtubule_size(gen);
+     
+     // Generate a random number
+     const Real r = dis(gen);
+     
+     // if r <= omega_in and m[k][r_pos] == 0 then add a molecule to
+     // the microtubule in that position
+     if (r <= omega_in && m[k][r_pos] == 0)
+      {
+       // Attach a molecule
+       m[k][r_pos] = 1;
+       
+       // Keep track of the position of the molecule attached by omega
+       // in
+       r_pos_omega_in = r_pos;
+       omega_in_attached_a_molecule = true;
+      }
+    }
+   
+   // -------------------------------------------
+   /// Detach (omega out)
+   // -------------------------------------------
+   
+   // Keep track of the position free by omega_out becasue this
+   // position cannot be occupied by other molecules in the current
+   // simulation step
+   bool omega_out_dettached_a_molecule = false;
+   const unsigned r_pos_omega_out = 0;
+   
+   if (omega_out > 0.0)
+    {
+     // Choose a random position at the microtubule
+     const unsigned r_pos = dis_microtubule_size(gen);
+     
+     // Generate a random number
+     const Real r = dis(gen);
+     
+     // if r <= omega_out and m[k][r_pos] == 1 then remove the
+     // molecule from that position of the microtubule
+     if (r <= omega_out && m[k][r_pos] == 1)
+      {
+       // Detach the molecule
+       m[k][r_pos] = 0;
+       
+       r_pos_omega_out = r_pos;
+       omega_out_dettached_a_molecule = true;
+       
+       // Reattach the molecule in case that the molecule was just
+       // attached by omega_in
+       if (omega_in_attached_a_molecule && r_pos == r_pos_omega_in)
+        {
+         m[k][r_pos] = 1;
+         omega_out_dettached_a_molecule = false;
+        }
+      }
+    }
+   
    // *******************************************
    // Update the boundaries (left and right)
    // *******************************************
@@ -285,10 +358,18 @@ void mTASEP(bool **m, const unsigned N, const unsigned L,
    // Is a <= alpha and the first space is free?
    if (a <= alpha && m[k][0] == 0)
     {
+     // Double-check whether the space if free by the dettaching
+     // process by omega_out, if that is the case then we cannot add a
+     // molecule to the start
+     if (omega_out_dettached_a_molecule && r_pos_omega_out = 0)
+      {
+       
+      }
+     
      // Add a molecule to the start
      m[k][0] = 1;
-     // Indicate we added molecule to the beginning of the microtubule
-     // so there is no need to update its position
+     // Indicate we added a molecule at the beginning of the
+     // microtubule so there is no need to update its position
      added_to_start = true;
     }
    
@@ -302,8 +383,9 @@ void mTASEP(bool **m, const unsigned N, const unsigned L,
    // A flag indicating whether a molecule was removed from the last
    // cell of the microtubule
    bool removed_from_end = false;
-   // Is a <= alpha and the first space is free?
-   if (b <= beta && m[k][L-1] == 1)
+   // Is b <= beta and the last space is occupied, and the molecule
+   // was not attached by omega_in?
+   if (b <= beta && m[k][L-1] == 1 && !attached_at_the_end_by_omega_in)
     {
      // Remove the molecule from the microtubule
      m[k][L-1] = 0;
