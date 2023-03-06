@@ -276,10 +276,10 @@ void mTASEP(bool **m, const unsigned N, const unsigned L,
    /// Attach (omega in)
    // -------------------------------------------
    
-   // Keep track of the position of the molecule attached by omega_in
-   // because the just attached molecule cannot move
-   bool omega_in_attached_a_molecule = false;
-   const unsigned r_pos_omega_in = 0;
+   // Keep track of the position of the particle attached by omega_in
+   // because the just attached particle cannot move
+   bool omega_in_attached_a_particle = false;
+   unsigned r_pos_omega_in = 0;
    
    if (omega_in > 0.0)
     {
@@ -289,17 +289,17 @@ void mTASEP(bool **m, const unsigned N, const unsigned L,
      // Generate a random number
      const Real r = dis(gen);
      
-     // if r <= omega_in and m[k][r_pos] == 0 then add a molecule to
+     // if r <= omega_in and m[k][r_pos] == 0 then add a particle to
      // the microtubule in that position
      if (r <= omega_in && m[k][r_pos] == 0)
       {
-       // Attach a molecule
+       // Attach a particle
        m[k][r_pos] = 1;
        
-       // Keep track of the position of the molecule attached by omega
+       // Keep track of the position of the particle attached by omega
        // in
        r_pos_omega_in = r_pos;
-       omega_in_attached_a_molecule = true;
+       omega_in_attached_a_particle = true;
       }
     }
    
@@ -308,10 +308,10 @@ void mTASEP(bool **m, const unsigned N, const unsigned L,
    // -------------------------------------------
    
    // Keep track of the position free by omega_out becasue this
-   // position cannot be occupied by other molecules in the current
+   // position cannot be occupied by other particles in the current
    // simulation step
-   bool omega_out_dettached_a_molecule = false;
-   const unsigned r_pos_omega_out = 0;
+   bool omega_out_dettached_a_particle = false;
+   unsigned r_pos_omega_out = 0;
    
    if (omega_out > 0.0)
     {
@@ -322,23 +322,19 @@ void mTASEP(bool **m, const unsigned N, const unsigned L,
      const Real r = dis(gen);
      
      // if r <= omega_out and m[k][r_pos] == 1 then remove the
-     // molecule from that position of the microtubule
-     if (r <= omega_out && m[k][r_pos] == 1)
+     // particle from that position of the microtubule ALSO check that
+     // the particle is not there becasue it was just attached by the
+     // omega_in process
+     if (r <= omega_out && m[k][r_pos] == 1 && !(omega_in_attached_a_particle && r_pos == r_pos_omega_in))
       {
-       // Detach the molecule
+       // Detach the particle
        m[k][r_pos] = 0;
        
        r_pos_omega_out = r_pos;
-       omega_out_dettached_a_molecule = true;
+       omega_out_dettached_a_particle = true;
        
-       // Reattach the molecule in case that the molecule was just
-       // attached by omega_in
-       if (omega_in_attached_a_molecule && r_pos == r_pos_omega_in)
-        {
-         m[k][r_pos] = 1;
-         omega_out_dettached_a_molecule = false;
-        }
       }
+     
     }
    
    // *******************************************
@@ -349,49 +345,45 @@ void mTASEP(bool **m, const unsigned N, const unsigned L,
    /// LEFT END
    // -------------------------------------------
    
-   // Compute a probability to add a molecule at the beginning of the
+   // Compute a probability to add a particle at the beginning of the
    // microtubule
    const Real a = dis(gen);
-   // A flag indicating whether a molecule was added at the beginning
+   // A flag indicating whether a particle was added at the beginning
    // of the microtubule
    bool added_to_start = false;
-   // Is a <= alpha and the first space is free?
-   if (a <= alpha && m[k][0] == 0)
+   // Is a <= alpha and the first space is free? ALSO check whether
+   // the space is free due to the dettaching process by omega_out, if
+   // that is the case then we cannot add a particle to the start
+   if (a <= alpha && m[k][0] == 0 && !(omega_out_dettached_a_particle && r_pos_omega_out == 0))
     {
-     // Double-check whether the space if free by the dettaching
-     // process by omega_out, if that is the case then we cannot add a
-     // molecule to the start
-     if (omega_out_dettached_a_molecule && r_pos_omega_out = 0)
-      {
-       
-      }
-     
-     // Add a molecule to the start
+     // Add a particle to the start
      m[k][0] = 1;
-     // Indicate we added a molecule at the beginning of the
+     // Indicate we added a particle at the beginning of the
      // microtubule so there is no need to update its position
      added_to_start = true;
+     
     }
    
    // -------------------------------------------
    /// RIGHT END
    // -------------------------------------------
    
-   // Compute a probability to remove the last molecule of the
+   // Compute a probability to remove the last particle of the
    // microtubule
    const Real b = dis(gen);
-   // A flag indicating whether a molecule was removed from the last
+   // A flag indicating whether a particle was removed from the last
    // cell of the microtubule
    bool removed_from_end = false;
-   // Is b <= beta and the last space is occupied, and the molecule
-   // was not attached by omega_in?
-   if (b <= beta && m[k][L-1] == 1 && !attached_at_the_end_by_omega_in)
+   // Is b <= beta and the last space occupied, ALSO, was the particle
+   // not attached by omega_in?
+   if (b <= beta && m[k][L-1] == 1 && !(omega_in_attached_a_particle && r_pos_omega_in == L-1))
     {
-     // Remove the molecule from the microtubule
+     // Remove the particle from the microtubule
      m[k][L-1] = 0;
-     // Indicate we removed a molecule from the last position of the
-     // microtubule so other molecule should not step in this cell
+     // Indicate we removed a particle from the last position of the
+     // microtubule so other particle should not step in this cell
      removed_from_end = true;
+     
     }
    
    // *******************************************
@@ -430,10 +422,14 @@ void mTASEP(bool **m, const unsigned N, const unsigned L,
    for (unsigned i = start_index; i <= end_index; i++)
     {
      // Check whether there is a particle at the current cell space
-     if (m[k][i] == 1)
+     // and ensure that particle was not introduced by the omega_in
+     // process
+     if (m[k][i] == 1 && !(omega_in_attached_a_particle && r_pos_omega_in == i))
       {
        // Check whether there is a free space at the next cell space
-       if (m[k][i+1] == 0)
+       // and ensure that space is not there becase the omega_out
+       // process
+       if (m[k][i+1] == 0 && !(omega_out_dettached_a_particle && r_pos_omega_out == i+1))
         {
          // Compute a probability to move to the next space
          const Real p = dis(gen);
@@ -451,12 +447,13 @@ void mTASEP(bool **m, const unsigned N, const unsigned L,
        else
         {
          // Try lateral movement since there is a particle on the next
-         // cell
+         // cell OR the particle on the next cell was just removed by
+         // the omega_out process
          step_lateral_particles_list.push_back(i);
          
-        } // else if (m[k][i+1] == 0)
+        } // else if (m[k][i+1] == 0 && !(omega_out_dettached_a_particle && r_pos_omega_out == i+1))
        
-      } // if (m[k][i] == 1)
+      } // if (m[k][i] == 1 && !(omega_in_attached_a_particle && r_pos_omega_in == i))
 
     } // for (i <= end_index)
         
@@ -486,50 +483,6 @@ void mTASEP(bool **m, const unsigned N, const unsigned L,
        try_lateral_movement(m, N, L, k, i);
       }
      
-    }
-   
-   // *******************************************
-   // Apply TASEP-LK rules
-   // *******************************************
-
-   // -------------------------------------------
-   /// Attach (omega in)
-   // -------------------------------------------
-   if (omega_in > 0.0)
-    {
-     // Choose a random position at the microtubule
-     const unsigned r_pos = dis_microtubule_size(gen);
-
-     // Generate a random number
-     const Real r = dis(gen);
-
-     // if r <= omega_in and m[k][r_pos] == 0 then add a molecule to
-     // the microtubule in that position
-     if (r <= omega_in && m[k][r_pos] == 0)
-      {
-       // Attach a molecule
-       m[k][r_pos] = 1;
-      }
-    }
-   
-   // -------------------------------------------
-   /// Detach (omega out)
-   // -------------------------------------------
-   if (omega_out > 0.0)
-    {
-     // Choose a random position at the microtubule
-     const unsigned r_pos = dis_microtubule_size(gen);
-
-     // Generate a random number
-     const Real r = dis(gen);
-
-     // if r <= omega_out and m[k][r_pos] == 1 then remove the
-     // molecule from that position of the microtubule
-     if (r <= omega_out && m[k][r_pos] == 1)
-      {
-       // Detach the molecule
-       m[k][r_pos] = 0;
-      }
     }
    
   } // for (k < N)
