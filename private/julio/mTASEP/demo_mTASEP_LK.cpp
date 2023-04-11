@@ -725,12 +725,28 @@ int main(int argc, const char** argv)
   // Validate parameters values
   if (simulation_step_to_start_gathering_data > max_simulations_per_experiment)
    {
-        // Error message
+    // Error message
     std::ostringstream error_message;
     error_message << "There step number to start gathering data is greater than\n"
                   << "the maximum number of simulations per experiment\n"
                   << "simulation_step_to_start_gathering_data:" << simulation_step_to_start_gathering_data
                   << "max_simulations_per_experiment:" << max_simulations_per_experiment
+                  << std::endl;
+    throw SciCellxxLibError(error_message.str(),
+                            SCICELLXX_CURRENT_FUNCTION,
+                            SCICELLXX_EXCEPTION_LOCATION);
+   }
+
+  // If the output_space_state_diagram is ENABLED check whether the
+  // max_simulations_per_experiment does not exceed a MAXIMUM value
+  if (output_space_state_diagram && max_simulations_per_experiment > 1000)
+   {
+    // Error message
+    std::ostringstream error_message;
+    error_message << "You enabled the output_space_state_diagram but the\n"
+                  << "max_simulations_per_experiment exceeds the MAXIMUM value (1,000).\n"
+                  << "This may lead to memory issues due to this large memory requirement.\n"
+                  << "You can DISABLED this error check if you are sure on what you are doing!\n"
                   << std::endl;
     throw SciCellxxLibError(error_message.str(),
                             SCICELLXX_CURRENT_FUNCTION,
@@ -783,11 +799,22 @@ int main(int argc, const char** argv)
   std::vector<Real> omegas_out;
   SciCellxxLinearSpace::create_linear_space(omegas_out, omega_out_min, omega_out_max, omega_out_step, omega_out_n_points);
   
-  SciCellxxLinearSpace::print_linear_space<Real>(alphas);
-  SciCellxxLinearSpace::print_linear_space<Real>(betas);
-  SciCellxxLinearSpace::print_linear_space<Real>(rhos);
-  SciCellxxLinearSpace::print_linear_space<Real>(omegas_in);
-  SciCellxxLinearSpace::print_linear_space<Real>(omegas_out);
+  // Print the information only on the master core
+  if (SciCellxxMPI::rank == SciCellxxMPI::master_core)
+   {
+    scicellxx_output << "Linear spaces:" << std::endl;
+    scicellxx_output << "Alphas:" << std::endl;
+    SciCellxxLinearSpace::print_linear_space<Real>(alphas);
+    scicellxx_output << "Betas:" << std::endl;
+    SciCellxxLinearSpace::print_linear_space<Real>(betas);
+    scicellxx_output << "Rhos:" << std::endl;
+    SciCellxxLinearSpace::print_linear_space<Real>(rhos);
+    scicellxx_output << "Omegas_in:" << std::endl;
+    SciCellxxLinearSpace::print_linear_space<Real>(omegas_in);
+    scicellxx_output << "Omegas_out:" << std::endl;
+    SciCellxxLinearSpace::print_linear_space<Real>(omegas_out);
+    scicellxx_output << std::endl;
+   }
   
   // Create the list with the list of parameter values
   std::vector<std::vector<Real> > lists;
@@ -796,19 +823,46 @@ int main(int argc, const char** argv)
   lists.push_back(rhos);
   lists.push_back(omegas_in);
   lists.push_back(omegas_out);
-  
+
+  // Print the information only on the master core
+  if (SciCellxxMPI::rank == SciCellxxMPI::master_core)
+   {
+    scicellxx_output << "Computing cartesian product ..." << std::endl;
+   }
   // Perform cartesian product
   std::vector<std::vector<Real> > configurations = SciCellxxCartesianProduct::product(lists);
-  scicellxx_output << "Cartesian product:" << std::endl;
-  SciCellxxCartesianProduct::print(configurations);
-  scicellxx_output << std::endl;
   
+  // Print the information only on the master core
+  if (SciCellxxMPI::rank == SciCellxxMPI::master_core)
+   {
+    scicellxx_output << "Computing cartesian product [DONE]" << std::endl;
+   }
+  
+  // Get the total number of configurations
   const unsigned n_all_configurations = configurations.size();
-  
-  // Report the total number of configurations and the partitioning
-  // for parallel computing
-  scicellxx_output << "Total number of all configurations: " << n_all_configurations << std::endl;
-  scicellxx_output << "Number of cores: " << SciCellxxMPI::nprocs << std::endl;
+
+  // Print the information only on the master core
+  if (SciCellxxMPI::rank == SciCellxxMPI::master_core)
+   {
+    // Report the total number of configurations and the partitioning
+    // for parallel computing
+    scicellxx_output << "Total number of all configurations: " << n_all_configurations << std::endl;
+    scicellxx_output << "Number of cores: " << SciCellxxMPI::nprocs << std::endl;
+   }
+
+  // Print the information only on the master core
+  if (SciCellxxMPI::rank == SciCellxxMPI::master_core)
+   {
+    // Only print the Cartesian product if PANIC mode is enabled
+#ifdef SCICELLXX_PANIC_MODE
+    // Report the cartesian product
+    scicellxx_output << "Cartesian product:" << std::endl;
+    SciCellxxCartesianProduct::print(configurations);
+    scicellxx_output << std::endl;
+#else
+    scicellxx_output << "Cartesian product printing is DISABLED since PANIC_MODE is DISABLED" << std::endl;
+#endif // #ifdef SCICELLXX_PANIC_MODE
+   }
   
   // Validate that the number of cores is no larger than the number of
   // configurations
@@ -826,7 +880,11 @@ int main(int argc, const char** argv)
   
   // Compute the number of configurations per core
   const unsigned n_configurations_per_core = n_all_configurations / SciCellxxMPI::nprocs;
-  scicellxx_output << "Number of configurations per core: " << n_configurations_per_core << std::endl;
+  // Print the information only on the master core
+  if (SciCellxxMPI::rank == SciCellxxMPI::master_core)
+   {
+    scicellxx_output << "Number of configurations per core: " << n_configurations_per_core << std::endl;
+   }
   
   // For each core get its corresponding processing configurations
   // (the indices on the all configurations vector)
@@ -887,6 +945,8 @@ int main(int argc, const char** argv)
     std::ostringstream ss_omega_out;
     ss_omega_out << setprecision(precision_real_values) << omega_out;
     
+    scicellxx_output << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs) << "Config_id/total:" << configuration_index << "/" << n_all_configurations << "\talpha:" << ss_alpha.str() << "\tbeta:" << ss_beta.str() << "\trho:" << ss_rho.str() << "\tomega_in:" << ss_omega_in.str() << "\tomega_out:" << ss_omega_out.str() << std::endl;
+    
     // Keep track of the means, standard deviation and median of the
     // channel density space/state per experiment
     std::vector<Real> mean_density_iconfig(max_experiments);
@@ -944,8 +1004,11 @@ int main(int argc, const char** argv)
       // memory for at least the max number of simulations per
       // experiment)
       std::vector<std::vector<Real> > mean_channels_density_space_state_all_simulations;
-      mean_channels_density_space_state_all_simulations.reserve(max_simulations_per_experiment);
-
+      if (output_space_state_diagram)
+       {
+        mean_channels_density_space_state_all_simulations.reserve(max_simulations_per_experiment);
+       }
+      
       // The number of data to collect
       const unsigned n_data_to_gather = max_simulations_per_experiment - simulation_step_to_start_gathering_data;
       
@@ -965,8 +1028,11 @@ int main(int argc, const char** argv)
         
         // Compute the density on the microtubule
         std::vector<Real> mean_channels_density = compute_mean_channels_density(m, N, L);
-        // Add the density to the space_state diagram
-        mean_channels_density_space_state_all_simulations.push_back(mean_channels_density);
+        if (output_space_state_diagram)
+         {
+          // Add the density to the space_state diagram
+          mean_channels_density_space_state_all_simulations.push_back(mean_channels_density);
+         }
         
         if (i_simulation_step >= simulation_step_to_start_gathering_data)
          {
@@ -1073,6 +1139,8 @@ int main(int argc, const char** argv)
   // The header
   output_final_results_this_core_file << "id,alpha,beta,rho,omega_in,omega_out,density,std_density,median_density,current,std_current,median_current" << std::endl;
   
+  scicellxx_output << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs) << "Flushing results into disk ..." << std::endl;
+  
   // For each configuration
   for (unsigned i_config = 0; i_config < n_configurations_this_core; i_config++)
    {
@@ -1122,12 +1190,14 @@ int main(int argc, const char** argv)
     
     output_final_results_this_core_file << configuration_index << "," << ss_alpha.str() << "," << ss_beta.str() << "," << ss_rho.str() << "," << ss_omega_in.str() << "," << ss_omega_out.str() << "," << ss_imean_density.str() << "," << ss_istdev_density.str() << "," << ss_imedian_density.str() << "," << ss_imean_current.str() << "," << ss_istdev_current.str() << "," << ss_imedian_current.str() << std::endl;
     
-    scicellxx_output << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs) << "id:" << configuration_index << "\talpha:" << ss_alpha.str() << "\tbeta:" << ss_beta.str() << "\trho:" << ss_rho.str() << "\tomega_in:" << ss_omega_in.str() << "\tomega_out:" << ss_omega_out.str() << "\tdensity:" << ss_imean_density.str() << "\tdensity(std):" << ss_istdev_density.str() << "\tdensity(median):" << ss_imedian_density.str() << "\tcurrent:" << ss_imean_current.str() << "\tcurrent(std):" << ss_istdev_current.str() << "\tcurrent(median):" << ss_imedian_current.str() << std::endl;
+    //scicellxx_output << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs) << "id:" << configuration_index << "\talpha:" << ss_alpha.str() << "\tbeta:" << ss_beta.str() << "\trho:" << ss_rho.str() << "\tomega_in:" << ss_omega_in.str() << "\tomega_out:" << ss_omega_out.str() << "\tdensity:" << ss_imean_density.str() << "\tdensity(std):" << ss_istdev_density.str() << "\tdensity(median):" << ss_imedian_density.str() << "\tcurrent:" << ss_imean_current.str() << "\tcurrent(std):" << ss_istdev_current.str() << "\tcurrent(median):" << ss_imedian_current.str() << std::endl;
     
    } // for (i_config < n_configurations_this_core)
   
   // Close the file
   output_final_results_this_core_file.close();
+  
+  scicellxx_output << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs) << "Flushing results into disk [DONE]" << std::endl;
   
   // ****************************************************************************************
   // GATHER RESULTS INTO A MASTER CORE
@@ -1142,6 +1212,8 @@ int main(int argc, const char** argv)
   const unsigned n_fields_of_data_to_transfer = 12;
   // This number incluces storage for the global id
   Real *data_sent_to_master = new Real[n_fields_of_data_to_transfer*n_configurations_this_core];
+  
+  scicellxx_output << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs) << "Gathering results into a single file ..." << std::endl;
   
   // For each configuration
   for (unsigned i_config = 0; i_config < n_configurations_this_core; i_config++)
@@ -1256,12 +1328,15 @@ int main(int argc, const char** argv)
               n_displacement_on_mater_for_each_core, MPI_SC_REAL,
               SciCellxxMPI::master_core, SciCellxxMPI::comm);
   
+  scicellxx_output << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs) << "Gathering results into a single file [DONE]" << std::endl;
+  
   // ****************************************************************************************
   // Generate a single output file with the results from all processors
-  // ****************************************************************************************
-  
+  // ****************************************************************************************  
   if (SciCellxxMPI::rank == SciCellxxMPI::master_core)
    {
+    scicellxx_output << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs) << "Flushing gathered results into disk ..." << std::endl;
+    
     // Open the file
     std::string output_final_results_filename(root_output_folder + "/output" + ".csv");
     std::ofstream output_final_results_file(output_final_results_filename, std::ios_base::out);
@@ -1317,12 +1392,14 @@ int main(int argc, const char** argv)
       
       output_final_results_file << configuration_index << "," << ss_alpha.str() << "," << ss_beta.str() << "," << ss_rho.str() << "," << ss_omega_in.str() << "," << ss_omega_out.str() << "," << ss_imean_density.str() << "," << ss_istdev_density.str() << "," << ss_imedian_density.str() << "," << ss_imean_current.str() << "," << ss_istdev_current.str() << "," << ss_imedian_current.str() << std::endl;
       
-      scicellxx_output << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs) << "id:" << configuration_index << "\talpha:" << ss_alpha.str() << "\tbeta:" << ss_beta.str() << "\trho:" << ss_rho.str() << "\tomega_in:" << ss_omega_in.str() << "\tomega_out:" << ss_omega_out.str() << "\tdensity:" << ss_imean_density.str() << "\tdensity(std):" << ss_istdev_density.str() << "\tdensity(median):" << ss_imedian_density.str() << "\tcurrent:" << ss_imean_current.str() << "\tcurrent(std):" << ss_istdev_current.str() << "\tcurrent(median):" << ss_imedian_current.str() << std::endl;
+      //scicellxx_output << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs) << "id:" << configuration_index << "\talpha:" << ss_alpha.str() << "\tbeta:" << ss_beta.str() << "\trho:" << ss_rho.str() << "\tomega_in:" << ss_omega_in.str() << "\tomega_out:" << ss_omega_out.str() << "\tdensity:" << ss_imean_density.str() << "\tdensity(std):" << ss_istdev_density.str() << "\tdensity(median):" << ss_imedian_density.str() << "\tcurrent:" << ss_imean_current.str() << "\tcurrent(std):" << ss_istdev_current.str() << "\tcurrent(median):" << ss_imedian_current.str() << std::endl;
       
      } // for (i_config < n_all_configurations)
     
     // Close the file
     output_final_results_file.close();
+    
+    scicellxx_output << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs) << "Flushing gathered results into disk [DONE]" << std::endl;
     
    } // if (SciCellxxMPI::rank == SciCellxxMPI::master_core)
   
