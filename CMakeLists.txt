@@ -7,7 +7,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.9)
 # ----------------------------------------------------------------------
 
 # Project name (this case library's name)
-PROJECT(SCICELLXX)
+PROJECT(SCICELLXX LANGUAGES CXX CUDA)
 SET(${CMAKE_PROJECT_NAME}_MAJOR_VERSION 0)
 SET(${CMAKE_PROJECT_NAME}_MINOR_VERSION 6)
 SET(${CMAKE_PROJECT_NAME}_PATCH_LEVEL 0)
@@ -154,6 +154,25 @@ IF (SCICELLXX_USES_MPI)
   ENDIF (SCICELLXX_AUTO_FIND_MPI_PATHS)
   
 ENDIF (SCICELLXX_USES_MPI)
+MESSAGE( STATUS "-----------------------------------------------------------------------" )
+
+# ----------------------------------------------------------------------
+
+# ----------------------------------------------------------------------
+# Do we want to compile using CUDA?
+# ----------------------------------------------------------------------
+MESSAGE( STATUS "" )
+MESSAGE( STATUS "-----------------------------------------------------------------------" )
+MESSAGE( STATUS "** CUDA'S LIBRARY INFORMATION **" )
+MESSAGE( STATUS "-----------------------------------------------------------------------" )
+IF (SCICELLXX_USES_CUDA)
+  FIND_PACKAGE(CUDA REQUIRED)
+  IF (CUDA_FOUND)
+    MESSAGE( STATUS "FOUND CUDA_INCLUDE_DIRS:             " ${CUDA_INCLUDE_DIRS} )
+    MESSAGE( STATUS "FOUND CUDA_LIBRARIES:                " ${CUDA_LIBRARIES} )
+    INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
+  ENDIF (CUDA_FOUND)
+ENDIF (SCICELLXX_USES_CUDA)
 MESSAGE( STATUS "-----------------------------------------------------------------------" )
 
 # ----------------------------------------------------------------------
