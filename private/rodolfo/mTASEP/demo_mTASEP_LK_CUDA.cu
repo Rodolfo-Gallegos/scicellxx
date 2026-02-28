@@ -46,6 +46,17 @@
 // Use the namespace of the framework
 using namespace scicellxx;
 
+// Macro for CUDA error handling
+#define CUDA_CHECK(call) \
+    do { \
+        cudaError_t err = call; \
+        if (err != cudaSuccess) { \
+            fprintf(stderr, "CUDA error at %s:%d: %s\n", __FILE__, __LINE__, \
+                    cudaGetErrorString(err)); \
+            exit(EXIT_FAILURE); \
+        } \
+    } while (0)
+
 // Used to define arguments
 struct Args {
  argparse::ArgValue<unsigned> L;
@@ -101,7 +112,7 @@ void output_parameters_to_file(std::string &filename, const int argc, const char
   int deviceCount;
   cudaGetDeviceCount(&deviceCount);
     
-  output_parameters << "Número de dispositivos GPU disponibles: " << deviceCount << std::endl;
+  output_parameters << "Number of available GPU devices: " << deviceCount << std::endl;
   output_parameters << "L:" << args.L << std::endl;
   output_parameters << "N:" << args.N << std::endl;
   output_parameters << "alpha_min:" << setprecision(precision_real_values) << args.alpha_min << std::endl;
@@ -131,8 +142,8 @@ void output_parameters_to_file(std::string &filename, const int argc, const char
   output_parameters << "root_output_folder:" << args.root_output_folder << std::endl;
   output_parameters << "output_space_state_diagram:" << args.output_space_state_diagram << std::endl;
   output_parameters << "output_microtubule_state:" << args.output_microtubule_state << std::endl;
-  output_parameters << "Número de bloques CUDA: " << args.numBlocks << std::endl;
-  output_parameters << "Número de hilos por bloque: " << args.blockSize << std::endl;
+  output_parameters << "Number of CUDA blocks: " << args.numBlocks << std::endl;
+  output_parameters << "Number of threads per block: " << args.blockSize << std::endl;
 
   // Close the parameters file
   output_parameters.close(); 
@@ -187,7 +198,7 @@ void boolean_matrix_to_csv_file(bool **m, const unsigned nrows, const unsigned n
 } // boolean_matrix_to_csv_file
 
 
-// Definir una estructura para contener todas las estadísticas
+// Define a structure to hold all statistics
 struct Statistics {
     Real mean_density;
     Real stdev_density;
@@ -222,7 +233,8 @@ __device__ void d_compute_mean_channels_density(const bool* m, unsigned e_m, uns
 
 // CUDA function for lateral movement
 __device__ void d_try_lateral_movement(bool *m, const unsigned N, const unsigned L, const unsigned k, 
-                                      const unsigned i, const unsigned n_m, const unsigned e_m)
+                                      const unsigned i, const unsigned n_m, const unsigned e_m,
+                                      curandState &state)
 {
 
     // Double-check there is a particle at the current position
@@ -235,10 +247,7 @@ __device__ void d_try_lateral_movement(bool *m, const unsigned N, const unsigned
     unsigned index_microtubule_above = (k == 0) ? N - 1 : k - 1;
     unsigned index_microtubule_below = (k == N - 1) ? 0 : k + 1;
 
-    // Generate a random number to choose between the above or below microtubule
-    unsigned seed = threadIdx.x + blockIdx.x * blockDim.x;
-    curandState_t state;
-    curand_init(seed, 0, 0, &state);
+    // Use the thread's RNG state passed from d_mTASEP (without re-initializing)
     const Real r = curand_uniform(&state);
 
     // First choose the microtubule from above (preferred due to probability)
@@ -275,13 +284,15 @@ __device__ void d_try_lateral_movement(bool *m, const unsigned N, const unsigned
 
 
 __device__ void d_mTASEP(bool* d_m, const unsigned e_m, const unsigned i_simulation, 
+            const unsigned i_experiment,
             const unsigned d_N, const unsigned d_L,
             const Real alpha, const Real beta, const Real rho,
             const Real omega_in, const Real omega_out,
             bool lateral_movement, Real &mean_current,
             Real* mean_current_per_channel,                                      
             unsigned* step_forward_particles_list,
-            unsigned* step_lateral_particles_list)
+            unsigned* step_lateral_particles_list,
+            curandState &state)
 {
  /*
     Applies TASEP algorithm to a multichannel microtubule
@@ -293,21 +304,13 @@ __device__ void d_mTASEP(bool* d_m, const unsigned e_m, const unsigned i_simulat
     Comparison of Update Procedures, N. Rajewsky et. al., Journal of
     Statistical Physics, Vol. 92, 1998"
  */
-    int tid = threadIdx.x + blockIdx.x * blockDim.x;
-
-    if (i_simulation == 0){ 
-      printf("\n\nEntra a d_mTASEP con el hilo %d, del experimento %d, de la simulación %d.", tid, e_m, i_simulation);
+    // Bug 1 fix: Reset current at the beginning of each call (equivalent
+    // to the vector being local in the MPI/CPU version)
+    for (unsigned k = 0; k < d_N; k++) {
+        mean_current_per_channel[e_m + k * d_L] = 0.0;
     }
 
-    // Inicializar el estado del generador de números aleatorios
-    curandState state;
-    unsigned long long seed = threadIdx.x + blockIdx.x * blockDim.x;
-    curand_init(seed, 0, 0, &state);
-
-    // Generar un número real aleatorio uniformemente distribuido en el rango [0,1)
-    Real r = curand_uniform(&state);
-    
-    // Compute the current for each channel on the microtubule
+    unsigned lateral_counts[32]; // Buffer for lateral move counts per channel
 
     // Perform the method for each channel
     for (unsigned k = 0; k < d_N; k++)
@@ -522,23 +525,34 @@ __device__ void d_mTASEP(bool* d_m, const unsigned e_m, const unsigned i_simulat
           mean_current_per_channel[n_m]+=1;
         }
         
-        // *******************************************
-        // Apply lateral movement
-        // *******************************************
-        if (d_lateral_movement)
+        // Store lateral move count for this channel
+        if (d_lateral_movement && k < 32)
         {
-            const unsigned step_lateral_particle_list_size = lateral_count;
+            lateral_counts[k] = lateral_count;
+        }
+    
+    } // for (k < d_N)
+
+    // *******************************************
+    // Apply lateral movement AFTER all forward moves
+    // *******************************************
+    if (d_lateral_movement)
+    {
+        // We use a fixed order for lateral moves to keep the animation stable,
+        // but since forward moves are already done, the teleportation bias is gone.
+        for (unsigned k = 0; k < d_N; k++)
+        {
+            unsigned n_m = e_m + k * d_L;
+            const unsigned step_lateral_particle_list_size = (k < 32) ? lateral_counts[k] : 0;
 
             for (unsigned j = 0; j < step_lateral_particle_list_size; j++)
             {
                 // Get the index of the particle
                 const unsigned i = step_lateral_particles_list[n_m + j];
-
-                d_try_lateral_movement(d_m, d_N, d_L, k, i, n_m, e_m);
+                d_try_lateral_movement(d_m, d_N, d_L, k, i, n_m, e_m, state);
             }
         }
-    
-    } // for (k < d_N)
+    }
     
     // Compute the averaged current on all the microtubules
     mean_current = 0.0;
@@ -552,91 +566,131 @@ __device__ void d_mTASEP(bool* d_m, const unsigned e_m, const unsigned i_simulat
     mean_current=mean_current*factor;
 }
 
-__device__ void d_statistics_mean(Real* v, unsigned v_size, Real &mean)
+// stride=1 for contiguous arrays, stride>1 when v points to a field in a struct
+// (e.g. &stats[0].mean_density with stride=sizeof(Statistics)/sizeof(Real) = 6)
+__device__ void d_statistics_mean(Real* v, unsigned v_size, Real &mean,
+                                   unsigned stride = 1)
 {
-    // Sumar todos los elementos del vector
     Real sum = 0.0;
     for (unsigned i = 0; i < v_size; ++i)
-    {
-        sum += v[i];
-    }
-
-    // Calcular la media
+        sum += v[i * stride];
     mean = sum / static_cast<Real>(v_size);
 }
 
-__device__ void d_statistics_mean_std_median(Real* v, unsigned v_size, Real &mean, Real &stdev, Real &median)
+// Stride version: copy elements to local array tmp before operating,
+// avoiding corruption of the struct memory when sorting in-place.
+__device__ void d_statistics_mean_std_median(Real* v, unsigned v_size,
+                                              Real &mean, Real &stdev, Real &median,
+                                              unsigned stride = 1)
 {
-
-    // Sumar todos los elementos del vector
-    Real sum = 0.0;
+    // Copy elements (with stride) to a contiguous local buffer
+    // max(d_n_data_to_gather, d_max_experiments) ≤ 32 in typical use
+    Real tmp[64];
     for (unsigned i = 0; i < v_size; ++i)
-    {
-        sum += v[ i];
-    }
+        tmp[i] = v[i * stride];
 
-    // Calcular la media
+    // Media
+    Real sum = 0.0;
+    for (unsigned i = 0; i < v_size; ++i) sum += tmp[i];
     mean = sum / static_cast<Real>(v_size);
 
-    // Calcular la desviación estándar
+    // Desviación estándar
     Real sq_sum = 0.0;
-    for (unsigned i = 0; i < v_size; ++i)
-    {
-        Real diff = v[ i] - mean;
-        sq_sum += diff * diff;
-    }
+    for (unsigned i = 0; i < v_size; ++i) { Real d = tmp[i] - mean; sq_sum += d * d; }
     stdev = sqrt(sq_sum / static_cast<Real>(v_size));
 
-    // Calcular la mediana
-    // Ordenar el vector (esto puede no ser eficiente)
+    // Median (bubble sort on local copy)
     for (unsigned i = 0; i < v_size - 1; ++i)
-    {
         for (unsigned j = 0; j < v_size - i - 1; ++j)
-        {
-            if (v[ j] > v[ j + 1])
-            {
-                Real temp = v[ j];
-                v[ j] = v[ j + 1];
-                v[ j + 1] = temp;
-            }
-        }
-    }
-    // Obtener la mediana
-    if (v_size % 2 == 0)
-    {
-        median = (v[ v_size / 2 - 1] + v[ v_size / 2]) / 2.0;
-    }
-    else
-    {
-        median = v[ v_size / 2];
-    }
+            if (tmp[j] > tmp[j + 1]) { Real t = tmp[j]; tmp[j] = tmp[j+1]; tmp[j+1] = t; }
+
+    median = (v_size % 2 == 0)
+             ? (tmp[v_size/2 - 1] + tmp[v_size/2]) / 2.0
+             : tmp[v_size / 2];
 }
 
 
 
-// Kernel CUDA
+// ─────────────────────────────────────────────────────────────────────────────
+// Animation Kernel: only runs extreme configurations and saves
+// a microtubule snapshot (N×L bools) at each simulation step.
+// One thread per extreme configuration (1 realization = enough to see dynamics).
+// Typical size: 16 configs → ~1 MB of snapshots.
+// ─────────────────────────────────────────────────────────────────────────────
+__global__ void Run_animation_configurations(
+    Real*     d_anim_configs,   // [n_extreme × 5]  extreme configuration parameters
+    bool*     d_anim_m,         // [n_extreme × N × L]  evolving microtubule
+    bool*     d_snap,           // [n_extreme × max_sims × N × L]  snapshots
+    Real*     d_anim_current_ch,// [n_extreme × N × L] (current accumulator)
+    unsigned* d_anim_fwd,       // [n_extreme × N × L] (step_forward_list)
+    unsigned* d_anim_lat,       // [n_extreme × N × L] (step_lateral_list)
+    unsigned  n_extreme)
+{
+    int tid = threadIdx.x + blockIdx.x * blockDim.x;
+    if (tid >= (int)n_extreme) return;
+
+    int i_extreme = tid;  // 1 thread per extreme configuration
+
+    const Real alpha    = d_anim_configs[i_extreme * 5 + 0];
+    const Real beta     = d_anim_configs[i_extreme * 5 + 1];
+    const Real rho      = d_anim_configs[i_extreme * 5 + 2];
+    const Real omega_in = d_anim_configs[i_extreme * 5 + 3];
+    const Real omega_out= d_anim_configs[i_extreme * 5 + 4];
+
+    // Microtubule base for this thread (reused in each step)
+    unsigned e_m = (unsigned)tid * d_N * d_L;
+
+    // Initialize microtubule to zero
+    for (unsigned k = 0; k < d_N * d_L; k++)
+        d_anim_m[e_m + k] = false;
+
+    // Initialize RNG once
+    curandState state;
+    curand_init((unsigned long long)tid + 12345ULL, 0, 0, &state);
+
+    for (unsigned i_sim = 0; i_sim < d_max_simulations_per_experiment; i_sim++)
+    {
+        Real local_current = 0.0;
+
+        // Simulate one step on GPU using the same device function as the main kernel
+        d_mTASEP(d_anim_m, e_m, i_sim, 0, d_N, d_L,
+                 alpha, beta, rho, omega_in, omega_out,
+                 d_lateral_movement, local_current,
+                 d_anim_current_ch, d_anim_fwd, d_anim_lat,
+                 state);
+
+        // Save full microtubule snapshot at this step
+        unsigned snap_base = ((unsigned)tid * d_max_simulations_per_experiment + i_sim) * d_N * d_L;
+        for (unsigned k = 0; k < d_N * d_L; k++)
+            d_snap[snap_base + k] = d_anim_m[e_m + k];
+    }
+}
+
+// Main CUDA Kernel
 __global__ void Run_all_configurations(Real* d_configurations, bool* d_m,  
-                                        Real* d_density, Statistics* stats, 
-                                        Statistics* stats_experiment,
+                                        Real* d_density, 
+                                        Statistics* d_exp_stats, 
+                                        Statistics* d_conf_stats,
+                                        Statistics* stats_experiment_raw,
                                         Real* mean_current_per_channel,                                      
                                         unsigned* step_forward_particles_list,
                                         unsigned* step_lateral_particles_list) {
-    // Obtener el índice global del hilo
+    // Get global thread index
     int tid = threadIdx.x + blockIdx.x * blockDim.x;
     
-    // Verificar que el hilo esté dentro del rango de configuraciones
+    // Check if thread is within range of configurations
     if (tid < d_n_all_configurations) {
-        // Obtener los parámetros de configuración para este hilo
+        // Get configuration parameters for this thread
         const Real alpha = d_configurations[tid * 5 + 0];
         const Real beta = d_configurations[tid * 5 + 1];
         const Real rho = d_configurations[tid * 5 + 2];
         const Real omega_in = d_configurations[tid * 5 + 3];
         const Real omega_out = d_configurations[tid * 5 + 4];
         
-        // Realizar operaciones con los parámetros de configuración
-        // Por ejemplo, imprimirlos
+        // Perform operations with configuration parameters
+        // For example, print them
         if (tid == 12345){ 
-          printf("\nHilo %d: alpha=%f, beta=%f, rho=%f, omega_in=%f, omega_out=%f\n", tid, alpha, beta, rho, omega_in, omega_out);
+          printf("\nThread %d: alpha=%f, beta=%f, rho=%f, omega_in=%f, omega_out=%f\n", tid, alpha, beta, rho, omega_in, omega_out);
         }
 
         unsigned experiment_counter = 0;
@@ -653,110 +707,111 @@ __global__ void Run_all_configurations(Real* d_configurations, bool* d_m,
           }
 
           if (tid == 0 && i_experiment == 0){ 
-            printf("\nd_m se reinició correctamente %d: ", d_m[e_m + d_N * d_L - 1]);
+            printf("\nd_m was reset correctly %d: ", d_m[e_m + d_N * d_L - 1]);
           }
         
           unsigned simulation_counter = 0;
 
           // unsigned experiment = 
 
-          for (unsigned i_simulation_step = 0; i_simulation_step < d_max_simulations_per_experiment; i_simulation_step++)
-          {
-            unsigned s_m = e_m + i_simulation_step * d_L;  // Start of simulation per thread 
+            // Initialize RNG state ONCE
+            // Use tid and i_experiment to balance seeds
+            curandState state;
+            unsigned long long seed = (unsigned long long)tid + (unsigned long long)i_experiment * 10007ULL;
+            curand_init(seed, 0, 0, &state);
 
+            for (unsigned i_simulation_step = 0; i_simulation_step < d_max_simulations_per_experiment; i_simulation_step++)
+            {
             // Store the current
-            Real local_mean_current = 0.0;
+                Real local_mean_current = 0.0;
 
-            // Apply mTASEP
-            d_mTASEP(d_m, e_m, i_simulation_step, d_N, d_L, 
-                    alpha, beta, rho, omega_in, omega_out, 
-                    d_lateral_movement, local_mean_current, mean_current_per_channel,                                      
-                    step_forward_particles_list, step_lateral_particles_list);
+                // Apply mTASEP
+                d_mTASEP(d_m, e_m, i_simulation_step, i_experiment, d_N, d_L, 
+                        alpha, beta, rho, omega_in, omega_out, 
+                        d_lateral_movement, local_mean_current, mean_current_per_channel,                                      
+                        step_forward_particles_list, step_lateral_particles_list,
+                        state);
 
-            // Compute the density on the microtubule
-            // d_density[e_m + i_simulation_step * d_L]
-            d_compute_mean_channels_density(d_m, e_m, s_m, d_density);
-
+            // Compute density on the microtubule (direct mean from d_m, no external buffer)
+            // This prevents the s_m overflow that happened when using d_density[s_m] with
+            // s_m = e_m + i_simulation_step * d_L, which exceeded the thread's space.
+            Real local_mean_density = 0.0;
             if (i_simulation_step >= d_simulation_step_to_start_gathering_data)
             {
-              // Compute the mean density for this simulation step
-              // (density along the microtubule)
-              Real local_mean_density = 0.0;
-              // SciCellxxStatistics::statistics_mean(d_density, local_mean_density);
-              
-              d_statistics_mean(&d_density[s_m], d_L, local_mean_density);
+              Real sum_density = 0.0;
+              for (unsigned k = 0; k < d_N; k++)
+                for (unsigned pos = 0; pos < d_L; pos++)
+                  sum_density += static_cast<Real>(d_m[e_m + k * d_L + pos]);
+              local_mean_density = sum_density / static_cast<Real>(d_N * d_L);
 
-              unsigned tempidx = tid * d_max_experiments + i_experiment * d_tam_simulation + simulation_counter;
-              // unsigned s_m = e_m + i_simulation_step * d_n_data_to_gather;
+              unsigned data_idx = (tid * d_max_experiments + i_experiment) * d_n_data_to_gather + simulation_counter;
 
-              stats_experiment[tempidx].mean_density = local_mean_density;
-              stats_experiment[tempidx].mean_current = local_mean_current;
+              stats_experiment_raw[data_idx].mean_density = local_mean_density;
+              stats_experiment_raw[data_idx].mean_current = local_mean_current;
 
               // Increase counter
               simulation_counter++;
-              
             }
           } // for (i_simulation_step < max_simulations_per_experiment)
 
-          // Compute the mean, standard deviation and median for density on this experiment
+          // Stride between elements of the same field in a Statistics struct array
+          // sizeof(Statistics)/sizeof(Real) = 6  (mean_density, stdev_density, median_density,
+          //                                        mean_current, stdev_current, median_current)
+          constexpr unsigned STATS_STRIDE = sizeof(Statistics) / sizeof(Real);
+
+          // Compute stats for density over the gathered simulation steps
           Real imean_density = 0.0;
           Real istdev_density = 0.0;
           Real imedian_density = 0.0;
 
-          unsigned tempidx_exp = tid * d_max_experiments + i_experiment * d_tam_simulation;
+          unsigned exp_start_idx = (tid * d_max_experiments + i_experiment) * d_n_data_to_gather;
 
-          d_statistics_mean_std_median(&stats_experiment[tempidx_exp].mean_density, d_n_data_to_gather, imean_density, istdev_density, imedian_density);
+          d_statistics_mean_std_median(&stats_experiment_raw[exp_start_idx].mean_density,
+              d_n_data_to_gather, imean_density, istdev_density, imedian_density, STATS_STRIDE);
 
           unsigned tempidx = tid * d_max_experiments + experiment_counter;
-          
-          // Keep track of the mean, standard deviation and median of the density for each experiment
-          stats[tempidx].mean_density = imean_density;
-          stats[tempidx].stdev_density = istdev_density;
-          stats[tempidx].median_density = imedian_density;
 
-          // Compute the mean, standard deviation and median for current on this experiment
+          d_exp_stats[tempidx].mean_density   = imean_density;
+          d_exp_stats[tempidx].stdev_density  = istdev_density;
+          d_exp_stats[tempidx].median_density = imedian_density;
+
+          // Compute stats for current over the gathered simulation steps
           Real imean_current = 0.0;
           Real istdev_current = 0.0;
           Real imedian_current = 0.0;
 
-          d_statistics_mean_std_median(&stats_experiment[tempidx_exp].mean_current, d_n_data_to_gather, imean_current, istdev_current, imedian_current);          
+          d_statistics_mean_std_median(&stats_experiment_raw[exp_start_idx].mean_current,
+              d_n_data_to_gather, imean_current, istdev_current, imedian_current, STATS_STRIDE);
 
-          stats[tempidx].mean_current = imean_current;
-          stats[tempidx].stdev_current = istdev_current;
-          stats[tempidx].median_current = imedian_current;        
+          d_exp_stats[tempidx].mean_current   = imean_current;
+          d_exp_stats[tempidx].stdev_current  = istdev_current;
+          d_exp_stats[tempidx].median_current = imedian_current;
 
-          experiment_counter++;          
+          experiment_counter++;
 
-          // stats->mean_density[experiment_counter] = imean_density;
-          // stats->stdev_density[experiment_counter] = istdev_density;
         } // for (i_experiment < max_experiments)
 
-        // Compute the mean, standard deviation and median for density on this configuration
-        Real imean_density = 0.0;
-        Real istdev_density = 0.0;
-        Real imedian_density = 0.0;
+        // Average over experiments to get configuration statistics
+        constexpr unsigned STATS_STRIDE2 = sizeof(Statistics) / sizeof(Real);
+
+        Real imean_density = 0.0, istdev_density = 0.0, imedian_density = 0.0;
+        Real imean_current = 0.0, istdev_current = 0.0, imedian_current = 0.0;
 
         unsigned tempidx_conf = tid * d_max_experiments;
 
-        d_statistics_mean(&stats[tempidx_conf].mean_density, d_max_experiments,  imean_density);
-        d_statistics_mean(&stats[tempidx_conf].stdev_density, d_max_experiments, istdev_density);
-        d_statistics_mean(&stats[tempidx_conf].median_density, d_max_experiments, imedian_density);
+        d_statistics_mean(&d_exp_stats[tempidx_conf].mean_density,   d_max_experiments, imean_density,   STATS_STRIDE2);
+        d_statistics_mean(&d_exp_stats[tempidx_conf].stdev_density,  d_max_experiments, istdev_density,  STATS_STRIDE2);
+        d_statistics_mean(&d_exp_stats[tempidx_conf].median_density, d_max_experiments, imedian_density, STATS_STRIDE2);
+        d_statistics_mean(&d_exp_stats[tempidx_conf].mean_current,   d_max_experiments, imean_current,   STATS_STRIDE2);
+        d_statistics_mean(&d_exp_stats[tempidx_conf].stdev_current,  d_max_experiments, istdev_current,  STATS_STRIDE2);
+        d_statistics_mean(&d_exp_stats[tempidx_conf].median_current, d_max_experiments, imedian_current, STATS_STRIDE2);
 
-        // Compute the mean, standard deviation and median for current on this configuration
-        Real imean_current = 0.0;
-        Real istdev_current = 0.0;
-        Real imedian_current = 0.0;
-
-        d_statistics_mean(&stats[tempidx_conf].mean_current, d_max_experiments, imean_current);
-        d_statistics_mean(&stats[tempidx_conf].stdev_current, d_max_experiments, istdev_current);
-        d_statistics_mean(&stats[tempidx_conf].median_current, d_max_experiments, imedian_current);
-
-        stats[tid].mean_density = imean_density;
-        stats[tid].stdev_density = istdev_density;
-        stats[tid].median_density = imedian_density;
-        stats[tid].mean_current = imean_current;
-        stats[tid].stdev_current = istdev_current;
-        stats[tid].median_current = imedian_current;
+        d_conf_stats[tid].mean_density   = imean_density;
+        d_conf_stats[tid].stdev_density  = istdev_density;
+        d_conf_stats[tid].median_density = imedian_density;
+        d_conf_stats[tid].mean_current   = imean_current;
+        d_conf_stats[tid].stdev_current  = istdev_current;
+        d_conf_stats[tid].median_current = imedian_current;
     }
 
     // stats[tid].mean_density = alpha + beta + rho + omega_in + omega_out;
@@ -1355,7 +1410,7 @@ int main(int argc, const char** argv)
   const char fill_char = '0';
   const unsigned precision_real_values = 4;
 
-  // Thgis throws an error when using MPI since multile cores try to
+  // This throws an error when using MPI since multiple cores try to
   // create the same output folder
 // #ifndef SCICELLXX_USES_MPI
   // Create output directory
@@ -1493,51 +1548,6 @@ int main(int argc, const char** argv)
   const unsigned tam_experiment = max_experiments * n_all_configurations;
   const unsigned tam_simulation = max_simulations_per_experiment * tam_experiment;
   const unsigned tam_steps = tam_experiment * N * L;
-
-  cudaMemcpyToSymbol(d_N, &N, sizeof(unsigned));
-  cudaMemcpyToSymbol(d_L, &L, sizeof(unsigned));
-
-  cudaMemcpyToSymbol(d_n_all_configurations, &n_all_configurations, sizeof(unsigned));
-  cudaMemcpyToSymbol(d_max_experiments, &max_experiments, sizeof(unsigned));
-  cudaMemcpyToSymbol(d_n_data_to_gather, &n_data_to_gather, sizeof(unsigned));
-
-  cudaMemcpyToSymbol(d_max_simulations_per_experiment, &max_simulations_per_experiment, sizeof(unsigned));
-  cudaMemcpyToSymbol(d_simulation_step_to_start_gathering_data, &simulation_step_to_start_gathering_data, sizeof(unsigned));
-  cudaMemcpyToSymbol(d_lateral_movement, &lateral_movement, sizeof(bool));
-
-  cudaMemcpyToSymbol(d_tam_experiment, &tam_experiment, sizeof(unsigned));
-  cudaMemcpyToSymbol(d_tam_simulation, &tam_simulation, sizeof(unsigned));
-
-
-  // Print the information only on the master core
-  // if (SciCellxxMPI::rank == SciCellxxMPI::master_core)
-  //  {
-  // scicellxx_output << "Number of configurations per core: " << n_configurations_per_core << std::endl;
-  // //  }
-  
-  // // For each core get its corresponding processing configurations
-  // // (the indices on the all configurations vector)
-  // std::vector<unsigned> indices_configurations_per_core;
-  // indices_configurations_per_core.reserve(n_configurations_per_core + 1);
-
-  // for (unsigned i = 0; i < n_all_configurations; i++)
-  //  {
-  //   indices_configurations_per_core.push_back(i);
-  //  } // for (i < n_all_configurations)
-
-  // Print the indices of configurations per core
-  // for (unsigned i = 0; i < indices_configurations_per_core.size(); i++)
-  // {
-  //  scicellxx_output << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank,SciCellxxMPI::nprocs) << indices_configurations_per_core[i] << std::endl;
-  // }
-  
-  // Get the real number of configuration for this core (probably
-  // different from n_configurations_per_core due to rounding errors)
-  // const unsigned n_configurations_this_core = indices_configurations_per_core.size();
-  // scicellxx_output<< "Configuraciones por nucleo: " << n_configurations_this_core << std::endl;
-  // const unsigned n_configurations_this_core = 100;
-  
-  
   // // Keep track of the means, standard deviation and median of the
   // // channel density space/state per configuration
   // std::vector<Real> mean_density(n_configurations_this_core);
@@ -1553,6 +1563,21 @@ int main(int argc, const char** argv)
   // unsigned config_counter = 0;
 
   /************************ Start CUDA ***************************/
+
+  cudaMemcpyToSymbol(d_N, &N, sizeof(unsigned));
+  cudaMemcpyToSymbol(d_L, &L, sizeof(unsigned));
+
+  cudaMemcpyToSymbol(d_n_all_configurations, &n_all_configurations, sizeof(unsigned));
+  cudaMemcpyToSymbol(d_max_experiments, &max_experiments, sizeof(unsigned));
+  cudaMemcpyToSymbol(d_n_data_to_gather, &n_data_to_gather, sizeof(unsigned));
+
+  cudaMemcpyToSymbol(d_max_simulations_per_experiment, &max_simulations_per_experiment, sizeof(unsigned));
+  cudaMemcpyToSymbol(d_simulation_step_to_start_gathering_data, &simulation_step_to_start_gathering_data, sizeof(unsigned));
+  cudaMemcpyToSymbol(d_lateral_movement, &lateral_movement, sizeof(bool));
+
+  cudaMemcpyToSymbol(d_tam_experiment, &tam_experiment, sizeof(unsigned));
+  cudaMemcpyToSymbol(d_tam_simulation, &tam_simulation, sizeof(unsigned));
+
   cudaProfilerStart();
 
   // Create a one-dimensional array to pass to the device
@@ -1563,7 +1588,7 @@ int main(int argc, const char** argv)
       }
   }
 
-  // Crear y asignar memoria para las configuraciones en el dispositivo
+  // Create and allocate memory for configurations on the device
   bool* d_m;
   unsigned* step_forward_particles_list;
   unsigned* step_lateral_particles_list;
@@ -1572,28 +1597,30 @@ int main(int argc, const char** argv)
   Real* d_configurations;
   Real* mean_current_per_channel;
 
-  Statistics* d_statistics;
-  Statistics* d_statistics_experiment;
+  Statistics* d_statistics;            // Statistics per experiment
+  Statistics* d_statistics_config;    // Averaged statistics per configuration
+  Statistics* d_statistics_experiment; // Raw data per simulation (step by step)
 
   Real* h_density = new Real[tam_simulation * L];
-  Statistics* h_statistics = new Statistics[tam_experiment];
+  Statistics* h_statistics = new Statistics[n_all_configurations];
   Statistics* h_statistics_experiment = new Statistics[tam_simulation * n_data_to_gather];
 
-  cudaMalloc(&d_m, tam_experiment * N * L * sizeof(bool));
-  cudaMemset(d_m, 0, tam_experiment * N * L * sizeof(bool));
-  cudaMalloc(&d_density, tam_simulation * L * sizeof(Real));
-  cudaMemset(d_density, 0, tam_simulation * L * sizeof(Real));
+  CUDA_CHECK(cudaMalloc(&d_m, tam_experiment * N * L * sizeof(bool)));
+  CUDA_CHECK(cudaMemset(d_m, 0, tam_experiment * N * L * sizeof(bool)));
+  CUDA_CHECK(cudaMalloc(&d_density, tam_simulation * L * sizeof(Real)));
+  CUDA_CHECK(cudaMemset(d_density, 0, tam_simulation * L * sizeof(Real)));
 
-  cudaMalloc(&step_forward_particles_list, tam_steps * sizeof(unsigned));
-  cudaMalloc(&step_lateral_particles_list, tam_steps * sizeof(unsigned));  
+  CUDA_CHECK(cudaMalloc(&step_forward_particles_list, tam_steps * sizeof(unsigned)));
+  CUDA_CHECK(cudaMalloc(&step_lateral_particles_list, tam_steps * sizeof(unsigned)));  
 
-  cudaMalloc(&mean_current_per_channel, tam_steps * sizeof(Real));
-  cudaMalloc(&d_configurations, n_all_configurations * 5 * sizeof(Real));
+  CUDA_CHECK(cudaMalloc(&mean_current_per_channel, tam_steps * sizeof(Real)));
+  CUDA_CHECK(cudaMalloc(&d_configurations, n_all_configurations * 5 * sizeof(Real)));
 
-  cudaMalloc(&d_statistics, tam_experiment * sizeof(Statistics));
-  cudaMalloc(&d_statistics_experiment, tam_experiment * n_data_to_gather * sizeof(Statistics));
+  CUDA_CHECK(cudaMalloc(&d_statistics, tam_experiment * sizeof(Statistics)));
+  CUDA_CHECK(cudaMalloc(&d_statistics_config, n_all_configurations * sizeof(Statistics)));
+  CUDA_CHECK(cudaMalloc(&d_statistics_experiment, tam_experiment * n_data_to_gather * sizeof(Statistics)));
 
-  cudaMemcpy(d_configurations, flat_configurations.data(), n_all_configurations * 5 * sizeof(Real), cudaMemcpyHostToDevice);
+  CUDA_CHECK(cudaMemcpy(d_configurations, flat_configurations.data(), n_all_configurations * 5 * sizeof(Real), cudaMemcpyHostToDevice));
 
   size_t memory_max = tam_steps * sizeof(Real);
   printf("Min memory required: %.2f GB\n", 100 * (float)memory_max / (1024 * 1024 * 1024));
@@ -1601,391 +1628,162 @@ int main(int argc, const char** argv)
 
   scicellxx_output << "\n\t ***** Simulation starts ***** \n" << std::endl;
   
-  // Llamar al kernel
+  // Call kernel
   Run_all_configurations<<<numBlocks, blockSize>>>( d_configurations, 
                                                     d_m, d_density,
                                                     d_statistics,
+                                                    d_statistics_config,
                                                     d_statistics_experiment, 
                                                     mean_current_per_channel,
                                                     step_forward_particles_list,
                                                     step_lateral_particles_list );
 
-  // Esperar a que todos los hilos terminen
+  // Wait for all threads to finish
   cudaDeviceSynchronize();
 
-  // Verificar errores
+  // Check for errors
   cudaError_t error = cudaGetLastError();
   if (error != cudaSuccess) {
-      printf("\n***** Error en el lanzamiento del kernel: %s\n", cudaGetErrorString(error));
-      // Puedes agregar más detalles de depuración aquí
+      printf("\n***** Error in kernel launch: %s\n", cudaGetErrorString(error));
+      // You can add more debugging details here
       exit(-1);
   }
 
   scicellxx_output << "\n\n\t ***** Simulation finishes *****\n" << std::endl;
 
   cudaMemcpy(h_density, d_density, tam_simulation * L * sizeof(Real), cudaMemcpyDeviceToHost);
-  cudaMemcpy(h_statistics, d_statistics, n_all_configurations * sizeof(Statistics), cudaMemcpyDeviceToHost);
+  cudaMemcpy(h_statistics, d_statistics_config, n_all_configurations * sizeof(Statistics), cudaMemcpyDeviceToHost);
   cudaMemcpy(h_statistics_experiment, d_statistics_experiment, tam_simulation * n_data_to_gather * sizeof(Statistics), cudaMemcpyDeviceToHost);
 
-  // Imprimir los valores de h_statistics
-  // for (int i = 0; i < 10; ++i) {
-  //     std::cout << "Configuración " << i << ":" << std::endl;
-  //     std::cout << "Mean density: " << h_statistics[i].mean_density << std::endl;
-  // }
+  // *** [MISSING FEATURE 2] Microtubule state output ***
+  // Copy d_m from device to host only if output is required
+  bool* h_m = nullptr;
+  if (output_microtubule_state)
+  {
+    const size_t d_m_size = tam_experiment * N * L;
+    h_m = new bool[d_m_size];
+    cudaMemcpy(h_m, d_m, d_m_size * sizeof(bool), cudaMemcpyDeviceToHost);
+  }
 
-  // Liberar memoria en el dispositivo
+  // Deallocate memory on the device
   cudaFree(step_forward_particles_list);
   cudaFree(step_lateral_particles_list);
   cudaFree(mean_current_per_channel);
   cudaFree(d_statistics_experiment);
   cudaFree(d_configurations);
   cudaFree(d_statistics);
+  cudaFree(d_statistics_config);
   cudaFree(d_density);
   cudaFree(d_m);
 
+  // *** Space-state diagram output ***
+  if (output_space_state_diagram)
+  {
+    std::string ssd_folder(root_output_folder + "/space_state_diagrams");
+    SciCellxxFileSystem::create_directory(ssd_folder);
+    scicellxx_output << "Writing space-state diagrams..." << std::endl;
+    for (unsigned i_config = 0; i_config < n_all_configurations; i_config++)
+    {
+      const Real alpha    = flat_configurations[i_config * 5 + 0];
+      const Real beta     = flat_configurations[i_config * 5 + 1];
+      const Real rho      = flat_configurations[i_config * 5 + 2];
+      const Real omega_in = flat_configurations[i_config * 5 + 3];
+      const Real omega_out= flat_configurations[i_config * 5 + 4];
+
+      std::ostringstream ss_a;   ss_a   << setprecision(precision_real_values) << alpha;
+      std::ostringstream ss_b;   ss_b   << setprecision(precision_real_values) << beta;
+      std::ostringstream ss_r;   ss_r   << setprecision(precision_real_values) << rho;
+      std::ostringstream ss_oi;  ss_oi  << setprecision(precision_real_values) << omega_in;
+      std::ostringstream ss_oo;  ss_oo  << setprecision(precision_real_values) << omega_out;
+
+      for (unsigned i_experiment = 0; i_experiment < max_experiments; i_experiment++)
+      {
+        std::ostringstream ss_exp;
+        ss_exp << std::setw(width_number) << std::setfill(fill_char) << i_experiment;
+
+        const std::string ssd_filename(
+          ssd_folder +
+          "/space_state_exp" + ss_exp.str() +
+          "_a" + ss_a.str() +
+          "_b" + ss_b.str() +
+          "_r" + ss_r.str() +
+          "_oi" + ss_oi.str() +
+          "_oo" + ss_oo.str() + ".csv");
+
+        std::ofstream ssd_file(ssd_filename, std::ios_base::out);
+
+        for (unsigned pos = 0; pos < L - 1; pos++)
+          ssd_file << pos << ",";
+        ssd_file << L - 1 << "\n";
+
+        const unsigned e_density_base = (i_config * max_experiments + i_experiment) * max_simulations_per_experiment;
+
+        for (unsigned i_sim = 0; i_sim < max_simulations_per_experiment; i_sim++)
+        {
+          const unsigned row_start = (e_density_base + i_sim) * L;
+          for (unsigned pos = 0; pos < L - 1; pos++)
+            ssd_file << h_density[row_start + pos] << ",";
+          ssd_file << h_density[row_start + L - 1] << "\n";
+        }
+        ssd_file.close();
+      }
+    }
+    scicellxx_output << "Writing space-state diagrams [DONE]" << std::endl;
+  }
+
+  // *** Final microtubule state output ***
+  if (output_microtubule_state && h_m != nullptr)
+  {
+    std::string mts_folder(root_output_folder + "/microtubule_states");
+    SciCellxxFileSystem::create_directory(mts_folder);
+    scicellxx_output << "Writing microtubule states..." << std::endl;
+    for (unsigned i_config = 0; i_config < n_all_configurations; i_config++)
+    {
+      const Real alpha    = flat_configurations[i_config * 5 + 0];
+      const Real beta     = flat_configurations[i_config * 5 + 1];
+      const Real rho      = flat_configurations[i_config * 5 + 2];
+      const Real omega_in = flat_configurations[i_config * 5 + 3];
+      const Real omega_out= flat_configurations[i_config * 5 + 4];
+
+      std::ostringstream ss_a;   ss_a   << setprecision(precision_real_values) << alpha;
+      std::ostringstream ss_b;   ss_b   << setprecision(precision_real_values) << beta;
+      std::ostringstream ss_r;   ss_r   << setprecision(precision_real_values) << rho;
+      std::ostringstream ss_oi;  ss_oi  << setprecision(precision_real_values) << omega_in;
+      std::ostringstream ss_oo;  ss_oo  << setprecision(precision_real_values) << omega_out;
+
+      for (unsigned i_experiment = 0; i_experiment < max_experiments; i_experiment++)
+      {
+        std::ostringstream ss_exp;
+        ss_exp << std::setw(width_number) << std::setfill(fill_char) << i_experiment;
+
+        const std::string mts_filename(
+          mts_folder +
+          "/microtubule_state_exp" + ss_exp.str() +
+          "_a" + ss_a.str() +
+          "_b" + ss_b.str() +
+          "_r" + ss_r.str() +
+          "_oi" + ss_oi.str() +
+          "_oo" + ss_oo.str() + ".csv");
+
+        std::ofstream mts_file(mts_filename, std::ios_base::out);
+
+        const unsigned e_m_base = (i_config * max_experiments + i_experiment) * N * L;
+
+        for (unsigned k = 0; k < N; k++)
+        {
+          for (unsigned pos = 0; pos < L - 1; pos++)
+            mts_file << static_cast<int>(h_m[e_m_base + k * L + pos]) << ",";
+          mts_file << static_cast<int>(h_m[e_m_base + k * L + L - 1]) << "\n";
+        }
+        mts_file.close();
+      }
+    }
+    scicellxx_output << "Writing microtubule states [DONE]" << std::endl;
+    delete[] h_m;
+  }
+
   /************************ CUDA end ***************************/
   cudaProfilerStop();
-  // // Run all configurations
-  // // for (unsigned i_config = 0; i_config < n_all_configurations; i_config++)
-  // for (unsigned i_config = 0; i_config < n_configurations_this_core; i_config++)
-  // {
-  //   const unsigned configuration_index = indices_configurations_per_core[i_config];
-
-  //   const Real alpha = configurations[configuration_index][0];
-  //   const Real beta = configurations[configuration_index][1];
-  //   const Real rho = configurations[configuration_index][2];
-  //   const Real omega_in = configurations[configuration_index][3];
-  //   const Real omega_out = configurations[configuration_index][4];
-    
-  //   // Keep track of the means, standard deviation and median of the
-  //   // channel density space/state per experiment
-  //   std::vector<Real> mean_density_experiment(max_experiments);
-  //   std::vector<Real> stdev_density_experiment(max_experiments);
-  //   std::vector<Real> median_density_experiment(max_experiments);
-
-  //   // Keep track of the means, standard deviation and median of the
-  //   // microtubule current per experiment
-  //   std::vector<Real> mean_current_experiment(max_experiments);
-  //   std::vector<Real> stdev_current_experiment(max_experiments);
-  //   std::vector<Real> median_current_experiment(max_experiments);
-    
-  //   unsigned experiment_counter = 0;
-    
-  //   // Run all experiments for the current configuration
-  //   for (unsigned i_experiment = 0; i_experiment < max_experiments; i_experiment++)
-  //   {
-  //     // Construct the microtubule with N channels and L cells on each channel
-  //     bool **m = new bool*[N];
-  //     for (unsigned i_channel = 0; i_channel < N; i_channel++)
-  //     {
-  //       m[i_channel] = new bool[L];
-  //     }
-
-  //     // Initialize microtubule with zeroes
-  //     for (unsigned i_channel = 0; i_channel < N; i_channel++)
-  //     {
-  //       for (unsigned i_cell = 0; i_cell < L; i_cell++)
-  //       {
-  //         m[i_channel][i_cell] = 0;
-  //       }
-  //     }
-      
-  //     // Keep track of the means of the mean channel density space/state
-  //     std::vector<Real> mean_density_simulation(n_data_to_gather);
-  //     // Keep track of the means of the current
-  //     std::vector<Real> mean_current_simulation(n_data_to_gather);
-  //     unsigned simulation_counter = 0;
-      
-  //     // Start simulation
-  //     for (unsigned i_simulation_step = 0; i_simulation_step < max_simulations_per_experiment; i_simulation_step++)
-  //     {
-  //       // Store the current
-  //       Real local_mean_current = 0.0;
-  //       // Apply mTASEP
-  //       mTASEP(m, N, L, alpha, beta, rho, omega_in, omega_out, lateral_movement, local_mean_current);
-        
-  //       // Compute the density on the microtubule
-  //       std::vector<Real> mean_channels_density = compute_mean_channels_density(m, N, L);
-
-  //       if (i_simulation_step >= simulation_step_to_start_gathering_data)
-  //        {
-  //         // Compute the mean density for this simulation step
-  //         // (density along the microtubule)
-  //         Real local_mean_density = 0.0;
-  //         SciCellxxStatistics::statistics_mean(mean_channels_density, local_mean_density);
-  //         // Keep track of the means for each simulation step
-  //         mean_density_simulation[simulation_counter] = local_mean_density;
-  //         mean_current_simulation[simulation_counter] = local_mean_current;
-          
-  //         // Increase counter
-  //         simulation_counter++;
-          
-  //        }
-  //     } // for (i_simulation_step < max_simulations_per_experiment)
-
-  //     // Compute the mean, standard deviation and median for density on this experiment
-  //     Real imean_density = 0.0;
-  //     Real istdev_density = 0.0;
-  //     Real imedian_density = 0.0;
-  //     SciCellxxStatistics::statistics_mean_std_median(mean_density_simulation, imean_density, istdev_density, imedian_density);
-  //     // Keep track of the mean, standard deviation and median of the density for each experiment
-  //     mean_density_experiment[experiment_counter] = imean_density;
-  //     stdev_density_experiment[experiment_counter] = istdev_density;
-  //     median_density_experiment[experiment_counter] = imedian_density;
-      
-  //     // Compute the mean, standard deviation and median for current on this experiment
-  //     Real imean_current = 0.0;
-  //     Real istdev_current = 0.0;
-  //     Real imedian_current = 0.0;
-  //     SciCellxxStatistics::statistics_mean_std_median(mean_current_simulation, imean_current, istdev_current, imedian_current);
-  //     // Keep track of the mean, standard deviation and median of the current for each experiment
-  //     mean_current_experiment[experiment_counter] = imean_current;
-  //     stdev_current_experiment[experiment_counter] = istdev_current;
-  //     median_current_experiment[experiment_counter] = imedian_current;
-      
-  //     experiment_counter++;
-      
-  //     // Free memory for multichannel-microtubule
-  //     for (unsigned i_channel = 0; i_channel < N; i_channel++)
-  //      {
-  //       delete [] m[i_channel];
-  //      }
-  //     delete [] m;
-      
-  //   } // for (i_experiment < max_experiments)
-    
-  //   // Compute the mean, standard deviation and median for density on this configuration
-  //   Real imean_density = 0.0;
-  //   Real istdev_density = 0.0;
-  //   Real imedian_density = 0.0;
-  //   SciCellxxStatistics::statistics_mean(mean_density_experiment, imean_density);
-  //   SciCellxxStatistics::statistics_mean(stdev_density_experiment, istdev_density);
-  //   SciCellxxStatistics::statistics_mean(median_density_experiment, imedian_density);
-  //   // Keep track of the mean, standard deviation and median of the density for each configuration
-  //   mean_density[config_counter] = imean_density;
-  //   stdev_density[config_counter] = istdev_density;
-  //   median_density[config_counter] = imedian_density;
-    
-  //   // Compute the mean, standard deviation and median for current on this configuration
-  //   Real imean_current = 0.0;
-  //   Real istdev_current = 0.0;
-  //   Real imedian_current = 0.0;
-  //   SciCellxxStatistics::statistics_mean(mean_current_experiment, imean_current);
-  //   SciCellxxStatistics::statistics_mean(stdev_current_experiment, istdev_current);
-  //   SciCellxxStatistics::statistics_mean(median_current_experiment, imedian_current);
-  //   // Keep track of the mean, standard deviation and median of the current for each configuration
-  //   mean_current[config_counter] = imean_current;
-  //   stdev_current[config_counter] = istdev_current;
-  //   median_current[config_counter] = imedian_current;
-    
-  //   config_counter++;
-    
-  // } // for (i_config < n_configurations_this_core)
-  
-  // // ****************************************************************************************
-  // // Each core reports its results into a file
-  // // ****************************************************************************************
-  
-  // // Open the file
-  // // std::string output_final_results_this_core_filename(root_output_folder + "/output_r" + ss_rank.str() + ".csv");
-  // // std::ofstream output_final_results_this_core_file(output_final_results_this_core_filename, std::ios_base::out);
-  // // The header
-  // // output_final_results_this_core_file << "id,alpha,beta,rho,omega_in,omega_out,density,std_density,median_density,current,std_current,median_current" << std::endl;
-  
-  // // scicellxx_output << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs) << "Flushing results into disk ..." << std::endl;
-  // scicellxx_output << "Flushing results into disk ..." << std::endl;
-  
-  // // For each configuration
-  // for (unsigned i_config = 0; i_config < n_configurations_this_core; i_config++)
-  //  {
-  //   // Get the index for the corresponding configuration for this core
-  //   const unsigned configuration_index = indices_configurations_per_core[i_config];
-    
-  //   // Get values for each configuration
-  //   const Real alpha = configurations[configuration_index][0];
-  //   const Real beta = configurations[configuration_index][1];
-  //   const Real rho = configurations[configuration_index][2];
-  //   const Real omega_in = configurations[configuration_index][3];
-  //   const Real omega_out = configurations[configuration_index][4];
-     
-  //   const Real imean_density = mean_density[i_config];
-  //   const Real istdev_density = stdev_density[i_config];
-  //   const Real imedian_density = median_density[i_config];
-    
-  //   const Real imean_current = mean_current[i_config];
-  //   const Real istdev_current = stdev_current[i_config];
-  //   const Real imedian_current = median_current[i_config];
-    
-  //   // Transform to string to output to file
-  //   std::ostringstream ss_alpha;
-  //   ss_alpha << setprecision(precision_real_values) << alpha;
-  //   std::ostringstream ss_beta;
-  //   ss_beta << setprecision(precision_real_values) << beta;
-  //   std::ostringstream ss_rho;
-  //   ss_rho << setprecision(precision_real_values) << rho;
-  //   std::ostringstream ss_omega_in;
-  //   ss_omega_in << setprecision(precision_real_values) << omega_in;
-  //   std::ostringstream ss_omega_out;
-  //   ss_omega_out << setprecision(precision_real_values) << omega_out;
-    
-  //   std::ostringstream ss_imean_density;
-  //   ss_imean_density << setprecision(precision_real_values) << imean_density;
-  //   std::ostringstream ss_istdev_density;
-  //   ss_istdev_density << setprecision(precision_real_values) << istdev_density;
-  //   std::ostringstream ss_imedian_density;
-  //   ss_imedian_density << setprecision(precision_real_values) << imedian_density;
-    
-  //   std::ostringstream ss_imean_current;
-  //   ss_imean_current << setprecision(precision_real_values) << imean_current;
-  //   std::ostringstream ss_istdev_current;
-  //   ss_istdev_current << setprecision(precision_real_values) << istdev_current;
-  //   std::ostringstream ss_imedian_current;
-  //   ss_imedian_current << setprecision(precision_real_values) << imedian_current;
-    
-  //   // output_final_results_this_core_file << configuration_index << "," << ss_alpha.str() << "," << ss_beta.str() << "," << ss_rho.str() << "," << ss_omega_in.str() << "," << ss_omega_out.str() << "," << ss_imean_density.str() << "," << ss_istdev_density.str() << "," << ss_imedian_density.str() << "," << ss_imean_current.str() << "," << ss_istdev_current.str() << "," << ss_imedian_current.str() << std::endl;
-    
-  //   //scicellxx_output << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs) << "id:" << configuration_index << "\talpha:" << ss_alpha.str() << "\tbeta:" << ss_beta.str() << "\trho:" << ss_rho.str() << "\tomega_in:" << ss_omega_in.str() << "\tomega_out:" << ss_omega_out.str() << "\tdensity:" << ss_imean_density.str() << "\tdensity(std):" << ss_istdev_density.str() << "\tdensity(median):" << ss_imedian_density.str() << "\tcurrent:" << ss_imean_current.str() << "\tcurrent(std):" << ss_istdev_current.str() << "\tcurrent(median):" << ss_imedian_current.str() << std::endl;
-    
-  //  } // for (i_config < n_configurations_this_core)
-  
-  // // Close the file
-  // // output_final_results_this_core_file.close();
-  
-  // // scicellxx_output << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs) << "Flushing results into disk [DONE]" << std::endl;
-  // scicellxx_output << "Flushing results into disk [DONE]" << std::endl;
-  
-  // // ****************************************************************************************
-  // // GATHER RESULTS INTO A MASTER CORE
-  // // ****************************************************************************************
-  
-  // // ****************************************************************************************
-  // // Send the results from each core to a master core
-  // // ****************************************************************************************
-  
-  // // Store the results into a vector to send it to a master node that
-  // // will reports results in a single file
-  // const unsigned n_fields_of_data_to_transfer = 12;
-  // // This number incluces storage for the global id
-  // Real *data_sent_to_master = new Real[n_fields_of_data_to_transfer*n_configurations_this_core];
-  
-  // // scicellxx_output << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs) << "Gathering results into a single file ..." << std::endl;
-  // scicellxx_output << "Gathering results into a single file ..." << std::endl;
-  
-  // // For each configuration
-  // for (unsigned i_config = 0; i_config < n_configurations_this_core; i_config++)
-  //  {
-  //   // Get the index for the corresponding configuration for this core
-  //   const unsigned configuration_index = indices_configurations_per_core[i_config];
-    
-  //   // Get values for each configuration
-  //   const Real alpha = configurations[configuration_index][0];
-  //   const Real beta = configurations[configuration_index][1];
-  //   const Real rho = configurations[configuration_index][2];
-  //   const Real omega_in = configurations[configuration_index][3];
-  //   const Real omega_out = configurations[configuration_index][4];
-    
-  //   const Real imean_density = mean_density[i_config];
-  //   const Real istdev_density = stdev_density[i_config];
-  //   const Real imedian_density = median_density[i_config];
-    
-  //   const Real imean_current = mean_current[i_config];
-  //   const Real istdev_current = stdev_current[i_config];
-  //   const Real imedian_current = median_current[i_config];
-
-  //   const unsigned start_index = i_config*n_fields_of_data_to_transfer;
-  //   data_sent_to_master[start_index + 0] = configuration_index;
-  //   data_sent_to_master[start_index + 1] = alpha;
-  //   data_sent_to_master[start_index + 2] = beta;
-  //   data_sent_to_master[start_index + 3] = rho;
-  //   data_sent_to_master[start_index + 4] = omega_in;
-  //   data_sent_to_master[start_index + 5] = omega_out;
-  //   data_sent_to_master[start_index + 6] = imean_density;
-  //   data_sent_to_master[start_index + 7] = istdev_density;
-  //   data_sent_to_master[start_index + 8] = imedian_density;
-  //   data_sent_to_master[start_index + 9] = imean_current;
-  //   data_sent_to_master[start_index + 10] = istdev_current;
-  //   data_sent_to_master[start_index + 11] = imedian_current;
-    
-  //  } // for (i_config < n_configurations_this_core)
-  
-  // // The number of configurations to recieve from each core into master
-  // int *n_configurations_to_receive_on_master_from_each_core = 0;
-  
-  // // On a master core gather the number of configurations on each core
-  // // MPI_Gather(&n_configurations_this_core, 1, MPI_UNSIGNED,
-  //           //  n_configurations_to_receive_on_master_from_each_core, 1, MPI_INT,
-  //           //  SciCellxxMPI::master_core, SciCellxxMPI::comm);
-
-  // //std::cerr << "This core configs:\n";
-  // //std::cerr << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs) << n_configurations_this_core << std::endl;
-  
-  // unsigned all_configurations_mpi_reduce = 0;
-  // // MPI_Reduce(&n_configurations_this_core, &all_configurations_mpi_reduce, 1, MPI_UNSIGNED, MPI_SUM,
-  // //            SciCellxxMPI::master_core, SciCellxxMPI::comm);
-  
-  // // Validate that the sum of configurations to receive is the same as
-  // // the original number of total configurations
-  // // if (SciCellxxMPI::rank == SciCellxxMPI::master_core)
-  // //  {
-  // //   if (all_configurations_mpi_reduce != n_all_configurations)
-  // //    {
-  // //     // Error message
-  // //     std::ostringstream error_message;
-  // //     error_message << "The sum of configurations to receive is different than the original\n"
-  // //                   << "number of total configurations\n"
-  // //                   << "(all_configurations_mpi_reduce):" << all_configurations_mpi_reduce << std::endl
-  // //                   << "(n_all_configurations):" << n_all_configurations << std::endl;
-  // //     throw SciCellxxLibError(error_message.str(),
-  // //                             SCICELLXX_CURRENT_FUNCTION,
-  // //                             SCICELLXX_EXCEPTION_LOCATION);
-  // //    }
-  // //  }
-  
-  // const unsigned n_data_sent_to_master = n_fields_of_data_to_transfer*n_configurations_this_core;
-  // //std::cerr << "N data sent to master:\n";
-  // //std::cerr << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs) << n_data_sent_to_master << std::endl;
-  
-  // // Vector to receive data from cores
-  // Real *data_received_on_master = new Real[n_fields_of_data_to_transfer*n_all_configurations];
-  
-  // // // The number of data to receive on master from each core
-  // // int *n_data_to_receive_on_master_from_each_core = new int[SciCellxxMPI::nprocs];
-  
-  // // if (SciCellxxMPI::rank == SciCellxxMPI::master_core)
-  // //  {
-  // //   //std::cerr << "Master core configs:\n";
-  // //   for (int i = 0; i < SciCellxxMPI::nprocs; i++)
-  // //    {
-  // //     n_data_to_receive_on_master_from_each_core[i] = n_configurations_to_receive_on_master_from_each_core[i] * n_fields_of_data_to_transfer;
-  // //     //std::cerr << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs)
-  // //     //          << "[" << i << "] confgs "<< n_configurations_to_receive_on_master_from_each_core[i] << std::endl;
-  // //     //std::cerr << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs)
-  // //     //          << "[" << i << "] data "<< n_data_to_receive_on_master_from_each_core[i] << std::endl;
-  // //    }
-  // //  }
-  
-  // // Compute the displacements vector
-  // // int *n_displacement_on_mater_for_each_core = new int[SciCellxxMPI::nprocs];
-  // // unsigned displ = 0;
-  // // if (SciCellxxMPI::rank == SciCellxxMPI::master_core)
-  // //  {
-  // //   for (int i = 0; i < SciCellxxMPI::nprocs; i++)
-  // //    {
-  // //     n_displacement_on_mater_for_each_core[i] = displ;
-  // //     displ+=n_data_to_receive_on_master_from_each_core[i];
-  //     //std::cerr << "N displacement on master for each core:\n";
-  //     //std::cerr << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs) << "["<<i<<"]: "<< n_displacement_on_mater_for_each_core[i] << std::endl;
-  //   //  }
-  // //  } // if (SciCellxxMPI::rank == SciCellxxMPI::master_core)
-  
-  // // On a master core gather the configurations from all cores
-  // // MPI_Gatherv(data_sent_to_master, n_data_sent_to_master, MPI_SC_REAL,
-  // //             data_received_on_master, n_data_to_receive_on_master_from_each_core,
-  // //             n_displacement_on_mater_for_each_core, MPI_SC_REAL,
-  // //             SciCellxxMPI::master_core, SciCellxxMPI::comm);
-  
-  // // scicellxx_output << MPI_RANK_NPROCS_PRINT(SciCellxxMPI::rank, SciCellxxMPI::nprocs) << "Gathering results into a single file [DONE]" << std::endl;
-  // scicellxx_output << "Gathering results into a single file [DONE]" << std::endl;
   
   // // ****************************************************************************************
   // // Generate a single output file with the results from all processors
@@ -2061,10 +1859,179 @@ int main(int argc, const char** argv)
     
   //  } // if (SciCellxxMPI::rank == SciCellxxMPI::master_core)
   
+  // *** Animation output for EXTREME configurations ***
+  // An "extreme configuration" is one where ALL its parameters are at
+  // their minimum or maximum value of the sweep. With 5 parameters there are up to 2^5 = 32 configs.
+  // For these configs, the simulation is re-executed on the GPU and snapshots
+  // of the microtubule are saved step-by-step, compatible with csv_to_jpeg_for_microtubule_animations.py.
+  if (output_microtubule_state)
+  {
+    // ── 1. Identify extreme configurations (trivial to do on CPU) ──────────
+    Real alpha_lo = alphas.front(),    alpha_hi = alphas.back();
+    Real beta_lo  = betas.front(),     beta_hi  = betas.back();
+    Real rho_lo   = rhos.front(),      rho_hi   = rhos.back();
+    Real oin_lo   = omegas_in.front(), oin_hi   = omegas_in.back();
+    Real oout_lo  = omegas_out.front(),oout_hi  = omegas_out.back();
+
+    const Real tol = 1e-9;
+    auto is_extreme = [&](Real v, Real lo, Real hi) {
+      return std::abs(v - lo) < tol || std::abs(v - hi) < tol;
+    };
+
+    std::vector<unsigned> extreme_ids;
+    std::vector<Real> extreme_flat;   // extreme config params (n_extreme × 5)
+    for (unsigned i = 0; i < n_all_configurations; i++)
+    {
+      Real a  = flat_configurations[i*5+0];
+      Real b  = flat_configurations[i*5+1];
+      Real r  = flat_configurations[i*5+2];
+      Real oi = flat_configurations[i*5+3];
+      Real oo = flat_configurations[i*5+4];
+      if (is_extreme(a,alpha_lo,alpha_hi) && is_extreme(b,beta_lo,beta_hi) &&
+          is_extreme(r,rho_lo,rho_hi)     && is_extreme(oi,oin_lo,oin_hi)  &&
+          is_extreme(oo,oout_lo,oout_hi))
+      {
+        extreme_ids.push_back(i);
+        extreme_flat.push_back(a);
+        extreme_flat.push_back(b);
+        extreme_flat.push_back(r);
+        extreme_flat.push_back(oi);
+        extreme_flat.push_back(oo);
+      }
+    }
+
+    const unsigned n_extreme      = extreme_ids.size();
+    // 1 experiment per config (animations show dynamics, not statistics)
+    const unsigned n_anim_threads  = n_extreme;
+
+    scicellxx_output << "Extreme configurations found: " << n_extreme << std::endl;
+    scicellxx_output << "Running animation kernel on GPU..." << std::endl;
+
+    // ── 2. Calculate buffer sizes ────────────────────────────────────────
+    // d_anim_m      : [n_anim_threads × N × L]  evolving microtubule
+    // d_snap        : [n_anim_threads × max_sims × N × L]  snapshots per step
+    // d_anim_current: [n_anim_threads × N × L]
+    // d_anim_fwd    : [n_anim_threads × N × L]
+    // d_anim_lat    : [n_anim_threads × N × L]
+    const size_t anim_NL   = (size_t)n_anim_threads * N * L;
+    const size_t snap_size = (size_t)n_anim_threads * max_simulations_per_experiment * N * L;
+
+    // ── 3. Allocate buffers in GPU ──────────────────────────────────────────────
+    Real*     d_anim_configs;
+    bool*     d_anim_m;
+    bool*     d_snap;
+    Real*     d_anim_current_ch;
+    unsigned* d_anim_fwd;
+    unsigned* d_anim_lat;
+
+    cudaMalloc(&d_anim_configs,    n_extreme * 5 * sizeof(Real));
+    cudaMalloc(&d_anim_m,          anim_NL * sizeof(bool));
+    cudaMalloc(&d_snap,            snap_size * sizeof(bool));
+    cudaMalloc(&d_anim_current_ch, anim_NL * sizeof(Real));
+    cudaMalloc(&d_anim_fwd,        anim_NL * sizeof(unsigned));
+    cudaMalloc(&d_anim_lat,        anim_NL * sizeof(unsigned));
+
+    cudaMemset(d_anim_m,  0, anim_NL * sizeof(bool));
+    cudaMemset(d_snap,    0, snap_size * sizeof(bool));
+
+    cudaMemcpy(d_anim_configs, extreme_flat.data(),
+               n_extreme * 5 * sizeof(Real), cudaMemcpyHostToDevice);
+
+    // ── 4. Launch animation kernel ─────────────────────────────────────────
+    cudaGetLastError(); // discard any previous pending error in the queue
+
+    int anim_block = 128;
+    int anim_grid  = ((int)n_anim_threads + anim_block - 1) / anim_block;
+    Run_animation_configurations<<<anim_grid, anim_block>>>(
+        d_anim_configs, d_anim_m, d_snap,
+        d_anim_current_ch, d_anim_fwd, d_anim_lat,
+        n_extreme);
+
+    // Check for launch error
+    cudaError_t launch_err = cudaGetLastError();
+    if (launch_err != cudaSuccess) {
+        printf("Error LAUNCHING animation kernel: %s\n", cudaGetErrorString(launch_err));
+    }
+
+    // Check for execution error (syncs GPU)
+    cudaError_t sync_err = cudaDeviceSynchronize();
+    if (sync_err != cudaSuccess) {
+        printf("Error in animation kernel EXECUTION: %s\n", cudaGetErrorString(sync_err));
+    } else {
+        scicellxx_output << "Animation kernel [DONE]" << std::endl;
+    }
+
+    // ── 5. Copy snapshots to host ────────────────────────────────────────────
+    bool* h_snap = new bool[snap_size];
+    cudaMemcpy(h_snap, d_snap, snap_size * sizeof(bool), cudaMemcpyDeviceToHost);
+
+    cudaFree(d_anim_configs);
+    cudaFree(d_anim_m);
+    cudaFree(d_snap);
+    cudaFree(d_anim_current_ch);
+    cudaFree(d_anim_fwd);
+    cudaFree(d_anim_lat);
+
+    // ── 6. Write CSVs from host ───────────────────────────────────────────
+    std::string animations_root(root_output_folder + "/animations");
+    SciCellxxFileSystem::create_directory(animations_root);
+
+    scicellxx_output << "Writing microtubule animations for extreme configurations..." << std::endl;
+
+    for (unsigned ei = 0; ei < n_extreme; ei++)
+    {
+      const Real alpha    = extreme_flat[ei*5+0];
+      const Real beta     = extreme_flat[ei*5+1];
+      const Real rho      = extreme_flat[ei*5+2];
+      const Real omega_in = extreme_flat[ei*5+3];
+      const Real omega_out= extreme_flat[ei*5+4];
+
+      std::ostringstream ss_a;   ss_a   << setprecision(precision_real_values) << alpha;
+      std::ostringstream ss_b;   ss_b   << setprecision(precision_real_values) << beta;
+      std::ostringstream ss_r;   ss_r   << setprecision(precision_real_values) << rho;
+      std::ostringstream ss_oi;  ss_oi  << setprecision(precision_real_values) << omega_in;
+      std::ostringstream ss_oo;  ss_oo  << setprecision(precision_real_values) << omega_out;
+
+      // One folder per extreme configuration (no experiment index)
+      std::string anim_folder(
+        animations_root +
+        "/anim_a" + ss_a.str() + "_b" + ss_b.str() +
+        "_r" + ss_r.str() + "_oi" + ss_oi.str() +
+        "_oo" + ss_oo.str());
+      SciCellxxFileSystem::create_directory(anim_folder);
+
+      // tid in kernel = ei (one thread per extreme configuration)
+      for (unsigned i_sim = 0; i_sim < max_simulations_per_experiment; i_sim++)
+      {
+        std::ostringstream ss_step;
+        ss_step << std::setw(width_number) << std::setfill(fill_char) << i_sim;
+        std::string csv_filename(anim_folder + "/microtubule_" + ss_step.str() + ".csv");
+
+        std::ofstream csv_file(csv_filename, std::ios_base::out);
+
+        // snapshot base: [ei * max_sims + i_sim] × N × L
+        unsigned snap_base = (ei * max_simulations_per_experiment + i_sim) * N * L;
+
+        for (unsigned k = 0; k < N; k++)
+        {
+          for (unsigned pos = 0; pos < L - 1; pos++)
+            csv_file << static_cast<int>(h_snap[snap_base + k * L + pos]) << ",";
+          csv_file << static_cast<int>(h_snap[snap_base + k * L + L - 1]) << "\n";
+        }
+        csv_file.close();
+      }
+    }
+
+    delete[] h_snap;
+    scicellxx_output << "Writing microtubule animations [DONE]" << std::endl;
+  }
+
   // Finalise chapcom
-  // finalise_scicellxx();
+  finalise_scicellxx();
 
   delete[] h_statistics;
+  delete[] h_statistics_experiment;
+  delete[] h_density;
   
   return 0;
   
