@@ -11,18 +11,6 @@
 
 #include "../../../src/scicellxx.h"
 
-// __device__ void d_try_lateral_movement(bool* m, const unsigned N, const unsigned L, const unsigned k, const unsigned i, const unsigned e_m);
-
-// __device__ void d_compute_mean_channels_density(const bool* m, const unsigned N, const unsigned L, unsigned e_m, Real* density);
-
-// __device__ void d_mTASEP(bool* d_m, const unsigned e_m, const unsigned i_simulation, 
-//             const unsigned d_N, const unsigned d_L,
-//             const Real alpha, const Real beta, const Real rho,
-//             const Real omega_in, const Real omega_out,
-//             bool lateral_movement, Real &mean_current,
-//             Real* mean_current_per_channel,                                      
-//             unsigned* step_forward_particles_list,
-//             unsigned* step_lateral_particles_list);
 
 __device__ __constant__ unsigned d_N;
 __device__ __constant__ unsigned d_L;

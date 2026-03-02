@@ -1,23 +1,23 @@
 #!/usr/bin/env python3
 """
 csv_to_gif.py
-Genera GIFs animados del estado del microtúbulo a partir de los CSVs numerados.
+Generates animated GIFs of the microtubule state from numbered CSVs.
 
-Soporta dos formatos de salida:
-  --format cuda  (default) : lee de results_dir/animations/anim_a*/microtubule_*.csv
-  --format mpi             : lee de results_dir/exp00000_*/microtubule_*.csv
-                             filtrando solo las configuraciones extremas (params en min/max)
+Supports two output formats:
+  --format cuda  (default) : reads from results_dir/animations/anim_a*/microtubule_*.csv
+  --format mpi             : reads from results_dir/exp00000_*/microtubule_*.csv
+                             filtering only extreme configurations (params at min/max)
 
-Uso:
+Usage:
   python csv_to_gif.py --results_dir RESLT_CUDA [--delay 100] [--cmap binary]
   python csv_to_gif.py --results_dir RESLT_MPI  --format mpi [--delay 100]
 
-Argumentos:
-  --results_dir  Carpeta de resultados
-  --format       'cuda' o 'mpi' (default: cuda)
-  --delay        Duración de cada frame en ms (default: 100)
-  --cmap         Colormap de matplotlib (default: binary)
-  --dpi          Resolución de la imagen (default: 80)
+Arguments:
+  --results_dir  Results directory
+  --format       'cuda' or 'mpi' (default: cuda)
+  --delay        Duration of each frame in ms (default: 100)
+  --cmap         Matplotlib colormap (default: binary)
+  --dpi          Image resolution (default: 80)
 """
 
 import os
@@ -34,12 +34,12 @@ import matplotlib.animation as animation
 # ──────────────────────────────────────────────────────────────────────────────
 def make_gif(anim_folder: str, gif_path: str, delay_ms: int, cmap: str, dpi: int,
              title_override: str = ""):
-    """Lee los CSVs microtubule_NNNNN.csv de anim_folder y genera un GIF."""
+    """Reads microtubule_NNNNN.csv files from anim_folder and generates a GIF."""
     pattern = os.path.join(anim_folder, "microtubule_*.csv")
     files   = sorted(glob.glob(pattern))
 
     if not files:
-        print(f"  [SKIP] Sin archivos CSV en: {anim_folder}")
+        print(f"  [SKIP] No CSV files in: {anim_folder}")
         return
 
     frames = []
@@ -50,10 +50,10 @@ def make_gif(anim_folder: str, gif_path: str, delay_ms: int, cmap: str, dpi: int
                 m = m[np.newaxis, :]
             frames.append(m)
         except Exception as e:
-            print(f"  [WARN] No se pudo leer {f}: {e}")
+            print(f"  [WARN] Could not read {f}: {e}")
 
     if not frames:
-        print(f"  [SKIP] Sin datos válidos en: {anim_folder}")
+        print(f"  [SKIP] No valid data in: {anim_folder}")
         return
 
     N, L = frames[0].shape
@@ -63,8 +63,8 @@ def make_gif(anim_folder: str, gif_path: str, delay_ms: int, cmap: str, dpi: int
     fig, ax = plt.subplots(figsize=(max(6, L // 10), max(2, N // 2 + 1)), dpi=dpi)
     im = ax.imshow(frames[0], interpolation='none', cmap=cmap,
                    vmin=0, vmax=1, aspect='auto')
-    ax.set_xlabel("Posición $(x)$")
-    ax.set_ylabel("Canal")
+    ax.set_xlabel("Position $(x)$")
+    ax.set_ylabel("Channel")
     step_text = ax.set_title(f"{title_base}\nStep 0 / {len(frames)-1}")
     ax.set_xticks(np.arange(0, L, max(1, L // 10)))
     ax.yaxis.set_ticklabels([])
@@ -83,7 +83,7 @@ def make_gif(anim_folder: str, gif_path: str, delay_ms: int, cmap: str, dpi: int
     print(f"  [OK]  {gif_path}  ({len(frames)} frames, {N}×{L})")
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Parámetros extremos: parsear a y b del nombre de carpeta MPI:
+# Extreme parameters: parse a and b from MPI folder name:
 #   exp00000_a0_b1_r1_oi0_oo1  →  {a:0, b:1, r:1, oi:0, oo:1}
 PARAM_RE = re.compile(
     r"_a(?P<a>[0-9.]+)_b(?P<b>[0-9.]+)_r(?P<r>[0-9.]+)"
@@ -91,7 +91,7 @@ PARAM_RE = re.compile(
 )
 
 def parse_params(folder_name: str):
-    """Extrae los parámetros flotantes del nombre de la carpeta. Devuelve dict o None."""
+    """Extracts floating point parameters from the folder name. Returns dict or None."""
     m = PARAM_RE.search(folder_name)
     if not m:
         return None
@@ -102,15 +102,15 @@ def is_extreme(val: float, lo: float, hi: float, tol: float = 1e-9) -> bool:
 
 def find_extreme_mpi_folders(results_dir: str):
     """
-    Devuelve los folders MPI (exp00000_*) que correspondan a configuraciones extremas,
-    es decir, TODOS sus parámetros están en su valor mínimo o máximo del barrido.
+    Returns the MPI folders (exp00000_*) corresponding to extreme configurations,
+    meaning all its parameters are at their minimum or maximum sweep value.
     """
-    # Solo experimento 0 (suficiente para visualizar la dinámica)
+    # Only experiment 0 (sufficient to visualize the dynamics)
     all_folders = sorted(glob.glob(os.path.join(results_dir, "exp00000_*")))
     if not all_folders:
         return []
 
-    # Recopilar todos los valores únicos de cada parámetro
+    # Collect all unique values for each parameter
     param_vals = {k: set() for k in ('a', 'b', 'r', 'oi', 'oo')}
     for folder in all_folders:
         p = parse_params(os.path.basename(folder))
@@ -118,7 +118,7 @@ def find_extreme_mpi_folders(results_dir: str):
             for k in param_vals:
                 param_vals[k].add(p[k])
 
-    # Extremos = min y max de cada parámetro
+    # Extremes = min and max of each parameter
     extremes = {k: (min(vs), max(vs)) for k, vs in param_vals.items()}
 
     extreme_folders = []
@@ -132,35 +132,35 @@ def find_extreme_mpi_folders(results_dir: str):
 # ──────────────────────────────────────────────────────────────────────────────
 def main():
     parser = argparse.ArgumentParser(
-        description="Genera GIFs animados del estado del microtúbulo")
+        description="Generates animated GIFs of the microtubule state")
     parser.add_argument("--results_dir", required=True,
-                        help="Carpeta de resultados")
+                        help="Results directory")
     parser.add_argument("--format", choices=["cuda", "mpi"], default="cuda",
-                        help="Formato de salida: 'cuda' (default) o 'mpi'")
+                        help="Output format: 'cuda' (default) or 'mpi'")
     parser.add_argument("--delay", type=int, default=100,
-                        help="Duración de cada frame en ms (default: 100)")
+                        help="Duration of each frame in ms (default: 100)")
     parser.add_argument("--cmap", default="binary",
-                        help="Colormap de matplotlib (default: binary)")
+                        help="Matplotlib colormap (default: binary)")
     parser.add_argument("--dpi", type=int, default=80,
-                        help="Resolución de la imagen (default: 80)")
+                        help="Image resolution (default: 80)")
     args = parser.parse_args()
 
     results_dir = os.path.abspath(args.results_dir)
     if not os.path.isdir(results_dir):
-        print(f"ERROR: No existe la carpeta: {results_dir}")
+        print(f"ERROR: Directory does not exist: {results_dir}")
         sys.exit(1)
 
     gifs_dir = os.path.join(results_dir, "gifs")
     os.makedirs(gifs_dir, exist_ok=True)
-    print(f"Formato: {args.format}")
+    print(f"Format: {args.format}")
     print(f"GIFs → {gifs_dir}\n")
 
-    # ── Modo CUDA ──────────────────────────────────────────────────────────────
+    # ── CUDA Mode ──────────────────────────────────────────────────────────────
     if args.format == "cuda":
         animations_dir = os.path.join(results_dir, "animations")
         if not os.path.isdir(animations_dir):
-            print(f"ERROR: No existe 'animations/' en {results_dir}")
-            print("Ejecuta la simulación con --output_microtubule_state 1 primero.")
+            print(f"ERROR: 'animations/' does not exist in {results_dir}")
+            print("Run the simulation with --output_microtubule_state 1 first.")
             sys.exit(1)
 
         anim_folders = sorted(glob.glob(os.path.join(animations_dir, "anim_a*")))
@@ -168,39 +168,39 @@ def main():
             print("No se encontraron carpetas 'anim_a*'.")
             sys.exit(0)
 
-        print(f"Encontradas {len(anim_folders)} configuraciones extremas (CUDA).\n")
+        print(f"Found {len(anim_folders)} extreme configurations (CUDA).\n")
 
         for folder in anim_folders:
             folder_name = os.path.basename(folder)
             gif_name    = folder_name.replace("anim_", "") + ".gif"
             gif_path    = os.path.join(gifs_dir, gif_name)
             title       = folder_name.replace("anim_", "").replace("_", "  ")
-            print(f"Procesando: {folder_name}")
+            print(f"Processing: {folder_name}")
             make_gif(folder, gif_path, args.delay, args.cmap, args.dpi, title)
 
-    # ── Modo MPI ───────────────────────────────────────────────────────────────
+    # ── MPI Mode ───────────────────────────────────────────────────────────────
     else:
         extreme_folders = find_extreme_mpi_folders(results_dir)
         if not extreme_folders:
-            print("No se encontraron carpetas 'exp00000_*' con configuraciones extremas.")
-            print("Ejecuta la simulación MPI con --output_microtubule_state 1 primero.")
+            print("No 'exp00000_*' folders with extreme configurations found.")
+            print("Run the MPI simulation with --output_microtubule_state 1 first.")
             sys.exit(0)
 
-        print(f"Encontradas {len(extreme_folders)} configuraciones extremas (MPI).\n")
+        print(f"Found {len(extreme_folders)} extreme configurations (MPI).\n")
 
         for folder in extreme_folders:
             folder_name = os.path.basename(folder)
-            # Nombre del GIF: quitar el prefijo "exp00000_"
+            # GIF name: remove the "exp00000_" prefix
             gif_name = folder_name.replace("exp00000_", "") + ".gif"
             gif_path = os.path.join(gifs_dir, gif_name)
-            # Título limpio para el GIF
+            # Clean title for the GIF
             p = parse_params(folder_name)
             title = (f"α={p['a']}  β={p['b']}  ρ={p['r']}  ωin={p['oi']}  ωout={p['oo']}"
                      if p else folder_name)
-            print(f"Procesando: {folder_name}")
+            print(f"Processing: {folder_name}")
             make_gif(folder, gif_path, args.delay, args.cmap, args.dpi, title)
 
-    print(f"\nListo. GIFs guardados en: {gifs_dir}")
+    print(f"\nDone. GIFs saved in: {gifs_dir}")
 
 if __name__ == "__main__":
     main()
